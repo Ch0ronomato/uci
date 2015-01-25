@@ -117,8 +117,11 @@ class DriverQueue {
         std::cout << "  s now = " << q << std::endl;
       }
 
-      else if (command == "m")
+      else if (command == "m") {
+    	if (q.empty()) std::cout << "This is empty" << std::endl;
+    	else std::cout << "This is not empty" << std::endl;
         std::cout << preface+"  empty = " << q.empty();
+      }
 
       else if (command == "s")
         std::cout << preface+"  size = " << q.size() << std::endl;

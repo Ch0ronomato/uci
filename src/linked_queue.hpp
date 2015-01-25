@@ -100,12 +100,12 @@ LinkedQueue<T>::LinkedQueue() : front(nullptr), rear(front) {
 
 template <class T>
 LinkedQueue<T>::LinkedQueue(const LinkedQueue<T>& to_copy) {
-	*this = to_copy;
+	enqueue(to_copy.ibegin(), to_copy.iend());
 }
 
 template <class T>
 LinkedQueue<T>::LinkedQueue(std::initializer_list<T> il) {
-
+	for (T each : il) enqueue(each);
 }
 
 template <class T>
@@ -119,17 +119,17 @@ LinkedQueue<T>::~LinkedQueue() { }
 
 template <class T>
 bool LinkedQueue<T>::empty() const {
-
+	return used == 0;
 }
 
 template <class T>
 int LinkedQueue<T>::size() const {
-
+	return used;
 }
 
 template <class T>
 T& LinkedQueue<T>::peek() const {
-
+	return front->value;
 }
 
 template <class T>
@@ -177,7 +177,7 @@ int LinkedQueue<T>::enqueue (ics::Iterator<T>& start, const ics::Iterator<T>& st
 	// for each value, call the enqueue.
 	while (start != stop) {
 		insert += enqueue(*start);
-		start++;
+		++start;
 	}
 	return insert;
 }
@@ -192,7 +192,11 @@ T LinkedQueue<T>::dequeue() {
 	LN *val = front;
 
 	// increment head.
-	front = front->next;
+	if (front->next == nullptr) {
+		front = rear = nullptr;
+	} else {
+		front = front->next;
+	}
 
 	// get the return value;
 	T return_value = val->value;
@@ -208,13 +212,20 @@ T LinkedQueue<T>::dequeue() {
 
 template <class T>
 void LinkedQueue<T>::clear() {
-
+	LN *node = front;
+	while (node != nullptr) {
+		front = front->next;
+		delete node;
+		node = front;
+	}
+	rear = nullptr;
+	used = 0;
+	mod_count++;
 }
 
 template <class T>
 LinkedQueue<T>& LinkedQueue<T>::operator = (const LinkedQueue<T>& rhs) {
-	LN *node = front = new LN();
-
+	enqueue(rhs.ibegin(), rhs.iend());
 	return *this;
 }
 
@@ -293,11 +304,9 @@ template<class T>
 const ics::Iterator<T>& LinkedQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_queue->mod_count)
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ++");
-  std::cout << "in ++" << std::endl;
   prev = current;
-  if (current == ref_queue->rear) {
-	  std::cout << "returning, rear" << std::endl;
-	  return *this;
+  if (current == nullptr) {
+	  throw IteratorPositionIllegal("LinkedQueue::Iterator::operator ++ is nullptr");
   }
 
   if (!can_erase)
@@ -355,7 +364,6 @@ T& LinkedQueue<T>::Iterator::operator *() const {
           << " and rear = " << ref_queue->rear;
     throw IteratorPositionIllegal("LinkedQueue::Iterator::operator * Iterator illegal: "+where.str());
   }
-  std::cout << "in deref" << std::endl;
   return current->value;
 }
 
