@@ -3,18 +3,18 @@
 
 
 
-#include "driver_queue.hpp"
+// #include "driver_queue.hpp"
+// int main() {
+//   ics::DriverQueue d;
+//   return 0;
+// }
+
+
+#include "driver_priority_queue.hpp"
 int main() {
-  ics::DriverQueue d;
-  return 0;
+ ics::DriverPriorityQueue d;
+ return 0;
 }
-
-
-//#include "driver_priority_queue.hpp"
-//int main() {
-//  ics::DriverPriorityQueue d;
-//  return 0;
-//}
 
 
 //#include "driver_set.hpp"

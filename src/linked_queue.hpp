@@ -129,6 +129,7 @@ int LinkedQueue<T>::size() const {
 
 template <class T>
 T& LinkedQueue<T>::peek() const {
+	if (empty()) throw EmptyError("LinkedQueue::peek the queue is empty");
 	return front->value;
 }
 
@@ -173,7 +174,6 @@ int LinkedQueue<T>::enqueue (const T& element) {
 template <class T>
 int LinkedQueue<T>::enqueue (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
 	int insert = 0;
-
 	// for each value, call the enqueue.
 	while (start != stop) {
 		insert += enqueue(*start);
@@ -225,23 +225,38 @@ void LinkedQueue<T>::clear() {
 
 template <class T>
 LinkedQueue<T>& LinkedQueue<T>::operator = (const LinkedQueue<T>& rhs) {
+	if (!empty()) clear();
 	enqueue(rhs.ibegin(), rhs.iend());
 	return *this;
 }
 
+// Two queues are equal iff they contain the same elements in the same order.
 template <class T>
 bool LinkedQueue<T>::operator == (const Queue<T>& rhs) const {
-
+	if (this == &rhs) return true;
+	if (size() != rhs.size()) return false;
+	auto &lhs_iter = ibegin(), &rhs_iter = rhs.ibegin();
+	for (int i=0; i < used; i++, lhs_iter++, rhs_iter++) {
+		if (*lhs_iter != *rhs_iter) return false;
+	}
+	return true;
 }
 
 template <class T>
 bool LinkedQueue<T>::operator != (const Queue<T>& rhs) const {
-
+	return !((*this) == rhs);
 }
 
 template<class T2>
 std::ostream& operator << (std::ostream& outs, const LinkedQueue<T2>& s) {
-
+	outs << "queue[";
+	int i = 0;
+	for (auto & iter = s.ibegin(); i < s.used; iter++, i++) {
+		if (i < s.size() - 1) outs << *iter << ",";
+		else outs << *iter;
+	}
+	outs << "]:rear";
+	return outs;
 }
 
 //Fill in the missing parts of the erase method and ++ operators
@@ -290,7 +305,26 @@ T LinkedQueue<T>::Iterator::erase() {
   if (current == nullptr)
     throw CannotEraseError("LinkedQueue::Iterator::erase Iterator cursor beyond data structure");
 
-  //Fill in the rest of the code here
+  T val = current->value;
+  if (prev != nullptr && current != ref_queue->rear) {
+    auto temp = prev->next = current->next;
+    delete current;
+    current = temp;
+  }
+  else if (current == ref_queue->rear) {
+    auto temp = prev->next = nullptr;
+    ref_queue->rear = prev;
+    delete current;
+    current = temp;
+  }
+  else {
+    auto temp = ref_queue->front = current->next;
+    delete current;
+    current = temp;
+  }
+  can_erase = false;
+  ref_queue->used--;
+  return val;
 }
 
 template<class T>
@@ -304,16 +338,24 @@ template<class T>
 const ics::Iterator<T>& LinkedQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_queue->mod_count)
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ++");
-  prev = current;
   if (current == nullptr) {
-	  throw IteratorPositionIllegal("LinkedQueue::Iterator::operator ++ is nullptr");
+  	  throw IteratorPositionIllegal("LinkedQueue::Iterator::operator ++ is nullptr");
   }
-
-  if (!can_erase)
-	  can_erase = true;
-  else
-	  current = current->next;
-
+  if (current == prev) {
+    return *(new Iterator(ref_queue, nullptr));
+  }
+  if (current == ref_queue->rear) {
+    prev = ref_queue->rear;
+    current = nullptr;
+    return *(new Iterator(ref_queue, current));
+  } else {
+    if (!can_erase)
+      can_erase = true;
+    else {
+      prev = current;
+      current = current->next;
+    }
+  }
   return *this;
 }
 
@@ -322,8 +364,19 @@ template<class T>
 const ics::Iterator<T>& LinkedQueue<T>::Iterator::operator ++ (int) {
   if (expected_mod_count != ref_queue->mod_count)
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ++(int)");
-
-  //Fill in the rest of the code here
+  
+  if (prev == ref_queue->rear) {
+    can_erase = false;
+    current = nullptr;
+    return *(new Iterator(ref_queue, nullptr));
+  } else {
+    prev = current;
+    if (!can_erase) 
+      can_erase = true;
+    else
+      current = current->next;
+  }
+  return *(new Iterator(ref_queue, prev));
 }
 
 template<class T>
@@ -335,7 +388,6 @@ bool LinkedQueue<T>::Iterator::operator == (const ics::Iterator<T>& rhs) const {
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ==");
   if (ref_queue != rhsASI->ref_queue)
     throw ComparingDifferentIteratorsError("LinkedQueue::Iterator::operator ==");
-
   return current == rhsASI->current;
 }
 
@@ -349,7 +401,6 @@ bool LinkedQueue<T>::Iterator::operator != (const ics::Iterator<T>& rhs) const {
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator !=");
   if (ref_queue != rhsASI->ref_queue)
     throw ComparingDifferentIteratorsError("LinkedQueue::Iterator::operator !=");
-
   return current != rhsASI->current;
 }
 

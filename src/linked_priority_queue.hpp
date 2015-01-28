@@ -96,6 +96,86 @@ template<class T> class LinkedPriorityQueue : public PriorityQueue<T>  {
 
 
 //See code in array_priority_queue.hpp and linked_queue.hpp
+template<class T>
+LinkedPriorityQueue<T>::LinkedPriorityQueue(bool (*agt)(const T& a, const T& b)) {
+  gt = agt;
+}
+
+template <class T>
+LinkedPriorityQueue<T>::LinkedPriorityQueue(const LinkedPriorityQueue<T>& to_copy) {
+
+}
+
+template <class T>
+LinkedPriorityQueue<T>::LinkedPriorityQueue(std::initializer_list<T> il,bool (*agt)(const T& a, const T& b)){
+
+}
+
+template <class T>
+LinkedPriorityQueue<T>::LinkedPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop,bool (*agt)(const T& a, const T& b)){
+
+}
+
+template <class T>
+int LinkedPriorityQueue<T>::enqueue (const T& element) {
+
+}
+
+template <class T>
+T LinkedPriorityQueue<T>::dequeue() {
+
+}
+
+template <class T>
+bool LinkedPriorityQueue<T>::empty() const {
+
+}
+
+template <class T>
+int LinkedPriorityQueue<T>::size () const {
+
+}
+
+template <class T>
+T& LinkedPriorityQueue<T>::peek () const {
+
+}
+
+template <class T>
+std::string LinkedPriorityQueue<T>::str() const {
+
+}
+
+template <class T>
+void LinkedPriorityQueue<T>::clear() {
+
+}
+
+template <class T>
+int LinkedPriorityQueue<T>::enqueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
+
+}
+
+template <class T>
+LinkedPriorityQueue<T>& LinkedPriorityQueue<T>::operator = (const LinkedPriorityQueue<T>& rhs) {
+
+}
+
+template <class T>
+bool LinkedPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
+
+}
+
+template <class T>
+bool LinkedPriorityQueue<T>::operator != (const PriorityQueue<T>& rhs) const {
+
+}
+
+template<class T2>
+std::ostream& operator << (std::ostream& outs, const LinkedPriorityQueue<T2>& s) {
+
+}
+
 
 //Write the constructors, methods, and operators here for LinkedPriorityQueue
 //Fill in the missing parts of the erase method and ++ operators
