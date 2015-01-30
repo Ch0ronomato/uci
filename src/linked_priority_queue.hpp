@@ -93,89 +93,170 @@ template<class T> class LinkedPriorityQueue : public PriorityQueue<T>  {
     void delete_list(LN*& front);        //Recycle storage, set front's argument to nullptr;
   };
 
-
+template<class T>
+void LinkedPriorityQueue<T>::delete_list(LN*& front) {
+  while (front != nullptr) {
+    std::cout << front->value << std::endl;
+    LN *temp = front;
+    front = front->next;
+    delete temp;
+  }
+}
 
 //See code in array_priority_queue.hpp and linked_queue.hpp
 template<class T>
-LinkedPriorityQueue<T>::LinkedPriorityQueue(bool (*agt)(const T& a, const T& b)) {
-  gt = agt;
-}
+LinkedPriorityQueue<T>::LinkedPriorityQueue(bool (*agt)(const T& a, const T& b)) : PriorityQueue<T>(agt) {}
 
 template <class T>
-LinkedPriorityQueue<T>::LinkedPriorityQueue(const LinkedPriorityQueue<T>& to_copy) {
-
-}
-
-template <class T>
-LinkedPriorityQueue<T>::LinkedPriorityQueue(std::initializer_list<T> il,bool (*agt)(const T& a, const T& b)){
+LinkedPriorityQueue<T>::LinkedPriorityQueue(const LinkedPriorityQueue<T>& to_copy) 
+  : PriorityQueue<T>(to_copy) {
 
 }
 
 template <class T>
-LinkedPriorityQueue<T>::LinkedPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop,bool (*agt)(const T& a, const T& b)){
+LinkedPriorityQueue<T>::LinkedPriorityQueue(std::initializer_list<T> il,bool (*agt)(const T& a, const T& b))
+  : PriorityQueue<T>(agt) {
 
 }
+
+template <class T>
+LinkedPriorityQueue<T>::LinkedPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop,bool (*agt)(const T& a, const T& b))
+	: PriorityQueue<T>(agt){
+
+}
+
+template <class T>
+LinkedPriorityQueue<T>::~LinkedPriorityQueue() {} 
 
 template <class T>
 int LinkedPriorityQueue<T>::enqueue (const T& element) {
+  // empty
+  if (front->next == nullptr) {
+    front->next = new LN(element, nullptr);
+  }
 
+  else if (gt != nullptr && gt(element, front->next->value)) {
+    front->next = new LN(element, front->next);
+  }
+
+  // anywhere else.
+  else 
+    for (LN *node = front->next, *prev = front; node != nullptr; node = node->next, prev = prev->next) {
+      if (gt != nullptr && gt(element, node->value)) {
+        prev->next = new LN(element, node);
+        break;
+      }
+      else if (node->next == nullptr) {
+        node->next = new LN(element);
+        break;
+      } 
+    }
+  mod_count++;
+  used++;
+  return 1;
 }
 
 template <class T>
 T LinkedPriorityQueue<T>::dequeue() {
+  LN *to_return = front->next;
+  T val = to_return->value;
+  front->next = front->next->next;
+  delete to_return;
 
+  --used;
+  mod_count++;
+  return val;
 }
 
 template <class T>
 bool LinkedPriorityQueue<T>::empty() const {
-
+  return used == 0;
 }
 
 template <class T>
 int LinkedPriorityQueue<T>::size () const {
-
+  return used;
 }
 
 template <class T>
 T& LinkedPriorityQueue<T>::peek () const {
-
+  if (front->next != nullptr) return front->next->value;
+  throw EmptyError("LinkedPriorityQueue::peek empty queue error");
 }
 
 template <class T>
 std::string LinkedPriorityQueue<T>::str() const {
-
+  int i = 0;
+  std::stringstream string_value(""), temp("");
+  for (T val : *this) {
+    if (i == 0) string_value << val;
+    else {
+      temp.str(string_value.str());
+      string_value.str(std::string());
+      string_value << val << "," << temp.str();
+    }
+    i++;
+  }
+  string_value << "(used = " << used << ", mod_count = " << ")";
+  return string_value.str();
 }
 
 template <class T>
 void LinkedPriorityQueue<T>::clear() {
-
+  if (used > 0) delete_list(front->next); 
+  used = 0;
 }
 
 template <class T>
 int LinkedPriorityQueue<T>::enqueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
-
+  int total = 0;
+  for (; start != stop; start++)
+    total += enqueue(*start);
+  return 0;
 }
 
 template <class T>
 LinkedPriorityQueue<T>& LinkedPriorityQueue<T>::operator = (const LinkedPriorityQueue<T>& rhs) {
-
+  if (!empty()) clear();
+  enqueue(rhs.ibegin(), rhs.iend());
 }
 
 template <class T>
 bool LinkedPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
+  // are the sizes the same?
+  if (used != rhs.size()) return false;
 
+  // do the priority functions equal?
+  if (gt != rhs.gt) return false;
+
+  // element equals
+  for (auto &lhs_iter = ibegin(), &rhs_iter = rhs.ibegin(); lhs_iter != iend(); lhs_iter++, rhs_iter++) {
+    if (*lhs_iter != *rhs_iter) return false;
+  }
+  return true;
 }
 
 template <class T>
 bool LinkedPriorityQueue<T>::operator != (const PriorityQueue<T>& rhs) const {
-
+  return !((*this) == rhs);
 }
 
 template<class T2>
 std::ostream& operator << (std::ostream& outs, const LinkedPriorityQueue<T2>& s) {
-
+  int i = 0;
+  std::stringstream string_value(""), temp("");
+  for (T2 val : s) {
+    if (i == 0) string_value << val;
+    else {
+      temp.str(string_value.str());
+      string_value.str(std::string());
+      string_value << val << "," << temp.str();
+    }
+    i++;
+  }
+  outs << "priority_queue[" << string_value.str() << "]:highest";
+  return outs;
 }
-
 
 //Write the constructors, methods, and operators here for LinkedPriorityQueue
 //Fill in the missing parts of the erase method and ++ operators
@@ -224,7 +305,11 @@ T LinkedPriorityQueue<T>::Iterator::erase() {
   if (current == nullptr)
     throw CannotEraseError("LinkedPriorityQueue::Iterator::erase Iterator cursor beyond data structure");
 
-  //Fill in the rest of the code here
+  T val = current->value;
+  prev->next = current->next;
+  delete current;
+  current = prev->next;
+  return val;
 }
 
 template<class T>
@@ -239,7 +324,13 @@ const ics::Iterator<T>& LinkedPriorityQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_pq->mod_count)
     throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ++");
 
-  //Fill in the rest of the code here
+  if (!can_erase) can_erase = true;
+  else {
+    prev = current;
+    if (current != nullptr) 
+      current = current->next;
+  }
+  return *this;
 }
 
 //KLUDGE: can create garbage! (can return local value!)
@@ -251,7 +342,12 @@ const ics::Iterator<T>& LinkedPriorityQueue<T>::Iterator::operator ++ (int) {
   if (current == nullptr)
     return *this;
 
-  //Fill in the rest of the code here
+  if (!can_erase) can_erase = true;
+  else {
+    prev = current;
+    current = current->next;
+  }
+  return *(new Iterator(ref_pq, prev));
 }
 
 template<class T>

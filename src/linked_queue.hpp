@@ -115,7 +115,7 @@ LinkedQueue<T>::LinkedQueue(ics::Iterator<T>& start, const ics::Iterator<T>& end
 }
 
 template <class T>
-LinkedQueue<T>::~LinkedQueue() { }
+LinkedQueue<T>::~LinkedQueue() { clear(); }
 
 template <class T>
 bool LinkedQueue<T>::empty() const {
@@ -338,9 +338,7 @@ template<class T>
 const ics::Iterator<T>& LinkedQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_queue->mod_count)
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ++");
-  if (current == nullptr) {
-  	  throw IteratorPositionIllegal("LinkedQueue::Iterator::operator ++ is nullptr");
-  }
+ 
   if (current == prev) {
     return *(new Iterator(ref_queue, nullptr));
   }
