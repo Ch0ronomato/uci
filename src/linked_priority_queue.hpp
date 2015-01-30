@@ -110,19 +110,23 @@ LinkedPriorityQueue<T>::LinkedPriorityQueue(bool (*agt)(const T& a, const T& b))
 template <class T>
 LinkedPriorityQueue<T>::LinkedPriorityQueue(const LinkedPriorityQueue<T>& to_copy) 
   : PriorityQueue<T>(to_copy) {
-
+  enqueue(to_copy.ibegin(), to_copy.iend());
+  gt = to_copy.gt;
 }
 
 template <class T>
 LinkedPriorityQueue<T>::LinkedPriorityQueue(std::initializer_list<T> il,bool (*agt)(const T& a, const T& b))
   : PriorityQueue<T>(agt) {
-
+  gt = agt;
+  for (T val : il)
+    enqueue(val);
 }
 
 template <class T>
 LinkedPriorityQueue<T>::LinkedPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop,bool (*agt)(const T& a, const T& b))
 	: PriorityQueue<T>(agt){
-
+  gt = agt;
+  enqueue(start, stop);
 }
 
 template <class T>
@@ -309,6 +313,9 @@ T LinkedPriorityQueue<T>::Iterator::erase() {
   prev->next = current->next;
   delete current;
   current = prev->next;
+  can_erase = false;
+  ref_pq->used--;
+  expected_mod_count = --ref_pq->mod_count;
   return val;
 }
 
