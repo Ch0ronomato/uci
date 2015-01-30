@@ -223,6 +223,7 @@ template <class T>
 LinkedPriorityQueue<T>& LinkedPriorityQueue<T>::operator = (const LinkedPriorityQueue<T>& rhs) {
   if (!empty()) clear();
   enqueue(rhs.ibegin(), rhs.iend());
+  gt = rhs.gt;
 }
 
 template <class T>
