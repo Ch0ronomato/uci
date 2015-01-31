@@ -130,7 +130,7 @@ LinkedPriorityQueue<T>::LinkedPriorityQueue(ics::Iterator<T>& start, const ics::
 }
 
 template <class T>
-LinkedPriorityQueue<T>::~LinkedPriorityQueue() {} 
+LinkedPriorityQueue<T>::~LinkedPriorityQueue() { delete_list(front->next); } 
 
 template <class T>
 int LinkedPriorityQueue<T>::enqueue (const T& element) {

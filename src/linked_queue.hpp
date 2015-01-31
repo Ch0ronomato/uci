@@ -115,7 +115,7 @@ LinkedQueue<T>::LinkedQueue(ics::Iterator<T>& start, const ics::Iterator<T>& end
 }
 
 template <class T>
-LinkedQueue<T>::~LinkedQueue() { clear(); }
+LinkedQueue<T>::~LinkedQueue() { delete_list(); }
 
 template <class T>
 bool LinkedQueue<T>::empty() const {
@@ -306,23 +306,18 @@ T LinkedQueue<T>::Iterator::erase() {
     throw CannotEraseError("LinkedQueue::Iterator::erase Iterator cursor beyond data structure");
 
   T val = current->value;
-  if (prev != nullptr && current != ref_queue->rear) {
-    auto temp = prev->next = current->next;
+  if (prev != nullptr) {
+    prev->next = current->next;
     delete current;
-    current = temp;
-  }
-  else if (current == ref_queue->rear) {
-    auto temp = prev->next = nullptr;
-    ref_queue->rear = prev;
-    delete current;
-    current = temp;
-  }
-  else {
-    auto temp = ref_queue->front = current->next;
-    delete current;
-    current = temp;
+    current = prev->next;
+  } else {
+    LN *node = current;
+    current = current->next;
+    delete node;
   }
   can_erase = false;
+  ref_queue->mod_count -= 1;
+  expected_mod_count = ref_queue->mod_count;
   ref_queue->used--;
   return val;
 }
@@ -338,22 +333,14 @@ template<class T>
 const ics::Iterator<T>& LinkedQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_queue->mod_count)
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ++");
- 
-  if (current == prev) {
-    return *(new Iterator(ref_queue, nullptr));
-  }
-  if (current == ref_queue->rear) {
-    prev = ref_queue->rear;
-    current = nullptr;
-    return *(new Iterator(ref_queue, current));
-  } else {
-    if (!can_erase)
-      can_erase = true;
-    else {
+
+  if (!can_erase) can_erase = true;
+  else {
+      if (current != nullptr) {
       prev = current;
       current = current->next;
     }
-  }
+  }  
   return *this;
 }
 
@@ -363,16 +350,11 @@ const ics::Iterator<T>& LinkedQueue<T>::Iterator::operator ++ (int) {
   if (expected_mod_count != ref_queue->mod_count)
     throw ConcurrentModificationError("LinkedQueue::Iterator::operator ++(int)");
   
-  if (prev == ref_queue->rear) {
-    can_erase = false;
-    current = nullptr;
-    return *(new Iterator(ref_queue, nullptr));
-  } else {
+  if (current == nullptr) return *this;
+  if (!can_erase) can_erase = true;
+  else {
     prev = current;
-    if (!can_erase) 
-      can_erase = true;
-    else
-      current = current->next;
+    current = current->next;
   }
   return *(new Iterator(ref_queue, prev));
 }
