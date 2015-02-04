@@ -141,21 +141,43 @@ LinkedSet<T>::LinkedSet(ics::Iterator<T>& start, const ics::Iterator<T>& stop)
     used = insert(start, stop);
 }
 
+/**
+ * Deconstructor
+ */
 template <class T>
 LinkedSet<T>::~LinkedSet() {
     delete_list(front);
 }
 
+/**
+ * Empty. Function will determine if the set is empty.
+ * Note: An alternative way to do this would be to say front==nullptr
+ * however, that then requires the code further down to enforce that 
+ * requirement, where as used is a highly used integer. This is easier.
+ */
 template <class T>
 bool LinkedSet<T>::empty() const {
     return used == 0;
 }
 
+/**
+ * Size. Function will return the size of the queue. 
+ */
 template <class T>
 int  LinkedSet<T>::size() const {
     return used;
 }
 
+/**
+ * Contains. Function will determine if an element is in a set. This
+ * function will take Linear Time.
+ *
+ * @param const T& element
+ *  The element to check for existence.
+ *
+ * @return bool
+ *  Return if the element is or isn't in the set.
+ */
 template <class T>
 bool LinkedSet<T>::contains(const T& element) const {
     bool to_return = false;
@@ -167,6 +189,9 @@ bool LinkedSet<T>::contains(const T& element) const {
     return to_return;
 }
 
+/**
+ * Str. A debugging print method.
+ */
 template <class T>
 std::string LinkedSet<T>::str() const {
     std::ostringstream out;
@@ -174,6 +199,10 @@ std::string LinkedSet<T>::str() const {
     return out.str();
 }
 
+/**
+ * Contains. Function will determine if a set contains all elements specified by the
+ * iterators. Function will consume the result of the simpiler contains method
+ */
 template<class T>
 bool LinkedSet<T>::contains (ics::Iterator<T>& start, const ics::Iterator<T>& stop) const {
 	bool found = true;
@@ -183,6 +212,13 @@ bool LinkedSet<T>::contains (ics::Iterator<T>& start, const ics::Iterator<T>& st
     return found;
 }
 
+/**
+ * Insert. Function will insert an element into a set given it doesn't already exist.
+ * Since this is trailered, we can just extened the trailered element.
+ *
+ * @return int
+ *  The number of insertions, which is one or zero.
+ */
 template<class T>
 int  LinkedSet<T>::insert (const T& element) {
     int to_return = 0;
@@ -196,6 +232,17 @@ int  LinkedSet<T>::insert (const T& element) {
     return to_return;
 }
 
+/**
+ * Erase. Function will find and erase a current element. This function 
+ * will not do any of the actual deleting, but merely call the erase_at
+ * function.
+ *
+ * @param const T& element
+ *  The element to erase.
+ *
+ * @return int
+ *  The number of elements erase. Either one or zero.
+ */
 template<class T>
 int LinkedSet<T>::erase(const T& element) {
     for (LN* temp = front; temp != trailer; temp = temp->next)
@@ -204,6 +251,9 @@ int LinkedSet<T>::erase(const T& element) {
     return 0;
 }
 
+/**
+ * Clear. Given the set isn't empty, erase all elements (except the trailer).
+ */
 template<class T>
 void LinkedSet<T>::clear() {
     if (empty()) return;
@@ -211,7 +261,20 @@ void LinkedSet<T>::clear() {
     front = trailer;
 }
 
-
+/**
+ * Insert w/ iterators. Given a start and stop iterator, insert all the elements
+ * between the two iterators, given the element does not exist. Function will
+ * consume the insert function.
+ *
+ * @param ics::Iterator<T>& start
+ *  The starting iterator
+ *
+ * @param const ics::Iterator<T>& stop
+ *  The ending iterator
+ *
+ * @return int
+ *  The number of inserts.
+ */
 template <class T>
 int LinkedSet<T>::insert (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
     int to_return = 0;
@@ -221,6 +284,19 @@ int LinkedSet<T>::insert (ics::Iterator<T>& start, const ics::Iterator<T>& stop)
     return to_return;
 }
 
+/**
+ * Erase. Function will erase all elements in a set between a start and stop
+ * iterator. Function will consume the simplier erase method.
+ *
+ * @param ics::Iterator<T> start
+ *  The starting iterator.
+ *
+ * @param const ics::Iterator<T> stop
+ *  The ending iterator.
+ *
+ * @return int
+ *  The number of removals from the list.
+ */
 template <class T>
 int LinkedSet<T>::erase  (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
 	int to_return = 0;
@@ -229,6 +305,20 @@ int LinkedSet<T>::erase  (ics::Iterator<T>& start, const ics::Iterator<T>& stop)
 	return to_return;
 }
 
+/** 
+ * Retain. Function will compute the intersection of two sets. Function will
+ * construct a new linked set given two iterators, and then determine the 
+ * elements in common.
+ *
+ * @param ics::Iterator<T>& start
+ *  The starting iterator
+ *  
+ * @param const ics::Iterator<T>& end
+ *  The ending iterator.
+ *
+ * @return int
+ *  The number of elements "retained" in the set.
+ */
 template <class T>
 int LinkedSet<T>::retain (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
     LinkedSet<T> s(start, stop);
@@ -242,6 +332,12 @@ int LinkedSet<T>::retain (ics::Iterator<T>& start, const ics::Iterator<T>& stop)
     return to_return;
 }
 
+/**
+ * Assignment. Function will become equal to a argument set.
+ * See equality operator for precise definition. In the event
+ * that the set has already been used previously, the set
+ * will be cleared.
+ */
 template <class T>
 LinkedSet<T>& LinkedSet<T>::operator = (const LinkedSet<T>& rhs) {
     if (this == &rhs)
@@ -252,6 +348,18 @@ LinkedSet<T>& LinkedSet<T>::operator = (const LinkedSet<T>& rhs) {
     return *this;
 }
 
+/**
+ * Equality. Function will determine if two set are equal. Two
+ * set are equal if and only if the sizes are equal, and if all
+ * the elements in the right hand set are in the current set, but
+ * not in the same order
+ *
+ * @param const Set<T>&
+ *  The argument set. Notice the type is not a linked set, that
+ *  is becase we use iterators to check element equality.
+ *  This allows for cross compabilities between data structures
+ *  as long as they are the same data type.
+ */
 template<class T>
 bool LinkedSet<T>::operator == (const Set<T>& rhs) const {
     if (this == &rhs)
@@ -265,6 +373,16 @@ bool LinkedSet<T>::operator == (const Set<T>& rhs) const {
     return true;
 }
 
+/**
+ * Non-Equality. Function will determine if two sets are NOT equal. See
+ * equality for definition.
+ *
+ * @param const Set<T>&
+ *  The argument queue. Notice the type is not a linked queue, that
+ *  is becase we use iterators to check element and order equality.
+ *  This allows for cross compabilities between data structures
+ *  as long as they are the same data type.
+ */
 template<class T>
 bool LinkedSet<T>::operator != (const Set<T>& rhs) const {
     return !(*this == rhs);
