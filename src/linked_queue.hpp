@@ -1,3 +1,9 @@
+// Ian Schweer (Unique ID: 660942)
+// Shaun McThomas (Unique ID: 307523)
+// We certify that we worked cooperatively on this programming
+//   assignment, according to the rules for pair programming:
+//   primarily that both partners worked on all parts together.
+
 #ifndef LINKED_QUEUE_HPP_
 #define LINKED_QUEUE_HPP_
 
@@ -348,10 +354,9 @@ template <class T>
 bool LinkedQueue<T>::operator == (const Queue<T>& rhs) const {
     if (this == &rhs) return true;
     if (size() != rhs.size()) return false;
-    auto &lhs_iter = ibegin(), &rhs_iter = rhs.ibegin();
-    for (int i=0; i < used; i++, lhs_iter++, rhs_iter++) {
+    
+    for (auto &lhs_iter = ibegin(), &rhs_iter = rhs.ibegin();lhs_iter != iend() ;lhs_iter++, rhs_iter++) 
         if (*lhs_iter != *rhs_iter) return false;
-    }
     return true;
 }
 
@@ -378,8 +383,7 @@ std::ostream& operator << (std::ostream& outs, const LinkedQueue<T2>& s) {
     outs << "queue[";
     int i = 0;
     for (auto & iter = s.ibegin(); i < s.used; iter++, i++) {
-        if (i < s.size() - 1) outs << *iter << ",";
-        else outs << *iter;
+        (i < s.size() - 1) ? outs << *iter << "," : outs << *iter;
     }
     outs << "]:rear";
     return outs;

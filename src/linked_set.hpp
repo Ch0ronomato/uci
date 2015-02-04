@@ -1,3 +1,9 @@
+// Ian Schweer (Unique ID: 660942)
+// Shaun McThomas (Unique ID: 307523)
+// We certify that we worked cooperatively on this programming
+//   assignment, according to the rules for pair programming:
+//   primarily that both partners worked on all parts together.
+
 #ifndef LINKED_SET_HPP_
 #define LINKED_SET_HPP_
 
@@ -12,89 +18,89 @@
 
 namespace ics {
 
-template<class T> class LinkedSet : public Set<T>	{
+template<class T> class LinkedSet : public Set<T>   {
   public:
 	LinkedSet();
 	LinkedSet(const LinkedSet<T>& to_copy);
 	LinkedSet(std::initializer_list<T> il);
-    LinkedSet(ics::Iterator<T>& start, const ics::Iterator<T>& stop);
+	LinkedSet(ics::Iterator<T>& start, const ics::Iterator<T>& stop);
 	virtual ~LinkedSet();
 
-    virtual bool empty      () const;
-    virtual int  size       () const;
-    virtual bool contains   (const T& element) const;
-    virtual std::string str () const;
+	virtual bool empty      () const;
+	virtual int  size       () const;
+	virtual bool contains   (const T& element) const;
+	virtual std::string str () const;
 
-    virtual bool contains (ics::Iterator<T>& start, const ics::Iterator<T>& stop) const;
+	virtual bool contains (ics::Iterator<T>& start, const ics::Iterator<T>& stop) const;
 
-    virtual int  insert (const T& element);
-    virtual int  erase  (const T& element);
-    virtual void clear  ();
+	virtual int  insert (const T& element);
+	virtual int  erase  (const T& element);
+	virtual void clear  ();
 
-    virtual int insert (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
-    virtual int erase  (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
-    virtual int retain (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
+	virtual int insert (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
+	virtual int erase  (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
+	virtual int retain (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
 
-    virtual LinkedSet<T>& operator = (const LinkedSet<T>& rhs);
-    virtual bool operator == (const Set<T>& rhs) const;
-    virtual bool operator != (const Set<T>& rhs) const;
-    virtual bool operator <= (const Set<T>& rhs) const;
-    virtual bool operator <  (const Set<T>& rhs) const;
-    virtual bool operator >= (const Set<T>& rhs) const;
-    virtual bool operator >  (const Set<T>& rhs) const;
+	virtual LinkedSet<T>& operator = (const LinkedSet<T>& rhs);
+	virtual bool operator == (const Set<T>& rhs) const;
+	virtual bool operator != (const Set<T>& rhs) const;
+	virtual bool operator <= (const Set<T>& rhs) const;
+	virtual bool operator <  (const Set<T>& rhs) const;
+	virtual bool operator >= (const Set<T>& rhs) const;
+	virtual bool operator >  (const Set<T>& rhs) const;
 
-    template<class T2>
-    friend std::ostream& operator << (std::ostream& outs, const LinkedSet<T2>& s);
+	template<class T2>
+	friend std::ostream& operator << (std::ostream& outs, const LinkedSet<T2>& s);
 
   private:
-    class LN;
+	class LN;
 
   public:
-    class Iterator : public ics::Iterator<T> {
-      public:
-        //KLUDGE should be callable only in begin/end
-        Iterator(LinkedSet<T>* fof, LN* initial);
-        virtual ~Iterator();
-        virtual T           erase();
-        virtual std::string str  () const;
-        virtual const ics::Iterator<T>& operator ++ ();
-        virtual const ics::Iterator<T>& operator ++ (int);
-        virtual bool operator == (const ics::Iterator<T>& rhs) const;
-        virtual bool operator != (const ics::Iterator<T>& rhs) const;
-        virtual T& operator *  () const;
-        virtual T* operator -> () const;
-      private:
-        LN*           current;  //if can_erase is false, this value is unusable
-        LinkedSet<T>* ref_set;
-        int           expected_mod_count;
-        bool          can_erase = true;
-    };
+	class Iterator : public ics::Iterator<T> {
+	  public:
+		//KLUDGE should be callable only in begin/end
+		Iterator(LinkedSet<T>* fof, LN* initial);
+		virtual ~Iterator();
+		virtual T           erase();
+		virtual std::string str  () const;
+		virtual const ics::Iterator<T>& operator ++ ();
+		virtual const ics::Iterator<T>& operator ++ (int);
+		virtual bool operator == (const ics::Iterator<T>& rhs) const;
+		virtual bool operator != (const ics::Iterator<T>& rhs) const;
+		virtual T& operator *  () const;
+		virtual T* operator -> () const;
+	  private:
+		LN*           current;  //if can_erase is false, this value is unusable
+		LinkedSet<T>* ref_set;
+		int           expected_mod_count;
+		bool          can_erase = true;
+	};
 
-    //For explicit use: Iterator<...>& it = c.ibegin(); ... or for (Iterator<...>& it = c.ibegin(); it != c.iend(); ++it)...
-    virtual ics::Iterator<T>& ibegin () const;
-    virtual ics::Iterator<T>& iend   () const;
+	//For explicit use: Iterator<...>& it = c.ibegin(); ... or for (Iterator<...>& it = c.ibegin(); it != c.iend(); ++it)...
+	virtual ics::Iterator<T>& ibegin () const;
+	virtual ics::Iterator<T>& iend   () const;
 
-    //For implicit use: for (... i : c)...
-    virtual Iterator begin () const;
-    virtual Iterator end   () const;
+	//For implicit use: for (... i : c)...
+	virtual Iterator begin () const;
+	virtual Iterator end   () const;
 
   private:
-    class LN {
-      public:
-        LN ()                      {}
-        LN (const LN& ln)          : value(ln.value), next(ln.next){}
-        LN (T v,  LN* n = nullptr) : value(v), next(n){}
+	class LN {
+	  public:
+		LN ()                      {}
+		LN (const LN& ln)          : value(ln.value), next(ln.next){}
+		LN (T v,  LN* n = nullptr) : value(v), next(n){}
 
-        T   value;
-        LN* next   = nullptr;
-    };
+		T   value;
+		LN* next   = nullptr;
+	};
 
-    int used      = 0;             //Cache of # values in set
-    LN* front     = new LN();
-    LN* trailer   = front;
-    int mod_count = 0;             //For sensing concurrent modification
-    int erase_at(LN* p);
-    void delete_list(LN*& front);  //Recycle storage, set front's argument to nullptr;
+	int used      = 0;             //Cache of # values in set
+	LN* front     = new LN();
+	LN* trailer   = front;
+	int mod_count = 0;             //For sensing concurrent modification
+	int erase_at(LN* p);
+	void delete_list(LN*& front);  //Recycle storage, set front's argument to nullptr;
   };
 
 
@@ -117,7 +123,7 @@ LinkedSet<T>::LinkedSet() : Set<T>() {
  */
 template <class T>
 LinkedSet<T>::LinkedSet(const LinkedSet<T>& to_copy) : Set<T>() {
-    insert(to_copy.ibegin(), to_copy.iend());
+	insert(to_copy.ibegin(), to_copy.iend());
 }
 
 /**
@@ -126,9 +132,8 @@ LinkedSet<T>::LinkedSet(const LinkedSet<T>& to_copy) : Set<T>() {
  */
 template <class T>
 LinkedSet<T>::LinkedSet(std::initializer_list<T> il) : Set<T>() {
-    int i = 1;
-    for (T val : il)
-        insert(val);
+	for (T val : il)
+		insert(val);
 }
 
 /**
@@ -137,8 +142,8 @@ LinkedSet<T>::LinkedSet(std::initializer_list<T> il) : Set<T>() {
  */
 template <class T>
 LinkedSet<T>::LinkedSet(ics::Iterator<T>& start, const ics::Iterator<T>& stop)
-    : Set<T>() {
-    used = insert(start, stop);
+	: Set<T>() {
+	insert(start, stop);
 }
 
 /**
@@ -146,7 +151,7 @@ LinkedSet<T>::LinkedSet(ics::Iterator<T>& start, const ics::Iterator<T>& stop)
  */
 template <class T>
 LinkedSet<T>::~LinkedSet() {
-    delete_list(front);
+	delete_list(front);
 }
 
 /**
@@ -157,7 +162,7 @@ LinkedSet<T>::~LinkedSet() {
  */
 template <class T>
 bool LinkedSet<T>::empty() const {
-    return used == 0;
+	return used == 0;
 }
 
 /**
@@ -165,7 +170,7 @@ bool LinkedSet<T>::empty() const {
  */
 template <class T>
 int  LinkedSet<T>::size() const {
-    return used;
+	return used;
 }
 
 /**
@@ -180,13 +185,11 @@ int  LinkedSet<T>::size() const {
  */
 template <class T>
 bool LinkedSet<T>::contains(const T& element) const {
-    bool to_return = false;
-    for (LN *node = front; node != trailer  && !to_return; node = node->next)
-        if (node->value == element) {
-            to_return = true;
-        }
-
-    return to_return;
+	bool to_return = false;
+	for (LN *node = front; node != trailer  && !to_return; node = node->next)
+		if (node->value == element) 
+			to_return = true;
+	return to_return;
 }
 
 /**
@@ -194,9 +197,9 @@ bool LinkedSet<T>::contains(const T& element) const {
  */
 template <class T>
 std::string LinkedSet<T>::str() const {
-    std::ostringstream out;
-    out << *this << "(length=" << size() << ",mod_count=" << mod_count << ")";
-    return out.str();
+	std::ostringstream out;
+	out << *this << "(length=" << size() << ",mod_count=" << mod_count << ")";
+	return out.str();
 }
 
 /**
@@ -206,10 +209,9 @@ std::string LinkedSet<T>::str() const {
 template<class T>
 bool LinkedSet<T>::contains (ics::Iterator<T>& start, const ics::Iterator<T>& stop) const {
 	bool found = true;
-    for (; found && start != stop; start++) {
-        found = contains(*start);
-    }
-    return found;
+	for (; found && start != stop; start++) 
+		found = contains(*start);
+	return found;
 }
 
 /**
@@ -221,15 +223,15 @@ bool LinkedSet<T>::contains (ics::Iterator<T>& start, const ics::Iterator<T>& st
  */
 template<class T>
 int  LinkedSet<T>::insert (const T& element) {
-    int to_return = 0;
-    if (!contains(element)) {
-        used++;        
-        mod_count++;
-        to_return++;
-        trailer->value = element;
-        trailer = trailer->next = new LN();
-    }
-    return to_return;
+	int to_return = 0;
+	if (!contains(element)) {
+		used++;        
+		mod_count++;
+		to_return++;
+		trailer->value = element;
+		trailer = trailer->next = new LN();
+	}
+	return to_return;
 }
 
 /**
@@ -245,10 +247,10 @@ int  LinkedSet<T>::insert (const T& element) {
  */
 template<class T>
 int LinkedSet<T>::erase(const T& element) {
-    for (LN* temp = front; temp != trailer; temp = temp->next)
-        if (temp->value == element)
-            return erase_at(temp);
-    return 0;
+	for (LN* temp = front; temp != trailer; temp = temp->next)
+		if (temp->value == element)
+			return erase_at(temp);
+	return 0;
 }
 
 /**
@@ -256,9 +258,11 @@ int LinkedSet<T>::erase(const T& element) {
  */
 template<class T>
 void LinkedSet<T>::clear() {
-    if (empty()) return;
-	delete_list(front);
-    front = trailer;
+	if (!empty()) 
+	{
+	   delete_list(front);
+		front = trailer;
+	}
 }
 
 /**
@@ -277,11 +281,9 @@ void LinkedSet<T>::clear() {
  */
 template <class T>
 int LinkedSet<T>::insert (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
-    int to_return = 0;
-    for (; start != stop; start++) {
-        to_return += insert(*start);
-    }
-    return to_return;
+	int to_return = 0;
+	for (; start != stop; to_return += insert(*start++));    
+	return to_return;
 }
 
 /**
@@ -300,8 +302,7 @@ int LinkedSet<T>::insert (ics::Iterator<T>& start, const ics::Iterator<T>& stop)
 template <class T>
 int LinkedSet<T>::erase  (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
 	int to_return = 0;
-	for(; start != stop; start++)
-		to_return += erase(*start);
+	for(; start != stop; to_return += erase(*start++));
 	return to_return;
 }
 
@@ -321,15 +322,13 @@ int LinkedSet<T>::erase  (ics::Iterator<T>& start, const ics::Iterator<T>& stop)
  */
 template <class T>
 int LinkedSet<T>::retain (ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
-    LinkedSet<T> s(start, stop);
-    int to_return = 0;
-    for (LN *temp = front; temp != trailer; temp = temp->next) {
-        if (!s.contains(temp->value)) {
-            erase_at(temp);
-        } else to_return++;
-    }
-    used = to_return;
-    return to_return;
+	LinkedSet<T> s;
+	for (; start != stop; start++)
+		if (contains(*start))
+			s.insert(*start);   
+
+	*this = s;
+	return used;
 }
 
 /**
@@ -340,12 +339,12 @@ int LinkedSet<T>::retain (ics::Iterator<T>& start, const ics::Iterator<T>& stop)
  */
 template <class T>
 LinkedSet<T>& LinkedSet<T>::operator = (const LinkedSet<T>& rhs) {
-    if (this == &rhs)
-        return *this;
-    clear();
-    insert(rhs.ibegin(), rhs.iend());
-    ++mod_count;
-    return *this;
+	if (this == &rhs)
+		return *this;
+	clear();
+	insert(rhs.ibegin(), rhs.iend());
+	++mod_count;
+	return *this;
 }
 
 /**
@@ -362,15 +361,15 @@ LinkedSet<T>& LinkedSet<T>::operator = (const LinkedSet<T>& rhs) {
  */
 template<class T>
 bool LinkedSet<T>::operator == (const Set<T>& rhs) const {
-    if (this == &rhs)
-        return true;
-    if (used != rhs.size())
-        return false;
-    for (LN *temp = front; temp != trailer; temp = temp->next)
-        if (!rhs.contains(temp->value))
-            return false;
+	if (this == &rhs)
+		return true;
+	if (used != rhs.size())
+		return false;
+	for (LN *temp = front; temp != trailer; temp = temp->next)
+		if (!rhs.contains(temp->value))
+			return false;
 
-    return true;
+	return true;
 }
 
 /**
@@ -385,48 +384,49 @@ bool LinkedSet<T>::operator == (const Set<T>& rhs) const {
  */
 template<class T>
 bool LinkedSet<T>::operator != (const Set<T>& rhs) const {
-    return !(*this == rhs);
+	return !(*this == rhs);
 }
 
 template<class T>
 bool LinkedSet<T>::operator <= (const Set<T>& rhs) const {
-    if (this == &rhs)
-        return true;
-    if (used > rhs.size())
-        return false;
-    for (LN *temp = front; temp != trailer; temp = temp->next)
-        if (!rhs.contains(temp->value))
-            return false;
+	// if (this == &rhs)
+	//     return true;
+	// if (used > rhs.size())
+	//     return false;
+	// for (LN *temp = front; temp != trailer; temp = temp->next)
+	//     if (!rhs.contains(temp->value))
+	//         return false;
 
-    return true;
+	// return true;
+	return (*this == rhs || *this < rhs);
 }
 
 template<class T>
 bool LinkedSet<T>::operator <  (const Set<T>& rhs) const {
-    if (this == &rhs)
-        return true;
-    if (used >= rhs.size())
-        return false;
-    for (LN *temp = front; temp != trailer; temp = temp->next)
-        if (!rhs.contains(temp->value))
-            return false;
+	if (this == &rhs)
+		return true;
+	if (used >= rhs.size())
+		return false;
+	for (LN *temp = front; temp != trailer; temp = temp->next)
+		if (!rhs.contains(temp->value))
+			return false;
 
-    return true;
+	return true;
 }
 
 template<class T>
 bool LinkedSet<T>::operator >= (const Set<T>& rhs) const {
-    return rhs <= *this;
+	return rhs <= *this;
 }
 
 template<class T>
 bool LinkedSet<T>::operator >  (const Set<T>& rhs) const {
-    return rhs < *this;
+	return rhs < *this;
 }
 
 template<class T>
 LinkedSet<T>::Iterator::Iterator(LinkedSet<T>* fof, LN* initial) : current(initial), ref_set(fof) {
-    expected_mod_count = ref_set->mod_count;
+	expected_mod_count = ref_set->mod_count;
 }
 
 template<class T>
@@ -436,160 +436,160 @@ LinkedSet<T>::Iterator::~Iterator() {
 
 template<class T>
 T LinkedSet<T>::Iterator::erase() {
-    if (expected_mod_count != ref_set->mod_count)
-        throw ConcurrentModificationError("LinkedSet::Iterator::erase");
-    if (!can_erase)
-        throw CannotEraseError("LinkedSet::Iterator::erase Iterator cursor already erased");
-    if (current == nullptr || current->next == nullptr)
-        throw CannotEraseError("LinkedSet::Iterator::erase Iterator cursor beyond data structure");
+	if (expected_mod_count != ref_set->mod_count)
+		throw ConcurrentModificationError("LinkedSet::Iterator::erase");
+	if (!can_erase)
+		throw CannotEraseError("LinkedSet::Iterator::erase Iterator cursor already erased");
+	if (current == nullptr || current->next == nullptr)
+		throw CannotEraseError("LinkedSet::Iterator::erase Iterator cursor beyond data structure");
 
-    can_erase = false;
-    T to_return = current->value;
-    LN *to_erase = current;
-    current = current->next;
-    ref_set->erase_at(to_erase);
-    expected_mod_count = ref_set->mod_count;
-    return to_return;
+	can_erase = false;
+	T to_return = current->value;
+	LN *to_erase = current;
+	current = current->next;
+	ref_set->erase_at(to_erase);
+	expected_mod_count = ref_set->mod_count;
+	return to_return;
 }
 
 template<class T>
 std::string LinkedSet<T>::Iterator::str  () const {
-    std::ostringstream answer;
-    answer << ref_set->str() << "(current=" << current->value << ",expected_mod_count=" << expected_mod_count << ",can_erase=" << can_erase << ")";
-    return answer.str();
+	std::ostringstream answer;
+	answer << ref_set->str() << "(current=" << current->value << ",expected_mod_count=" << expected_mod_count << ",can_erase=" << can_erase << ")";
+	return answer.str();
 }
 
 template<class T>
 const ics::Iterator<T>& LinkedSet<T>::Iterator::operator ++ () {
-    if (expected_mod_count != ref_set->mod_count)
-        throw ConcurrentModificationError("LinkedSet::Iterator::operator ++");
-    if (current->next == nullptr) {
-        return *this;
-    }
-    if (!can_erase) can_erase = true;
-    else {
-        current = current->next;
-    }
-    return *this;
+	if (expected_mod_count != ref_set->mod_count)
+		throw ConcurrentModificationError("LinkedSet::Iterator::operator ++");
+	if (current->next == nullptr) {
+		return *this;
+	}
+	if (!can_erase) can_erase = true;
+	else {
+		current = current->next;
+	}
+	return *this;
 }
 
 template<class T>
 const ics::Iterator<T>& LinkedSet<T>::Iterator::operator ++ (int) {
-    if (expected_mod_count != ref_set->mod_count)
-        throw ConcurrentModificationError("LinkedSet::Iterator::operator ++(int)");
-    if (current->next == nullptr) {
-        return *this;
-    }
+	if (expected_mod_count != ref_set->mod_count)
+		throw ConcurrentModificationError("LinkedSet::Iterator::operator ++(int)");
+	if (current->next == nullptr) {
+		return *this;
+	}
 
-    Iterator *to_return = new Iterator(this->ref_set, current);
-    if (!can_erase) can_erase = true;
-    else {
-        current = current->next;
-    }
-    return *to_return;
+	Iterator *to_return = new Iterator(this->ref_set, current);
+	if (!can_erase) can_erase = true;
+	else {
+		current = current->next;
+	}
+	return *to_return;
 }
 
 template<class T>
 bool LinkedSet<T>::Iterator::operator == (const ics::Iterator<T>& rhs) const {
-    const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
-    if (rhsASI == 0)
-        throw IteratorTypeError("ArraySet::Iterator::operator ==");
-    if (expected_mod_count != ref_set->mod_count)
-         throw ConcurrentModificationError("ArraySet::Iterator::operator ==");
-    if (ref_set != rhsASI->ref_set)
-        throw ComparingDifferentIteratorsError("ArraySet::Iterator::operator ==");
+	const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
+	if (rhsASI == 0)
+		throw IteratorTypeError("ArraySet::Iterator::operator ==");
+	if (expected_mod_count != ref_set->mod_count)
+		 throw ConcurrentModificationError("ArraySet::Iterator::operator ==");
+	if (ref_set != rhsASI->ref_set)
+		throw ComparingDifferentIteratorsError("ArraySet::Iterator::operator ==");
 
-    return current == rhsASI->current;
+	return current == rhsASI->current;
 }
 
 template<class T>
 bool LinkedSet<T>::Iterator::operator != (const ics::Iterator<T>& rhs) const {
-    return !(*this == rhs);
+	return !(*this == rhs);
 }
 
 template<class T>
 T& LinkedSet<T>::Iterator::operator *  () const {
-    if (expected_mod_count != ref_set->mod_count)
-        throw ConcurrentModificationError("LinkedSet::Iterator::operator *");
-    if (!can_erase || current == nullptr) {
-        std::ostringstream where;
-        where << current << " when size = " << ref_set->size();
-        throw IteratorPositionIllegal("LinkedSet::Iterator::operator * Iterator illegal: " + where.str());
-    }
-    return current->value;
+	if (expected_mod_count != ref_set->mod_count)
+		throw ConcurrentModificationError("LinkedSet::Iterator::operator *");
+	if (!can_erase || current == nullptr) {
+		std::ostringstream where;
+		where << current << " when size = " << ref_set->size();
+		throw IteratorPositionIllegal("LinkedSet::Iterator::operator * Iterator illegal: " + where.str());
+	}
+	return current->value;
 }
 
 template<class T>
 T* LinkedSet<T>::Iterator::operator -> () const {
-    if (expected_mod_count != ref_set->mod_count)
-        throw ConcurrentModificationError("ArraySet::Iterator::operator ->");
-    if (!can_erase || current->next == nullptr || current == nullptr) {
-        std::ostringstream where;
-        where << current << " when size = " << ref_set->size();
-        throw IteratorPositionIllegal("ArraySet::Iterator::operator -> Iterator illegal: "+where.str());
-    }
+	if (expected_mod_count != ref_set->mod_count)
+		throw ConcurrentModificationError("ArraySet::Iterator::operator ->");
+	if (!can_erase || current->next == nullptr || current == nullptr) {
+		std::ostringstream where;
+		where << current << " when size = " << ref_set->size();
+		throw IteratorPositionIllegal("ArraySet::Iterator::operator -> Iterator illegal: "+where.str());
+	}
 
-    return &current->value;
+	return &current->value;
 }
 
 template<class T2>
 std::ostream& operator << (std::ostream& outs, const LinkedSet<T2>& s) {
-    outs << "set[";
-    if (!s.empty()) {
-        int i = 0;
-        for (auto &val = s.ibegin(); val != s.iend(); ++val) {
-            outs << *val;
-            if (++i < s.size()) outs << ",";
-        }
-    }
-    outs << "]";
-    return outs;
+	outs << "set[";
+	if (!s.empty()) {
+		int i = 0;
+		for (auto &val = s.ibegin(); val != s.iend(); ++val) {
+			outs << *val;
+			if (++i < s.size()) outs << ",";
+		}
+	}
+	outs << "]";
+	return outs;
 }
 
 template<class T>
 auto LinkedSet<T>::ibegin() const -> ics::Iterator<T>&{
-    return *(new Iterator(const_cast<LinkedSet<T>*>(this), front));
+	return *(new Iterator(const_cast<LinkedSet<T>*>(this), front));
 }
 
 template<class T>
 auto LinkedSet<T>::iend() const -> ics::Iterator<T>&{
-    return *(new Iterator(const_cast<LinkedSet<T>*>(this), trailer));
+	return *(new Iterator(const_cast<LinkedSet<T>*>(this), trailer));
 }
 
 template<class T>
 auto LinkedSet<T>::begin() const -> LinkedSet<T>::Iterator {
-    return Iterator(const_cast<LinkedSet<T>*>(this), front);
+	return Iterator(const_cast<LinkedSet<T>*>(this), front);
 }
 
 template<class T>
 auto LinkedSet<T>::end() const -> LinkedSet<T>::Iterator {
-    return Iterator(const_cast<LinkedSet<T>*>(this), trailer);
+	return Iterator(const_cast<LinkedSet<T>*>(this), trailer);
 }
 
 
 template<class T>
 void LinkedSet<T>::delete_list(LN*& node) {
-    for (LN *temp = node; temp != trailer; temp = temp->next) {
-        erase_at(temp);
-    }
+	for (LN *temp = node; temp != trailer; temp = temp->next) {
+		erase_at(temp);
+	}
 }
 
 template<class T>
 int LinkedSet<T>::erase_at(LN* node) {
 	LN* temp = node;
 	node = node->next;
-    if (temp != front) {
-        // update back references.
-        LN *prev = front;
-        for (; prev->next != temp && prev->next != nullptr; prev = prev->next) {}
-        prev->next = node;
-    } else {
-        front = node;
-    }
+	if (temp != front) {
+		// update back references.
+		LN *prev = front;
+		for (; prev->next != temp && prev->next != nullptr; prev = prev->next);
+		prev->next = node;
+	} else {
+		front = node;
+	}
 	delete temp;
-    used--;
-    mod_count++;
-    return 1;
+	used--;
+	mod_count++;
+	return 1;
 }
 
 }

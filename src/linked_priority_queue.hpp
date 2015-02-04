@@ -1,3 +1,9 @@
+// Ian Schweer (Unique ID: 660942)
+// Shaun McThomas (Unique ID: 307523)
+// We certify that we worked cooperatively on this programming
+//   assignment, according to the rules for pair programming:
+//   primarily that both partners worked on all parts together.
+
 #ifndef LINKED_PRIORITY_QUEUE_HPP_
 #define LINKED_PRIORITY_QUEUE_HPP_
 
@@ -16,81 +22,81 @@ namespace ics {
 template<class T> class LinkedPriorityQueue : public PriorityQueue<T>  {
   using PriorityQueue<T>::gt;  //Required because of templated classes
   public:
-    LinkedPriorityQueue() = delete;
-    explicit LinkedPriorityQueue(bool (*agt)(const T& a, const T& b));
-    LinkedPriorityQueue(const LinkedPriorityQueue<T>& to_copy);
-    LinkedPriorityQueue(std::initializer_list<T> il,bool (*agt)(const T& a, const T& b));
-    LinkedPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop,bool (*agt)(const T& a, const T& b));
-    virtual ~LinkedPriorityQueue();
+	LinkedPriorityQueue() = delete;
+	explicit LinkedPriorityQueue(bool (*agt)(const T& a, const T& b));
+	LinkedPriorityQueue(const LinkedPriorityQueue<T>& to_copy);
+	LinkedPriorityQueue(std::initializer_list<T> il,bool (*agt)(const T& a, const T& b));
+	LinkedPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop,bool (*agt)(const T& a, const T& b));
+	virtual ~LinkedPriorityQueue();
 
-    virtual bool empty      () const;
-    virtual int  size       () const;
-    virtual T&   peek       () const;
-    virtual std::string str () const;
+	virtual bool empty      () const;
+	virtual int  size       () const;
+	virtual T&   peek       () const;
+	virtual std::string str () const;
 
-    virtual int  enqueue (const T& element);
-    virtual T    dequeue ();
-    virtual void clear   ();
+	virtual int  enqueue (const T& element);
+	virtual T    dequeue ();
+	virtual void clear   ();
 
-    virtual int enqueue (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
+	virtual int enqueue (ics::Iterator<T>& start, const ics::Iterator<T>& stop);
 
-    virtual LinkedPriorityQueue<T>& operator = (const LinkedPriorityQueue<T>& rhs);
-    virtual bool operator == (const PriorityQueue<T>& rhs) const;
-    virtual bool operator != (const PriorityQueue<T>& rhs) const;
+	virtual LinkedPriorityQueue<T>& operator = (const LinkedPriorityQueue<T>& rhs);
+	virtual bool operator == (const PriorityQueue<T>& rhs) const;
+	virtual bool operator != (const PriorityQueue<T>& rhs) const;
 
-    template<class T2>
-    friend std::ostream& operator << (std::ostream& outs, const LinkedPriorityQueue<T2>& s);
+	template<class T2>
+	friend std::ostream& operator << (std::ostream& outs, const LinkedPriorityQueue<T2>& s);
 
   private:
-    class LN;
+	class LN;
 
   public:
-    class Iterator : public ics::Iterator<T> {
-      public:
-        //KLUDGE should be callable only in begin/end
-        Iterator(LinkedPriorityQueue<T>* fof, LN* initial);
-        virtual ~Iterator();
-        virtual T           erase();
-        virtual std::string str  () const;
-        virtual const ics::Iterator<T>& operator ++ ();
-        virtual const ics::Iterator<T>& operator ++ (int);
-        virtual bool operator == (const ics::Iterator<T>& rhs) const;
-        virtual bool operator != (const ics::Iterator<T>& rhs) const;
-        virtual T& operator *  () const;
-        virtual T* operator -> () const;
-      private:
-        LN*                     prev;     //if header, then current is at front of list
-        LN*                     current;  //if can_erase is false, this value is unusable
-        LinkedPriorityQueue<T>* ref_pq;
-        int                     expected_mod_count;
-        bool                    can_erase = true;
-    };
+	class Iterator : public ics::Iterator<T> {
+	  public:
+		//KLUDGE should be callable only in begin/end
+		Iterator(LinkedPriorityQueue<T>* fof, LN* initial);
+		virtual ~Iterator();
+		virtual T           erase();
+		virtual std::string str  () const;
+		virtual const ics::Iterator<T>& operator ++ ();
+		virtual const ics::Iterator<T>& operator ++ (int);
+		virtual bool operator == (const ics::Iterator<T>& rhs) const;
+		virtual bool operator != (const ics::Iterator<T>& rhs) const;
+		virtual T& operator *  () const;
+		virtual T* operator -> () const;
+	  private:
+		LN*                     prev;     //if header, then current is at front of list
+		LN*                     current;  //if can_erase is false, this value is unusable
+		LinkedPriorityQueue<T>* ref_pq;
+		int                     expected_mod_count;
+		bool                    can_erase = true;
+	};
 
-    //For explicit use: Iterator<...>& it = c.ibegin(); ... or for (Iterator<...>& it = c.ibegin(); it != c.iend(); ++it)...
-    virtual ics::Iterator<T>& ibegin () const;
-    virtual ics::Iterator<T>& iend   () const;
+	//For explicit use: Iterator<...>& it = c.ibegin(); ... or for (Iterator<...>& it = c.ibegin(); it != c.iend(); ++it)...
+	virtual ics::Iterator<T>& ibegin () const;
+	virtual ics::Iterator<T>& iend   () const;
 
-    //For implicit use: for (... i : c)...
-    virtual Iterator begin () const;
-    virtual Iterator end   () const;
+	//For implicit use: for (... i : c)...
+	virtual Iterator begin () const;
+	virtual Iterator end   () const;
 
   private:
-    class LN {
-      public:
-        LN ()                      {}
-        LN (const LN& ln)          : value(ln.value), next(ln.next){}
-        LN (T v,  LN* n = nullptr) : value(v), next(n){}
+	class LN {
+	  public:
+		LN ()                      {}
+		LN (const LN& ln)          : value(ln.value), next(ln.next){}
+		LN (T v,  LN* n = nullptr) : value(v), next(n){}
 
-        T   value;
-        LN* next = nullptr;
-    };
+		T   value;
+		LN* next = nullptr;
+	};
 
-    //See base class PriorityQueue
-    //bool (*gt)(const T& a, const T& b);// gt(a,b) = true iff a has higher priority than b
-    int used      =  0;
-    LN* front     =  new LN();
-    int mod_count =  0;                  //For sensing concurrent modification
-    void delete_list(LN*& front);        //Recycle storage, set front's argument to nullptr;
+	//See base class PriorityQueue
+	//bool (*gt)(const T& a, const T& b);// gt(a,b) = true iff a has higher priority than b
+	int used      =  0;
+	LN* front     =  new LN();
+	int mod_count =  0;                  //For sensing concurrent modification
+	void delete_list(LN*& front);        //Recycle storage, set front's argument to nullptr;
   };
 
 /**
@@ -102,9 +108,9 @@ template<class T> class LinkedPriorityQueue : public PriorityQueue<T>  {
 template<class T>
 void LinkedPriorityQueue<T>::delete_list(LN*& front) {
   while (front != nullptr) {
-    LN *temp = front;
-    front = front->next;
-    delete temp;
+	LN *temp = front;
+	front = front->next;
+	delete temp;
   }
 }
 
@@ -144,7 +150,7 @@ LinkedPriorityQueue<T>::LinkedPriorityQueue(std::initializer_list<T> il,bool (*a
   : PriorityQueue<T>(agt) {
   gt = agt;
   for (T val : il)
-    enqueue(val);
+	enqueue(val);
 }
 
 /**
@@ -168,7 +174,9 @@ LinkedPriorityQueue<T>::LinkedPriorityQueue(ics::Iterator<T>& start, const ics::
  * Deconstructor
  */
 template <class T>
-LinkedPriorityQueue<T>::~LinkedPriorityQueue() { delete_list(front->next); } 
+LinkedPriorityQueue<T>::~LinkedPriorityQueue() {
+  delete_list(front->next); 
+} 
 
 /**
  * Enqueue. Function will add an element the list given a determined priority.
@@ -183,25 +191,25 @@ template <class T>
 int LinkedPriorityQueue<T>::enqueue (const T& element) {
   // empty
   if (front->next == nullptr) {
-    front->next = new LN(element, nullptr);
+	front->next = new LN(element, nullptr);
   }
 
   else if (gt != nullptr && gt(element, front->next->value)) {
-    front->next = new LN(element, front->next);
+	front->next = new LN(element, front->next);
   }
 
   // anywhere else.
   else 
-    for (LN *node = front->next, *prev = front; node != nullptr; node = node->next, prev = prev->next) {
-      if (gt != nullptr && gt(element, node->value)) {
-        prev->next = new LN(element, node);
-        break;
-      }
-      else if (node->next == nullptr) {
-        node->next = new LN(element);
-        break;
-      } 
-    }
+	for (LN *node = front->next, *prev = front; node != nullptr; node = node->next, prev = prev->next) {
+	  if (gt != nullptr && gt(element, node->value)) {
+		prev->next = new LN(element, node);
+		break;
+	  }
+	  else if (node->next == nullptr) {
+		node->next = new LN(element);
+		break;
+	  } 
+	}
   mod_count++;
   used++;
   return 1;
@@ -267,13 +275,13 @@ std::string LinkedPriorityQueue<T>::str() const {
   int i = 0;
   std::stringstream string_value(""), temp("");
   for (T val : *this) {
-    if (i == 0) string_value << val;
-    else {
-      temp.str(string_value.str());
-      string_value.str(std::string());
-      string_value << val << "," << temp.str();
-    }
-    i++;
+	if (i == 0) string_value << val;
+	else {
+	  temp.str(string_value.str());
+	  string_value.str(std::string());
+	  string_value << val << "," << temp.str();
+	}
+	i++;
   }
   string_value << "(used = " << used << ", mod_count = " << ")";
   return string_value.str();
@@ -305,9 +313,8 @@ void LinkedPriorityQueue<T>::clear() {
 template <class T>
 int LinkedPriorityQueue<T>::enqueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
   int total = 0;
-  for (; start != stop; start++)
-    total += enqueue(*start);
-  return 0;
+  for (; start != stop; total += enqueue(*(start++)));
+  return total;
 }
 
 /**
@@ -343,9 +350,9 @@ bool LinkedPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
   if (gt != rhs.gt) return false;
 
   // element equals
-  for (auto &lhs_iter = ibegin(), &rhs_iter = rhs.ibegin(); lhs_iter != iend(); lhs_iter++, rhs_iter++) {
-    if (*lhs_iter != *rhs_iter) return false;
-  }
+  for (auto &lhs_iter = ibegin(), &rhs_iter = rhs.ibegin(); lhs_iter != iend(); lhs_iter++, rhs_iter++) 
+	if (*lhs_iter != *rhs_iter) return false;
+  
   return true;
 }
 
@@ -369,16 +376,16 @@ bool LinkedPriorityQueue<T>::operator != (const PriorityQueue<T>& rhs) const {
  */
 template<class T2>
 std::ostream& operator << (std::ostream& outs, const LinkedPriorityQueue<T2>& s) {
-  int i = 0;
+  bool is_not_end = true;
   std::stringstream string_value(""), temp("");
   for (T2 val : s) {
-    if (i == 0) string_value << val;
-    else {
-      temp.str(string_value.str());
-      string_value.str(std::string());
-      string_value << val << "," << temp.str();
-    }
-    i++;
+	if (is_not_end) string_value << val;
+	else {
+	  temp.str(string_value.str());
+	  string_value.str(std::string());
+	  string_value << val << "," << temp.str();
+	}
+	is_not_end =false;
   }
   outs << "priority_queue[" << string_value.str() << "]:highest";
   return outs;
@@ -433,11 +440,11 @@ LinkedPriorityQueue<T>::Iterator::~Iterator() {}
 template<class T>
 T LinkedPriorityQueue<T>::Iterator::erase() {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::erase");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::erase");
   if (!can_erase)
-    throw CannotEraseError("LinkedPriorityQueue::Iterator::erase Iterator cursor already erased");
+	throw CannotEraseError("LinkedPriorityQueue::Iterator::erase Iterator cursor already erased");
   if (current == nullptr)
-    throw CannotEraseError("LinkedPriorityQueue::Iterator::erase Iterator cursor beyond data structure");
+	throw CannotEraseError("LinkedPriorityQueue::Iterator::erase Iterator cursor beyond data structure");
 
   T val = current->value;
   prev->next = current->next;
@@ -469,13 +476,13 @@ std::string LinkedPriorityQueue<T>::Iterator::str() const {
 template<class T>
 const ics::Iterator<T>& LinkedPriorityQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ++");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ++");
 
   if (!can_erase) can_erase = true;
   else {
-    prev = current;
-    if (current != nullptr) 
-      current = current->next;
+	prev = current;
+	if (current != nullptr) 
+	  current = current->next;
   }
   return *this;
 }
@@ -492,15 +499,15 @@ const ics::Iterator<T>& LinkedPriorityQueue<T>::Iterator::operator ++ () {
 template<class T>
 const ics::Iterator<T>& LinkedPriorityQueue<T>::Iterator::operator ++ (int) {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ++(int)");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ++(int)");
 
   if (current == nullptr)
-    return *this;
+	return *this;
 
   if (!can_erase) can_erase = true;
   else {
-    prev = current;
-    current = current->next;
+	prev = current;
+	current = current->next;
   }
   return *(new Iterator(ref_pq, prev));
 }
@@ -519,11 +526,11 @@ template<class T>
 bool LinkedPriorityQueue<T>::Iterator::operator == (const ics::Iterator<T>& rhs) const {
   const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
   if (rhsASI == 0)
-    throw IteratorTypeError("LinkedPriorityQueue::Iterator::operator ==");
+	throw IteratorTypeError("LinkedPriorityQueue::Iterator::operator ==");
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ==");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator ==");
   if (ref_pq != rhsASI->ref_pq)
-    throw ComparingDifferentIteratorsError("LinkedPriorityQueue::Iterator::operator ==");
+	throw ComparingDifferentIteratorsError("LinkedPriorityQueue::Iterator::operator ==");
 
   return current == rhsASI->current;
 }
@@ -541,11 +548,11 @@ template<class T>
 bool LinkedPriorityQueue<T>::Iterator::operator != (const ics::Iterator<T>& rhs) const {
   const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
   if (rhsASI == 0)
-    throw IteratorTypeError("LinkedPriorityQueue::Iterator::operator !=");
+	throw IteratorTypeError("LinkedPriorityQueue::Iterator::operator !=");
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator !=");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator !=");
   if (ref_pq != rhsASI->ref_pq)
-    throw ComparingDifferentIteratorsError("LinkedPriorityQueue::Iterator::operator !=");
+	throw ComparingDifferentIteratorsError("LinkedPriorityQueue::Iterator::operator !=");
 
   return current != rhsASI->current;
 }
@@ -553,12 +560,12 @@ bool LinkedPriorityQueue<T>::Iterator::operator != (const ics::Iterator<T>& rhs)
 template<class T>
 T& LinkedPriorityQueue<T>::Iterator::operator *() const {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator *");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator *");
   if (!can_erase || current == nullptr) {
-    std::ostringstream where;
-    where << current
-          << " when front = " << ref_pq->front;
-    throw IteratorPositionIllegal("LinkedPriorityQueue::Iterator::operator * Iterator illegal: "+where.str());
+	std::ostringstream where;
+	where << current
+		  << " when front = " << ref_pq->front;
+	throw IteratorPositionIllegal("LinkedPriorityQueue::Iterator::operator * Iterator illegal: "+where.str());
   }
 
   return current->value;
@@ -567,12 +574,12 @@ T& LinkedPriorityQueue<T>::Iterator::operator *() const {
 template<class T>
 T* LinkedPriorityQueue<T>::Iterator::operator ->() const {
   if (expected_mod_count != ref_pq->mod_count)
-    throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator *");
+	throw ConcurrentModificationError("LinkedPriorityQueue::Iterator::operator *");
   if (!can_erase || current == nullptr) {
-    std::ostringstream where;
-    where << current
-          << " when front = " << ref_pq->front;
-    throw IteratorPositionIllegal("LinkedPriorityQueue::Iterator::operator * Iterator illegal: "+where.str());
+	std::ostringstream where;
+	where << current
+		  << " when front = " << ref_pq->front;
+	throw IteratorPositionIllegal("LinkedPriorityQueue::Iterator::operator * Iterator illegal: "+where.str());
   }
 
   return &(current->value);
