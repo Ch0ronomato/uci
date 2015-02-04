@@ -115,7 +115,7 @@ LinkedQueue<T>::LinkedQueue(ics::Iterator<T>& start, const ics::Iterator<T>& end
 }
 
 template <class T>
-LinkedQueue<T>::~LinkedQueue() { delete_list(); }
+LinkedQueue<T>::~LinkedQueue() { delete_list(front); }
 
 template <class T>
 bool LinkedQueue<T>::empty() const {
@@ -212,15 +212,19 @@ T LinkedQueue<T>::dequeue() {
 
 template <class T>
 void LinkedQueue<T>::clear() {
-	LN *node = front;
+  delete_list(front);
+  rear = nullptr;
+}
+template <class T>
+void LinkedQueue<T>::delete_list(LN *&node) {
+	LN *to_delete = node;
 	while (node != nullptr) {
-		front = front->next;
-		delete node;
-		node = front;
+		node = node->next;
+		delete to_delete;
+		to_delete = node;
+    used--;
+    mod_count++;
 	}
-	rear = nullptr;
-	used = 0;
-	mod_count++;
 }
 
 template <class T>
@@ -306,17 +310,14 @@ T LinkedQueue<T>::Iterator::erase() {
     throw CannotEraseError("LinkedQueue::Iterator::erase Iterator cursor beyond data structure");
 
   T val = current->value;
-  if (prev != nullptr) {
+  LN *to_delete = current;
+  if (current == ref_queue->front) 
+    ref_queue->front = ref_queue->front->next;
+  else
     prev->next = current->next;
-    delete current;
-    current = prev->next;
-  } else {
-    LN *node = current;
-    current = current->next;
-    delete node;
-  }
+  current = current->next;
+  delete to_delete;
   can_erase = false;
-  ref_queue->mod_count -= 1;
   expected_mod_count = ref_queue->mod_count;
   ref_queue->used--;
   return val;

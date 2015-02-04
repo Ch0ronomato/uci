@@ -96,7 +96,6 @@ template<class T> class LinkedPriorityQueue : public PriorityQueue<T>  {
 template<class T>
 void LinkedPriorityQueue<T>::delete_list(LN*& front) {
   while (front != nullptr) {
-    std::cout << front->value << std::endl;
     LN *temp = front;
     front = front->next;
     delete temp;
