@@ -90,6 +90,182 @@ template<class T> class HeapPriorityQueue : public PriorityQueue<T>  {
 
 
 
+template<class T>
+HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) : PriorityQueue<T>(agt) {
+  pq = new T[length];
+}
+
+
+template<class T>
+HeapPriorityQueue<T>::HeapPriorityQueue(int initial_length, bool (*agt)(const T& a, const T& b))
+  : PriorityQueue<T>(agt), length(initial_length) {
+  if (length < 0)
+    length = 0;
+  pq = new T[length];
+}
+
+
+template<class T>
+HeapPriorityQueue<T>::HeapPriorityQueue(const HeapPriorityQueue<T>& to_copy)
+  : PriorityQueue<T>(to_copy.gt), length(to_copy.length), used(to_copy.used) {
+  pq = new T[length];
+  for (int i=0; i<to_copy.used; ++i)
+    pq[i] = to_copy.pq[i];
+}
+
+
+template<class T>
+HeapPriorityQueue<T>::HeapPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop, bool (*agt)(const T& a, const T& b))
+  : PriorityQueue<T>(agt) {
+  pq = new T[length];
+  enqueue(start,stop);
+}
+
+
+template<class T>
+HeapPriorityQueue<T>::HeapPriorityQueue(std::initializer_list<T> il, bool (*agt)(const T& a, const T& b))
+  : PriorityQueue<T>(agt) {
+  pq = new T[length];
+  for (T pq_elem : il)
+    enqueue(pq_elem);
+}
+
+
+template<class T>
+HeapPriorityQueue<T>::~HeapPriorityQueue() {
+  delete[] pq;
+}
+
+
+template<class T>
+inline bool HeapPriorityQueue<T>::empty() const {
+  return used == 0;
+}
+
+
+template<class T>
+int HeapPriorityQueue<T>::size() const {
+  return used;
+}
+
+
+template<class T>
+T& HeapPriorityQueue<T>::peek () const {
+  if (empty())
+    throw EmptyError("HeapPriorityQueue::peek");
+
+  return pq[0];
+}
+
+
+template<class T>
+std::string HeapPriorityQueue<T>::str() const {
+  std::ostringstream answer;
+  answer << *this << "(length=" << length << ",used=" << used << ",mod_count=" << mod_count << ")";
+  return answer.str();
+}
+
+
+template<class T>
+int HeapPriorityQueue<T>::enqueue(const T& element) {
+  this->ensure_length(used+1);
+  pq[used++] = element;
+  for (int i=used-2; i>=0; --i)
+    if (gt(pq[i],pq[i+1])) {//gt is in the base class; KLUDGE swap<T>?
+      T temp = pq[i];
+      pq[i] = pq[i+1];
+      pq[i+1] = temp;
+    }else
+      break;
+  ++mod_count;
+  return 1;
+}
+
+
+template<class T>
+T HeapPriorityQueue<T>::dequeue() {
+  if (this->empty())
+    throw EmptyError("HeapPriorityQueue::dequeue");
+
+  ++mod_count;
+  return pq[--used];
+}
+
+
+template<class T>
+void HeapPriorityQueue<T>::clear() {
+  used = 0;
+  ++mod_count;
+}
+
+
+template<class T>
+int HeapPriorityQueue<T>::enqueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop) {
+  int count = 0;
+  for (; start != stop; ++start)
+    count += enqueue(*start);
+
+  return count;
+}
+
+
+template<class T>
+HeapPriorityQueue<T>& HeapPriorityQueue<T>::operator = (const HeapPriorityQueue<T>& rhs) {
+  if (this == &rhs)
+    return *this;
+  this->ensure_length(rhs.used);
+  gt   = rhs.gt;  //gt is in the base class
+  used = rhs.used;
+  for (int i=0; i<used; ++i)
+    pq[i] = rhs.pq[i];
+  ++mod_count;
+  return *this;
+}
+
+
+template<class T>
+  bool HeapPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
+  if (this == &rhs)
+    return true;
+  if (used != rhs.size())
+    return false;
+  if (gt != rhs.gt)
+    return false;
+  if (used != rhs.size())
+    return false;
+  //KLUDGE: should check for same == function used to prioritize, but cannot unless
+  //  it is made part of the PriorityQueue class (should it be? protected)?
+  ics::Iterator<T>& rhs_i = rhs.ibegin();
+  for (int i=used-1; i>=0; --i,++rhs_i)
+    // Uses ! and ==, so != on T need not be defined
+    if (!(pq[i] == *rhs_i))
+      return false;
+
+  return true;
+}
+
+
+template<class T>
+bool HeapPriorityQueue<T>::operator != (const PriorityQueue<T>& rhs) const {
+  return !(*this == rhs);
+}
+
+
+template<class T>
+std::ostream& operator << (std::ostream& outs, const HeapPriorityQueue<T>& p) {
+  outs << "priority_queue[";
+
+  if (!p.empty()) {
+    outs << p.pq[0];
+    for (int i = 1; i < p.used; ++i)
+      outs << ","<< p.pq[i];
+  }
+
+  outs << "]:highest";
+  return outs;
+}
+
+
 //Insert constructor/methods here: see array_priority_queue.hpp
 
 //Insert heap helper methods here.
@@ -123,6 +299,161 @@ auto HeapPriorityQueue<T>::end () const -> HeapPriorityQueue<T>::Iterator {
 //Insert Iterator constructor/methods here: see array_priority_queue.hpp
 
 
+template<class T>
+int HeapPriorityQueue<T>::erase_at(int i) {
+  for (int j=i; j<used-1; ++j)
+    pq[j] = pq[j+1];
+  --used;
+  ++mod_count;
+  return 1;
+}
+
+
+template<class T>
+void HeapPriorityQueue<T>::ensure_length(int new_length) {
+  if (length >= new_length)
+    return;
+  T*  old_pq  = pq;
+  length = std::max(new_length,2*length);
+  pq = new T[length];
+  for (int i=0; i<used; ++i)
+    pq[i] = old_pq[i];
+
+  delete [] old_pq;
+}
+
+
+
+
+
+template<class T>
+HeapPriorityQueue<T>::Iterator::Iterator(HeapPriorityQueue<T>* iterate_over, int initial) : current(initial), ref_pq(iterate_over) {
+  expected_mod_count = ref_pq->mod_count;
+}
+
+
+template<class T>
+HeapPriorityQueue<T>::Iterator::~Iterator() {}
+
+
+template<class T>
+T HeapPriorityQueue<T>::Iterator::erase() {
+  if (expected_mod_count != ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::erase");
+  if (!can_erase)
+    throw CannotEraseError("HeapPriorityQueue::Iterator::erase Iterator cursor already erased");
+  if (current < 0 || current >= ref_pq->used)
+    throw CannotEraseError("HeapPriorityQueue::Iterator::erase Iterator cursor beyond data structure");
+
+  can_erase = false;
+  T to_return = ref_pq->pq[current];
+  ref_pq->erase_at(current);
+  --current;
+  expected_mod_count = ref_pq->mod_count;
+  return to_return;
+}
+
+
+template<class T>
+std::string HeapPriorityQueue<T>::Iterator::str() const {
+  std::ostringstream answer;
+  answer << ref_pq->str() << "/current=" << current << "/expected_mod_count=" << expected_mod_count << "/can_erase=" << can_erase;
+  return answer.str();
+}
+
+
+template<class T>
+const ics::Iterator<T>& HeapPriorityQueue<T>::Iterator::operator ++ () {
+  if (expected_mod_count != ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ++");
+
+  if (current < 0)
+    return *this;
+
+  if (!can_erase)
+    can_erase = true;
+  else
+    --current;
+
+  return *this;
+}
+
+
+//KLUDGE: can create garbage! (can return local value!)
+template<class T>
+const ics::Iterator<T>& HeapPriorityQueue<T>::Iterator::operator ++ (int) {
+  if (expected_mod_count != ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ++(int)");
+
+  if (current < 0)
+    return *this;
+
+  Iterator* to_return = new Iterator(this->ref_pq,current+1);
+  if (!can_erase)
+    can_erase = true;
+  else{
+    --to_return->current;
+    --current;
+  }
+
+  return *to_return;
+}
+
+
+template<class T>
+bool HeapPriorityQueue<T>::Iterator::operator == (const ics::Iterator<T>& rhs) const {
+  const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
+  if (rhsASI == 0)
+    throw IteratorTypeError("HeapPriorityQueue::Iterator::operator ==");
+  if (expected_mod_count != ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ==");
+  if (ref_pq != rhsASI->ref_pq)
+    throw ComparingDifferentIteratorsError("HeapPriorityQueue::Iterator::operator ==");
+
+  return current == rhsASI->current;
+}
+
+
+template<class T>
+bool HeapPriorityQueue<T>::Iterator::operator != (const ics::Iterator<T>& rhs) const {
+  const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
+  if (rhsASI == 0)
+    throw IteratorTypeError("HeapPriorityQueue::Iterator::operator !=");
+  if (expected_mod_count != ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator !=");
+  if (ref_pq != rhsASI->ref_pq)
+    throw ComparingDifferentIteratorsError("HeapPriorityQueue::Iterator::operator !=");
+
+  return current != rhsASI->current;
+}
+
+
+template<class T>
+T& HeapPriorityQueue<T>::Iterator::operator *() const {
+  if (expected_mod_count != ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator *");
+  if (!can_erase || current < 0 || current >= ref_pq->used) {
+    std::ostringstream where;
+    where << current << " when size = " << ref_pq->size();
+    throw IteratorPositionIllegal("HeapPriorityQueue::Iterator::operator * Iterator illegal: "+where.str());
+  }
+
+  return ref_pq->pq[current];
+}
+
+
+template<class T>
+T* HeapPriorityQueue<T>::Iterator::operator ->() const {
+  if (expected_mod_count !=  ref_pq->mod_count)
+    throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ->");
+  if (!can_erase || current < 0 || current >= ref_pq->used) {
+    std::ostringstream where;
+    where << current << " when size = " << ref_pq->size();
+    throw IteratorPositionIllegal("HeapPriorityQueue::Iterator::operator -> Iterator illegal: "+where.str());
+  }
+
+  return &ref_pq->pq[current];
+}
 
 }
 
