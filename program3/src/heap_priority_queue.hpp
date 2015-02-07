@@ -280,11 +280,11 @@ void HeapPriorityQueue<T>::ensure_length(int new_length) {
 }
 
 
+template<class T>
+HeapPriorityQueue<T>::Iterator::Iterator(HeapPriorityQueue<T> *iterate_over, bool begin) : ref_pq(iterate_over), it(*iterate_over) { }
 
-// template<class T>
-// HeapPriorityQueue<T>::Iterator::Iterator(HeapPriorityQueue<T>* iterate_over, bool begin) {
-//   expected_mod_count = ref_pq->mod_count;
-// }
+template<class T>
+HeapPriorityQueue<T>::Iterator::Iterator(const Iterator& i) : ref_pq(i.ref_pq), it(i.it) { }
 
 
 template<class T>
