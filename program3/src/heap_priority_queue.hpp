@@ -92,6 +92,8 @@ template<class T> class HeapPriorityQueue : public PriorityQueue<T>  {
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) : PriorityQueue<T>(agt) {
+  gt = agt;
+  pq = new T[length];
 }
 
 
@@ -100,19 +102,23 @@ HeapPriorityQueue<T>::HeapPriorityQueue(int initial_length, bool (*agt)(const T&
   : PriorityQueue<T>(agt), length(initial_length) {
   if (length < 0)
     length = 0;
+  pq = new T[length];
 }
 
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(const HeapPriorityQueue<T>& to_copy)
   : PriorityQueue<T>(to_copy.gt), length(to_copy.length), used(to_copy.used) {
- 
+  pq = new T[length];
+  for (int i=0; i<to_copy.used; ++i)
+    pq[i] = to_copy.pq[i];
 }
 
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop, bool (*agt)(const T& a, const T& b))
   : PriorityQueue<T>(agt) {
+  pq = new T[length];
   enqueue(start,stop);
 }
 
@@ -120,6 +126,7 @@ HeapPriorityQueue<T>::HeapPriorityQueue(ics::Iterator<T>& start, const ics::Iter
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(std::initializer_list<T> il, bool (*agt)(const T& a, const T& b))
   : PriorityQueue<T>(agt) {
+  pq = new T[length];
   for (T pq_elem : il)
     enqueue(pq_elem);
 }
@@ -127,6 +134,7 @@ HeapPriorityQueue<T>::HeapPriorityQueue(std::initializer_list<T> il, bool (*agt)
 
 template<class T>
 HeapPriorityQueue<T>::~HeapPriorityQueue() {
+  delete [] pq;
 }
 
 
@@ -146,6 +154,7 @@ template<class T>
 T& HeapPriorityQueue<T>::peek () const {
   if (empty())
     throw EmptyError("HeapPriorityQueue::peek");
+  return pq[0];
 }
 
 
@@ -159,6 +168,10 @@ std::string HeapPriorityQueue<T>::str() const {
 
 template<class T>
 int HeapPriorityQueue<T>::enqueue(const T& element) {
+  this->ensure_length(used + 1);
+  pq[used] = element;
+  // re heapify
+  percolate_up(used++);
   return 1;
 }
 
@@ -191,7 +204,7 @@ int HeapPriorityQueue<T>::enqueue(ics::Iterator<T>& start, const ics::Iterator<T
 
 template<class T>
 HeapPriorityQueue<T>& HeapPriorityQueue<T>::operator = (const HeapPriorityQueue<T>& rhs) {
-  if (this == &rhs)
+  if (rhs == *this)
     return *this;
   this->ensure_length(rhs.used);
   gt   = rhs.gt;  //gt is in the base class
@@ -274,9 +287,13 @@ template<class T>
 void HeapPriorityQueue<T>::ensure_length(int new_length) {
   if (length >= new_length)
     return;
-  // T*  old_pq  = pq;
+  T*  old_pq  = pq;
   length = std::max(new_length,2*length);
-  
+  pq = new T[length];
+  for (int i=0; i<used; ++i)
+    pq[i] = old_pq[i];
+
+  delete [] old_pq;
 }
 
 
@@ -364,6 +381,47 @@ T* HeapPriorityQueue<T>::Iterator::operator ->() const {
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ->");
 }
 
+/**
+ * HELPER FUNCTIONS
+ */
+template<class T> 
+int HeapPriorityQueue<T>::left_child(int i) {
+  return (i * 2) + 1;
 }
 
+template<class T> 
+int HeapPriorityQueue<T>::right_child(int i) {
+  return (i * 2) + 2;
+}
+
+template<class T> 
+int HeapPriorityQueue<T>::parent(int i) {
+  return ((i % 2 == 1 ? i + 1 : i) / 2) - 1;
+}
+
+template<class T>
+bool HeapPriorityQueue<T>::is_root(int i) {
+  return i == 0;
+}
+
+template<class T>
+bool HeapPriorityQueue<T>::in_heap(int i) {
+  return i < used;
+}
+
+template<class T>
+void HeapPriorityQueue<T>::percolate_up(int i) {
+  // find parent and go up.
+  int parentIndex = parent(i);
+  if (is_root(i) || !gt(pq[i], pq[parentIndex])) return;
+  std::swap(pq[parentIndex], pq[i]);
+  percolate_up(parentIndex); // parentIndex now become's i.
+}
+
+template<class T>
+void HeapPriorityQueue<T>::percolate_down(int i) {
+
+}
+
+}
 #endif /* HEAP_PRIORITY_QUEUE_HPP_ */
