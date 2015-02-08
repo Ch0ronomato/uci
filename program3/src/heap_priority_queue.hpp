@@ -46,6 +46,8 @@ template<class T> class HeapPriorityQueue : public PriorityQueue<T>  {
     virtual ics::Iterator<T>& ibegin() const;
     virtual ics::Iterator<T>& iend  () const;
 
+    // TODO: Delete this
+    void easyPreOrderPrint(std::string indent, int i);
     class Iterator : public ics::Iterator<T> {
       public:
         //KLUDGE should be callable only in begin/end
@@ -88,7 +90,16 @@ template<class T> class HeapPriorityQueue : public PriorityQueue<T>  {
   };
 
 
-
+template<class T>
+void HeapPriorityQueue<T>::easyPreOrderPrint(std::string indent = "", int i = 0) {
+  // std::cout << indent << pq[i] << std::endl;
+  // if (left_child(i) < used) easyPreOrderPrint(indent + " ", left_child(i));  
+  // if (right_child(i) < used) easyPreOrderPrint(indent + " ", right_child(i));
+  // std::cout << "-----------DFS FORM----------------" << std::endl;
+  // for (int i = 0; i < used; i++) 
+  //   i + 1 == used ? std::cout << pq[i] : std::cout << pq[i] << ",";
+  // std::cout << std::endl;
+}
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) : PriorityQueue<T>(agt) {
@@ -172,6 +183,7 @@ int HeapPriorityQueue<T>::enqueue(const T& element) {
   pq[used] = element;
   // re heapify
   percolate_up(used++);
+  mod_count++;
   return 1;
 }
 
@@ -180,8 +192,13 @@ template<class T>
 T HeapPriorityQueue<T>::dequeue() {
   if (this->empty())
     throw EmptyError("HeapPriorityQueue::dequeue");
-
+  easyPreOrderPrint();
+  T val = peek();
+  // make the max the root, percolate down.
+  pq[0] = pq[--used];
+  percolate_down(0);
   ++mod_count;
+  return val;
 }
 
 
@@ -420,7 +437,20 @@ void HeapPriorityQueue<T>::percolate_up(int i) {
 
 template<class T>
 void HeapPriorityQueue<T>::percolate_down(int i) {
+  // leaf case
+  if (left_child(i) >= used && right_child(i) >= used) 
+    // a leaf node, we're at the absolute end of our percolation.
+    return;
 
+  // can we swap?
+  int higher_priority = gt(pq[left_child(i)], pq[right_child(i)]) ? left_child(i) : right_child(i);
+
+  // continuation step
+  if (!gt(pq[higher_priority], pq[i])) return;
+  else {
+    std::swap(pq[higher_priority], pq[i]);
+    percolate_down(higher_priority);
+  }
 }
 
 }
