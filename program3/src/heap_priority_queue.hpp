@@ -95,14 +95,15 @@ void HeapPriorityQueue<T>::easyPreOrderPrint(std::string indent = "", int i = 0)
   // std::cout << indent << pq[i] << std::endl;
   // if (left_child(i) < used) easyPreOrderPrint(indent + " ", left_child(i));  
   // if (right_child(i) < used) easyPreOrderPrint(indent + " ", right_child(i));
-  // std::cout << "-----------DFS FORM----------------" << std::endl;
-  // for (int i = 0; i < used; i++) 
-  //   i + 1 == used ? std::cout << pq[i] : std::cout << pq[i] << ",";
-  // std::cout << std::endl;
+  std::cout << "-----------DFS FORM----------------" << std::endl;
+  for (int i = 0; i < used; i++) 
+    i + 1 == used ? std::cout << pq[i] : std::cout << pq[i] << ",";
+  std::cout << std::endl;
 }
 
 template<class T>
-HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) : PriorityQueue<T>(agt) {
+HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) 
+  : PriorityQueue<T>(agt), mod_count(0) {
   gt = agt;
   pq = new T[length];
 }
@@ -110,7 +111,7 @@ HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) : P
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(int initial_length, bool (*agt)(const T& a, const T& b))
-  : PriorityQueue<T>(agt), length(initial_length) {
+  : PriorityQueue<T>(agt), length(initial_length), mod_count(0) {
   if (length < 0)
     length = 0;
   pq = new T[length];
@@ -119,16 +120,16 @@ HeapPriorityQueue<T>::HeapPriorityQueue(int initial_length, bool (*agt)(const T&
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(const HeapPriorityQueue<T>& to_copy)
-  : PriorityQueue<T>(to_copy.gt), length(to_copy.length), used(to_copy.used) {
-  pq = new T[length];
-  for (int i=0; i<to_copy.used; ++i)
+  : PriorityQueue<T>(to_copy.gt), length(to_copy.length), used(to_copy.used), mod_count(0) {
+  pq = new T[length];  
+  for (int i=0; i < to_copy.used; ++i)
     pq[i] = to_copy.pq[i];
 }
 
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(ics::Iterator<T>& start, const ics::Iterator<T>& stop, bool (*agt)(const T& a, const T& b))
-  : PriorityQueue<T>(agt) {
+  : PriorityQueue<T>(agt), mod_count(0) {
   pq = new T[length];
   enqueue(start,stop);
 }
@@ -136,7 +137,7 @@ HeapPriorityQueue<T>::HeapPriorityQueue(ics::Iterator<T>& start, const ics::Iter
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(std::initializer_list<T> il, bool (*agt)(const T& a, const T& b))
-  : PriorityQueue<T>(agt) {
+  : PriorityQueue<T>(agt), mod_count(0) {
   pq = new T[length];
   for (T pq_elem : il)
     enqueue(pq_elem);
@@ -192,7 +193,6 @@ template<class T>
 T HeapPriorityQueue<T>::dequeue() {
   if (this->empty())
     throw EmptyError("HeapPriorityQueue::dequeue");
-  easyPreOrderPrint();
   T val = peek();
   // make the max the root, percolate down.
   pq[0] = pq[--used];
@@ -223,29 +223,29 @@ template<class T>
 HeapPriorityQueue<T>& HeapPriorityQueue<T>::operator = (const HeapPriorityQueue<T>& rhs) {
   if (rhs == *this)
     return *this;
+  clear();
   this->ensure_length(rhs.used);
   gt   = rhs.gt;  //gt is in the base class
-  used = rhs.used;
-  
+  enqueue(rhs.ibegin(), rhs.iend());
   ++mod_count;
   return *this;
 }
 
 
-template<class T>
-  bool HeapPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
+template<class T> 
+bool HeapPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
   if (this == &rhs)
     return true;
   if (used != rhs.size())
     return false;
   if (gt != rhs.gt)
     return false;
-  if (used != rhs.size())
-    return false;
   //KLUDGE: should check for same == function used to prioritize, but cannot unless
   //  it is made part of the PriorityQueue class (should it be? protected)?
-  ics::Iterator<T>& rhs_i = rhs.ibegin();
-  
+  ics::Iterator<T>& rhs_i = rhs.ibegin(), &lhs_i = ibegin();
+  for (int i = 0; i < used; i++, lhs_i++, rhs_i++) {
+    if (*lhs_i != *rhs_i) return false;
+  }
   return true;
 }
 
@@ -258,12 +258,18 @@ bool HeapPriorityQueue<T>::operator != (const PriorityQueue<T>& rhs) const {
 
 template<class T>
 std::ostream& operator << (std::ostream& outs, const HeapPriorityQueue<T>& p) {
-  outs << "priority_queue[";
-
-  if (!p.empty()) {
+  bool is_not_end = true;
+  std::stringstream string_value(""), temp("");
+  for (T val : p) {
+    if (is_not_end) string_value << val;
+    else {
+      temp.str(string_value.str());
+      string_value.str(std::string());
+      string_value << val << "," << temp.str();
+    }
+    is_not_end =false;
   }
-
-  outs << "]:highest";
+  outs << "priority_queue[" << string_value.str() << "]:highest";
   return outs;
 }
 
@@ -315,10 +321,16 @@ void HeapPriorityQueue<T>::ensure_length(int new_length) {
 
 
 template<class T>
-HeapPriorityQueue<T>::Iterator::Iterator(HeapPriorityQueue<T> *iterate_over, bool begin) : ref_pq(iterate_over), it(*iterate_over) { }
+HeapPriorityQueue<T>::Iterator::Iterator(HeapPriorityQueue<T> *iterate_over, bool begin) 
+  : ref_pq(iterate_over), it(*iterate_over), expected_mod_count(ref_pq->mod_count) { 
+    if (!begin) {
+      it.clear();
+    }
+}
 
 template<class T>
-HeapPriorityQueue<T>::Iterator::Iterator(const Iterator& i) : ref_pq(i.ref_pq), it(i.it) { }
+HeapPriorityQueue<T>::Iterator::Iterator(const Iterator& i) 
+  : ref_pq(i.ref_pq), it(i.it), expected_mod_count(i.ref_pq->mod_count) { }
 
 
 template<class T>
@@ -334,6 +346,7 @@ T HeapPriorityQueue<T>::Iterator::erase() {
 
   can_erase = false;
   expected_mod_count = ref_pq->mod_count;
+  throw CannotEraseError("Not implemented yet");
 }
 
 
@@ -347,6 +360,15 @@ template<class T>
 const ics::Iterator<T>& HeapPriorityQueue<T>::Iterator::operator ++ () {
   if (expected_mod_count != ref_pq->mod_count)
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ++");
+  
+  // are we at the begining?
+  if (!can_erase) can_erase = true;
+  else {
+    if (it.empty() && ref_pq != nullptr)
+      ref_pq = nullptr;
+    else 
+      it.dequeue();
+  }
 
   return *this;
 }
@@ -357,6 +379,16 @@ template<class T>
 const ics::Iterator<T>& HeapPriorityQueue<T>::Iterator::operator ++ (int) {
   if (expected_mod_count != ref_pq->mod_count)
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ++(int)");
+  Iterator *copy = new Iterator(*this);
+  // are we at the begining?
+  if (!can_erase) can_erase = true;
+  else {
+    if (it.empty() && ref_pq != nullptr)
+      ref_pq = nullptr;
+    else 
+      it.dequeue();
+  }
+  return *copy;  
 }
 
 
@@ -369,7 +401,7 @@ bool HeapPriorityQueue<T>::Iterator::operator == (const ics::Iterator<T>& rhs) c
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ==");
   if (ref_pq != rhsASI->ref_pq)
     throw ComparingDifferentIteratorsError("HeapPriorityQueue::Iterator::operator ==");
-
+  return this->it == rhsASI->it;
 }
 
 
@@ -382,6 +414,7 @@ bool HeapPriorityQueue<T>::Iterator::operator != (const ics::Iterator<T>& rhs) c
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator !=");
   if (ref_pq != rhsASI->ref_pq)
     throw ComparingDifferentIteratorsError("HeapPriorityQueue::Iterator::operator !=");
+  return !(*this == rhs);
 }
 
 
@@ -389,6 +422,9 @@ template<class T>
 T& HeapPriorityQueue<T>::Iterator::operator *() const {
   if (expected_mod_count != ref_pq->mod_count)
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator *");
+  if (it.empty() || !can_erase) 
+    throw IteratorPositionIllegal("HeapPriorityQueue::Iterator::operator * ");
+  return it.peek();
 }
 
 
