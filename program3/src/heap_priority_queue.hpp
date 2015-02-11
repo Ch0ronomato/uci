@@ -346,7 +346,9 @@ T HeapPriorityQueue<T>::Iterator::erase() {
 
   can_erase = false;
   expected_mod_count = ref_pq->mod_count;
-  throw CannotEraseError("Not implemented yet");
+  T value = it.dequeue();
+
+  // erase in actual code.
 }
 
 

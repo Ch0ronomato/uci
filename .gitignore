@@ -13,3 +13,5 @@ googletest_lib
 googletestlib
 quizonehelper
 quiztwohelper
+quiz5helper/src/q5solution.hpp
+quiz5helper/src/driver.cpp
