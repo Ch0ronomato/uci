@@ -166,13 +166,19 @@ int BSTMap<KEY,T>::size() const {
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::has_key (const KEY& element) const {
- //write code here
+  return find_key(map, element) != nullptr;
 }
 
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::has_value (const T& element) const {
- //write code here
+  ics::ArrayQueue<Entry> queue;
+  copy_to_queue(map, queue);
+  for (Entry entry : queue) {
+    if (entry.second == element)
+      return true;
+  }
+  return false;
 }
 
 
@@ -184,29 +190,11 @@ std::string BSTMap<KEY,T>::str() const {
 
 template<class KEY,class T>
 T BSTMap<KEY,T>::put(const KEY& key, const T& value) {
-  // do we have a root?
-  if (empty()) {
-    map = new TN(Entry(key, value), nullptr, nullptr);
-  } else {
-    // find our appropiate spot.
-    TN *dest = map;
-    while (!(dest->left == nullptr && dest->right == nullptr)) {
-      if (dest->value.first == key) {
-        dest->value.second = value;
-        break;
-      }
-      if (dest->value.first > key) // add to left
-        dest = dest->left;       
-      else // add to right
-        dest = dest->right;
-    }
-
-    if (dest->value.first > key) dest->left = new TN(Entry(key, value), nullptr, nullptr);
-    else dest->right = new TN(Entry(key, value), nullptr, nullptr);
-  }
-  used++;
+  int existence = (int)(has_key(key));
   mod_count++;
-  return value;
+  T to_return = insert(map, key, value);
+  used += (1 - existence);
+  return to_return;
 }
 
 template<class KEY,class T>
@@ -226,11 +214,15 @@ int BSTMap<KEY,T>::put (ics::Iterator<Entry>& start, const ics::Iterator<Entry>&
  //write code here
 }
 
-
+// we really don't want to return nullptr here.
 template<class KEY,class T>
 T& BSTMap<KEY,T>::operator [] (const KEY& key) { // for calls like map[key] = some value
   //write code here
   TN *node = find_key(map, key);
+  if (node == nullptr) {
+    put(key, T());
+    node = find_key(map, key);
+  }
   return node->value.second;
 }
 
@@ -244,7 +236,7 @@ const T& BSTMap<KEY,T>::operator [] (const KEY& key) const { // for calls like s
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::operator == (const Map<KEY,T>& rhs) const {
- //write code here
+
 }
 
 
@@ -303,7 +295,6 @@ typename BSTMap<KEY,T>::TN* BSTMap<KEY,T>::find_key (TN* root, const KEY& key) c
     if (found) break;
   }
 
-  start == nullptr ? std::cout << "nullptr" << std::endl : std::cout << "not nullptr" << std::endl;
   return start;
 }
 
@@ -316,7 +307,19 @@ bool BSTMap<KEY,T>::find_value (TN* root, const T& value) const {
 
 template<class KEY,class T>
 T& BSTMap<KEY,T>::insert (TN*& root, const KEY& key, const T& value) {
-  //write code here
+  if (root == nullptr) {
+    root = new TN(Entry(key, value), nullptr, nullptr);    //nullptr implicit for left/right subtrees
+    return root->value.second;
+  } else if (root->value.first == key) {
+    T temp = root->value.second;
+    root->value.second = value;
+    return temp;
+  }
+  else
+    if (key < root->value.first)
+      insert(root->left, key, value);
+    else
+      insert(root->right, key, value);
 }
 
 
@@ -366,7 +369,10 @@ typename BSTMap<KEY,T>::TN* BSTMap<KEY,T>::copy (TN* root) const {
 
 template<class KEY,class T>
 void BSTMap<KEY,T>::copy_to_queue (TN* root, ArrayQueue<Entry>& q) const {
- //write code here
+  if (root == nullptr) return;
+  q.enqueue(root->value);
+  copy_to_queue(root->left, q);
+  copy_to_queue(root->right, q);
 }
 
 
@@ -378,7 +384,7 @@ void BSTMap<KEY,T>::delete_BST (TN*& root) {
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::equals (TN*  root, const Map<KEY,T>& other) const {
- //write code here
+  auto & t = other.map;
 }
 
 
