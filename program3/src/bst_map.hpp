@@ -116,20 +116,20 @@ BSTMap<KEY,T>::BSTMap() {}
 template<class KEY,class T>
 BSTMap<KEY,T>::BSTMap(const BSTMap<KEY,T>& to_copy) : used(to_copy.used) {
 	// since we're coping a map, we'll do a dfs type insertion.
-	// ics::ArrayQueue<TN<Entry>> nodes(to_copy.map), in_copy;	
-	// for (TN<Entry> node : nodes)
-	// 	nodes.enqueue(node);
+	ics::ArrayQueue<TN<Entry>> nodes(to_copy.map), in_copy;	
+	for (TN<Entry> node : nodes)
+		nodes.enqueue(node);
 
-	// map = nodes.dequeue();
-	// auto current = map;
-	// in_copy.enqueue(map);
-	// while (!nodes.empty()) {
-	// 	current->left = nodes.dequeue();
-	// 	current->right = nodes.dequeue();
-	// 	in_copy.enqueue(current->left);
-	// 	in_copy.enqueue(current->right);
-	// 	current = in_copy.dequeue();
-	// }
+	map = nodes.dequeue();
+	auto current = map;
+	in_copy.enqueue(map);
+	while (!nodes.empty()) {
+		current->left = nodes.dequeue();
+		current->right = nodes.dequeue();
+		in_copy.enqueue(current->left);
+		in_copy.enqueue(current->right);
+		current = in_copy.dequeue();
+	}
 }
 
 
@@ -184,29 +184,7 @@ std::string BSTMap<KEY,T>::str() const {
 
 template<class KEY,class T>
 T BSTMap<KEY,T>::put(const KEY& key, const T& value) {
-  // do we have a root?
-  if (empty()) {
-    map = new TN(Entry(key, value), nullptr, nullptr);
-  } else {
-    // find our appropiate spot.
-    TN *dest = map;
-    while (!(dest->left == nullptr && dest->right == nullptr)) {
-      if (dest->value.first == key) {
-        dest->value.second = value;
-        break;
-      }
-      if (dest->value.first > key) // add to left
-        dest = dest->left;       
-      else // add to right
-        dest = dest->right;
-    }
-
-    if (dest->value.first > key) dest->left = new TN(Entry(key, value), nullptr, nullptr);
-    else dest->right = new TN(Entry(key, value), nullptr, nullptr);
-  }
-  used++;
-  mod_count++;
-  return value;
+ //write code here
 }
 
 template<class KEY,class T>
@@ -228,18 +206,14 @@ int BSTMap<KEY,T>::put (ics::Iterator<Entry>& start, const ics::Iterator<Entry>&
 
 
 template<class KEY,class T>
-T& BSTMap<KEY,T>::operator [] (const KEY& key) { // for calls like map[key] = some value
-  //write code here
-  TN *node = find_key(map, key);
-  return node->value.second;
+T& BSTMap<KEY,T>::operator [] (const KEY& key) {
+ //write code here
 }
 
 
 template<class KEY,class T>
-const T& BSTMap<KEY,T>::operator [] (const KEY& key) const { // for calls like some value = map[key]
-  //write code here
-  TN *node = find_key(map, key);
-  return node->value.second;
+const T& BSTMap<KEY,T>::operator [] (const KEY& key) const {
+ //write code here
 }
 
 template<class KEY,class T>
@@ -294,17 +268,7 @@ auto BSTMap<KEY,T>::end () const -> BSTMap<KEY,T>::Iterator {
 
 template<class KEY,class T>
 typename BSTMap<KEY,T>::TN* BSTMap<KEY,T>::find_key (TN* root, const KEY& key) const {
-  //write code here
-  bool found = false;
-  TN *start = root;
-  for (; !found && start != nullptr; 
-    start = (start->value.first > key ? start->left : start->right)) {
-    found = start->value.first == key;
-    if (found) break;
-  }
-
-  start == nullptr ? std::cout << "nullptr" << std::endl : std::cout << "not nullptr" << std::endl;
-  return start;
+ //write code here
 }
 
 
@@ -316,7 +280,7 @@ bool BSTMap<KEY,T>::find_value (TN* root, const T& value) const {
 
 template<class KEY,class T>
 T& BSTMap<KEY,T>::insert (TN*& root, const KEY& key, const T& value) {
-  //write code here
+ //write code here
 }
 
 
