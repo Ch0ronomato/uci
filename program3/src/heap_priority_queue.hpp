@@ -343,18 +343,35 @@ T HeapPriorityQueue<T>::Iterator::erase() {
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::erase");
   if (!can_erase)
     throw CannotEraseError("HeapPriorityQueue::Iterator::erase Iterator cursor already erased");
+  if (it.empty())
+    throw CannotEraseError("HeapPriorityQueue::Iterator::erase Iterator cursor beyond end");
 
   can_erase = false;
-  expected_mod_count = ref_pq->mod_count;
-  T value = it.dequeue();
-
+  T value = it.peek();
   // erase in actual code.
+  int index = -1;
+  for (int i = 0; i < ref_pq->size(); i++)
+    if (ref_pq->pq[i] == value) {
+      index = i;
+      break;
+    }
+  if (index > -1) {
+    ref_pq->pq[index] = ref_pq->pq[--ref_pq->used];
+    ref_pq->percolate_down(index);
+    expected_mod_count = ref_pq->mod_count;
+  }
+  return value;
 }
 
 
 template<class T>
 std::string HeapPriorityQueue<T>::Iterator::str() const {
   std::ostringstream answer;
+  answer << *(this->ref_pq);
+  answer << "(current = ";
+  answer << it;
+  answer << ")";
+  return answer.str();
 }
 
 
@@ -365,13 +382,10 @@ const ics::Iterator<T>& HeapPriorityQueue<T>::Iterator::operator ++ () {
   
   // are we at the begining?
   if (!can_erase) can_erase = true;
-  else {
-    if (it.empty() && ref_pq != nullptr)
-      ref_pq = nullptr;
-    else 
-      it.dequeue();
-  }
-
+  if (it.empty() && ref_pq != nullptr)
+    ref_pq = nullptr;
+  else 
+    it.dequeue();
   return *this;
 }
 
@@ -384,12 +398,10 @@ const ics::Iterator<T>& HeapPriorityQueue<T>::Iterator::operator ++ (int) {
   Iterator *copy = new Iterator(*this);
   // are we at the begining?
   if (!can_erase) can_erase = true;
-  else {
-    if (it.empty() && ref_pq != nullptr)
-      ref_pq = nullptr;
-    else 
-      it.dequeue();
-  }
+  if (it.empty() && ref_pq != nullptr)
+    ref_pq = nullptr;
+  else 
+    it.dequeue();
   return *copy;  
 }
 
@@ -434,6 +446,7 @@ template<class T>
 T* HeapPriorityQueue<T>::Iterator::operator ->() const {
   if (expected_mod_count !=  ref_pq->mod_count)
     throw ConcurrentModificationError("HeapPriorityQueue::Iterator::operator ->");
+  return &it.peek();
 }
 
 /**

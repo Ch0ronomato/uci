@@ -115,52 +115,38 @@ BSTMap<KEY,T>::BSTMap() {}
 
 template<class KEY,class T>
 BSTMap<KEY,T>::BSTMap(const BSTMap<KEY,T>& to_copy) : used(to_copy.used) {
-	// since we're coping a map, we'll do a dfs type insertion.
-	// ics::ArrayQueue<TN<Entry>> nodes(to_copy.map), in_copy;	
-	// for (TN<Entry> node : nodes)
-	// 	nodes.enqueue(node);
-
-	// map = nodes.dequeue();
-	// auto current = map;
-	// in_copy.enqueue(map);
-	// while (!nodes.empty()) {
-	// 	current->left = nodes.dequeue();
-	// 	current->right = nodes.dequeue();
-	// 	in_copy.enqueue(current->left);
-	// 	in_copy.enqueue(current->right);
-	// 	current = in_copy.dequeue();
-	// }
+	map = to_copy.copy(to_copy.map);	
 }
 
 
 template<class KEY,class T>
 BSTMap<KEY,T>::BSTMap(ics::Iterator<Entry>& start, const ics::Iterator<Entry>& stop) {
- //write code here
+	put(start,stop);
 }
 
 
 template<class KEY,class T>
 BSTMap<KEY,T>::BSTMap(std::initializer_list<Entry> il) {
- //write code here
+ 	for (Entry entry : il)
+ 		put(entry.first, entry.second);
 }
 
 
 template<class KEY,class T>
 BSTMap<KEY,T>::~BSTMap() {
- //write code here
+	// delete_BST(map);
 }
 
 
 template<class KEY,class T>
-inline bool BSTMap<KEY,T>::empty() const
-{
+inline bool BSTMap<KEY,T>::empty() const {
 	return used == 0;
 }
 
 
 template<class KEY,class T>
 int BSTMap<KEY,T>::size() const {
- return used;
+	return used;
 }
 
 
@@ -184,7 +170,7 @@ bool BSTMap<KEY,T>::has_value (const T& element) const {
 
 template<class KEY,class T>
 std::string BSTMap<KEY,T>::str() const {
- //write code here
+	return string_rotated(map, "");
 }
 
 
@@ -199,19 +185,32 @@ T BSTMap<KEY,T>::put(const KEY& key, const T& value) {
 
 template<class KEY,class T>
 T BSTMap<KEY,T>::erase(const KEY& key) {
- //write code here
+	// erase will already throw an error
+	// so we'll let remove do that.
+	if (find_key(map, key) != nullptr) {
+		mod_count--;
+		used--;
+		return remove(map, key);
+	} else
+		throw KeyError("BSTMap::remove no node");
 }
 
 
 template<class KEY,class T>
 void BSTMap<KEY,T>::clear() {
- //write code here
+	delete_BST(map);
 }
 
 
 template<class KEY,class T>
 int BSTMap<KEY,T>::put (ics::Iterator<Entry>& start, const ics::Iterator<Entry>& stop) {
- //write code here
+	int count = 0;
+	while (start != stop) {
+		put((*start).first, (*start).second);
+		count++;
+		start++;
+	}
+	return count;
 }
 
 // we really don't want to return nullptr here.
@@ -236,25 +235,32 @@ const T& BSTMap<KEY,T>::operator [] (const KEY& key) const { // for calls like s
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::operator == (const Map<KEY,T>& rhs) const {
-
+	return equals(map, rhs);
 }
 
 
 template<class KEY,class T>
 BSTMap<KEY,T>& BSTMap<KEY,T>::operator = (const BSTMap<KEY,T>& rhs) {
- //write code here
+	if (!empty()) clear();
+	put(rhs.ibegin(), rhs.iend());
+	return (*this);
 }
 
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::operator != (const Map<KEY,T>& rhs) const {
- //write code here
+	return !((*this) == rhs);
 }
 
 
 template<class KEY,class T>
 std::ostream& operator << (std::ostream& outs, const BSTMap<KEY,T>& m) {
- //write code here
+	outs << "map[";
+	if (!m.empty()) {
+		outs << m.str();
+	}
+	outs << "]";
+	return outs;
 }
 
 
@@ -301,7 +307,12 @@ typename BSTMap<KEY,T>::TN* BSTMap<KEY,T>::find_key (TN* root, const KEY& key) c
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::find_value (TN* root, const T& value) const {
- //write code here
+	bool found = false;	
+	ArrayQueue<Entry> q;
+	copy_to_queue(root, q);
+	while (!q.empty() && !found)
+		found = (q.dequeue().second == value); 
+	return found;
 }
 
 
@@ -363,7 +374,15 @@ T BSTMap<KEY,T>::remove (TN*& root, const KEY& key) {
 
 template<class KEY,class T>
 typename BSTMap<KEY,T>::TN* BSTMap<KEY,T>::copy (TN* root) const {
- //write code here
+	//write code here
+	if (root == nullptr) 
+		return nullptr;
+	else {
+		TN *to_return(root);
+		to_return->left = copy(root->left);
+		to_return->right = copy(root->right);
+		return to_return;
+	}
 }
 
 
@@ -378,25 +397,52 @@ void BSTMap<KEY,T>::copy_to_queue (TN* root, ArrayQueue<Entry>& q) const {
 
 template<class KEY,class T>
 void BSTMap<KEY,T>::delete_BST (TN*& root) {
- //write code here
+	while (!empty()) {
+		erase(map->value.first);
+	}
 }
 
-
+/**
+ * 
+ * Equality of two maps (NOT BST's) depends on existence of keys
+ * and values. Two maps are equal if they contain the same keys and 
+ * values. This is structure agnostic. 
+ */
 template<class KEY,class T>
 bool BSTMap<KEY,T>::equals (TN*  root, const Map<KEY,T>& other) const {
-  auto & t = other.map;
+	if (size() != other.size())
+		return false;
+	bool to_return = true;
+	for (auto &iter = other.ibegin(); iter != other.iend(); iter++) {
+		TN *node = find_key(map, iter->first);
+		if (node == nullptr || node->value.second != iter->second) {
+			to_return = false;
+			break;
+		}
+	}
+	return to_return;
 }
 
 
 template<class KEY,class T>
 std::string BSTMap<KEY,T>::string_rotated(TN* root, std::string indent) const {
- //write code here
+	if (root == nullptr)
+    return "";
+  else {
+  	std::stringstream outs;
+    outs << string_rotated(root->right, indent+"..");
+    outs << indent << root->value.first << "->" << root->value.second;
+    outs << string_rotated(root->left, indent+"..");
+    return outs.str();
+  }
 }
 
 
 template<class KEY,class T>
-BSTMap<KEY,T>::Iterator::Iterator(BSTMap<KEY,T>* iterate_over, bool begin) : it(), ref_map(iterate_over) {
- //write code here
+BSTMap<KEY,T>::Iterator::Iterator(BSTMap<KEY,T>* iterate_over, bool begin) : it(), ref_map(iterate_over)
+	, expected_mod_count(iterate_over->mod_count) {
+	if (begin) 
+		iterate_over->copy_to_queue(iterate_over->map, it);
 }
 
 
@@ -407,8 +453,9 @@ BSTMap<KEY,T>::Iterator::Iterator(const Iterator& i) :
 
 
 template<class KEY,class T>
-BSTMap<KEY,T>::Iterator::~Iterator()
-{}
+BSTMap<KEY,T>::Iterator::~Iterator() {
+	// delete ref_map;
+}
 
 
 template<class KEY,class T>
@@ -420,7 +467,12 @@ auto BSTMap<KEY,T>::Iterator::erase() -> Entry {
  if (it.empty())
    throw CannotEraseError("BSTMap::Iterator::erase Iterator cursor beyond data structure");
 
- //write code here
+	// delete the next node.
+	can_erase = false;
+	Entry to_delete = it.dequeue();
+	ref_map->erase(to_delete.first);
+	expected_mod_count = ref_map->mod_count;
+	return to_delete;
 }
 
 
@@ -438,7 +490,13 @@ auto  BSTMap<KEY,T>::Iterator::operator ++ () -> const ics::Iterator<ics::pair<K
  if (expected_mod_count != ref_map->mod_count)
    throw ConcurrentModificationError("BSTMap::Iterator::operator ++");
 
- //write code here
+  if (!can_erase) can_erase = true;
+  else {
+    if (!it.empty())
+      it.dequeue();
+  }
+
+  return *this;
 }
 
 
@@ -448,7 +506,13 @@ auto BSTMap<KEY,T>::Iterator::operator ++ (int) -> const ics::Iterator<ics::pair
  if (expected_mod_count != ref_map->mod_count)
    throw ConcurrentModificationError("BSTMap::Iterator::operator ++(int)");
 
- //write code here
+	Iterator *copy = new Iterator(*this);
+  if (!can_erase) can_erase = true;
+  else {
+    if (!it.empty())
+      it.dequeue();
+  }
+  return *copy;  
 }
 
 
@@ -461,22 +525,21 @@ bool BSTMap<KEY,T>::Iterator::operator == (const ics::Iterator<Entry>& rhs) cons
    throw ConcurrentModificationError("BSTMap::Iterator::operator ==");
  if (ref_map != rhsASI->ref_map)
    throw ComparingDifferentIteratorsError("BSTMap::Iterator::operator ==");
-
- //write code here
+	return it == rhsASI->it;
 }
 
 
 template<class KEY,class T>
 bool BSTMap<KEY,T>::Iterator::operator != (const ics::Iterator<Entry>& rhs) const {
- const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
- if (rhsASI == 0)
-   throw IteratorTypeError("BSTMap::Iterator::operator !=");
- if (expected_mod_count != ref_map->mod_count)
-   throw ConcurrentModificationError("BSTMap::Iterator::operator !=");
- if (ref_map != rhsASI->ref_map)
-   throw ComparingDifferentIteratorsError("BSTMap::Iterator::operator !=");
+	const Iterator* rhsASI = dynamic_cast<const Iterator*>(&rhs);
+	if (rhsASI == 0)
+		throw IteratorTypeError("BSTMap::Iterator::operator !=");
+	if (expected_mod_count != ref_map->mod_count)
+		throw ConcurrentModificationError("BSTMap::Iterator::operator !=");
+	if (ref_map != rhsASI->ref_map)
+		throw ComparingDifferentIteratorsError("BSTMap::Iterator::operator !=");
 
- //write code here
+	return it != rhsASI->it;
 }
 
 
@@ -488,7 +551,7 @@ ics::pair<KEY,T>& BSTMap<KEY,T>::Iterator::operator *() const {
  if (!can_erase || it.empty())
    throw IteratorPositionIllegal("BSTMap::Iterator::operator * Iterator illegal: exhausted");
 
- //write code here
+	return it.peek();
 }
 
 
@@ -500,7 +563,8 @@ ics::pair<KEY,T>* BSTMap<KEY,T>::Iterator::operator ->() const {
  if (!can_erase || it.empty())
    throw IteratorPositionIllegal("BSTMap::Iterator::operator -> Iterator illegal: exhausted");
 
- //write code here
+ 	//write code here
+	return &it.peek();
 }
 
 
