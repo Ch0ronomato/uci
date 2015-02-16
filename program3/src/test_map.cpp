@@ -1,4 +1,4 @@
-/* #include <iostream>
+#include <iostream>
 #include <sstream>
 #include <algorithm>                 // std::random_shuffle
 #include "ics46goody.hpp"
@@ -804,4 +804,3 @@ int main(int argc, char **argv) {
  ::testing::InitGoogleTest(&argc, argv);
  return RUN_ALL_TESTS();  
 }
- */

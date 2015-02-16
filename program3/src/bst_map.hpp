@@ -115,7 +115,7 @@ BSTMap<KEY,T>::BSTMap() {}
 
 template<class KEY,class T>
 BSTMap<KEY,T>::BSTMap(const BSTMap<KEY,T>& to_copy) : used(to_copy.used) {
-	map = to_copy.copy(to_copy.map);	
+	map = copy(to_copy.map);	
 }
 
 
@@ -176,11 +176,9 @@ std::string BSTMap<KEY,T>::str() const {
 
 template<class KEY,class T>
 T BSTMap<KEY,T>::put(const KEY& key, const T& value) {
-  int existence = (int)(has_key(key));
+   used += has_key(key)? 0 : 1;
   mod_count++;
-  T to_return = insert(map, key, value);
-  used += (1 - existence);
-  return to_return;
+  return insert(map, key, value);
 }
 
 template<class KEY,class T>
@@ -204,12 +202,9 @@ void BSTMap<KEY,T>::clear() {
 
 template<class KEY,class T>
 int BSTMap<KEY,T>::put (ics::Iterator<Entry>& start, const ics::Iterator<Entry>& stop) {
-	int count = 0;
-	while (start != stop) {
+	int count;
+	for (count = 0;start != stop;count++,start++) 
 		put((*start).first, (*start).second);
-		count++;
-		start++;
-	}
 	return count;
 }
 
@@ -225,7 +220,7 @@ T& BSTMap<KEY,T>::operator [] (const KEY& key) { // for calls like map[key] = so
   return node->value.second;
 }
 
-
+// shaun has checked up to here.
 template<class KEY,class T>
 const T& BSTMap<KEY,T>::operator [] (const KEY& key) const { // for calls like some value = map[key]
   //write code here
