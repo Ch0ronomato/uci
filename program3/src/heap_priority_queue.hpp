@@ -46,8 +46,6 @@ template<class T> class HeapPriorityQueue : public PriorityQueue<T>  {
     virtual ics::Iterator<T>& ibegin() const;
     virtual ics::Iterator<T>& iend  () const;
 
-    // TODO: Delete this
-    void easyPreOrderPrint(std::string indent, int i);
     class Iterator : public ics::Iterator<T> {
       public:
         //KLUDGE should be callable only in begin/end
@@ -88,18 +86,6 @@ template<class T> class HeapPriorityQueue : public PriorityQueue<T>  {
     void percolate_up   (int i);
     void percolate_down (int i);
   };
-
-
-template<class T>
-void HeapPriorityQueue<T>::easyPreOrderPrint(std::string indent = "", int i = 0) {
-  // std::cout << indent << pq[i] << std::endl;
-  // if (left_child(i) < used) easyPreOrderPrint(indent + " ", left_child(i));  
-  // if (right_child(i) < used) easyPreOrderPrint(indent + " ", right_child(i));
-  std::cout << "-----------DFS FORM----------------" << std::endl;
-  for (int i = 0; i < used; i++) 
-    i + 1 == used ? std::cout << pq[i] : std::cout << pq[i] << ",";
-  std::cout << std::endl;
-}
 
 template<class T>
 HeapPriorityQueue<T>::HeapPriorityQueue(bool (*agt)(const T& a, const T& b)) 
@@ -180,7 +166,7 @@ std::string HeapPriorityQueue<T>::str() const {
 
 template<class T>
 int HeapPriorityQueue<T>::enqueue(const T& element) {
-  this->ensure_length(used + 1);
+  ensure_length(used + 1);
   pq[used] = element;
   // re heapify
   percolate_up(used++);
@@ -191,7 +177,7 @@ int HeapPriorityQueue<T>::enqueue(const T& element) {
 
 template<class T>
 T HeapPriorityQueue<T>::dequeue() {
-  if (this->empty())
+  if (empty())
     throw EmptyError("HeapPriorityQueue::dequeue");
   T val = peek();
   // make the max the root, percolate down.
@@ -214,7 +200,6 @@ int HeapPriorityQueue<T>::enqueue(ics::Iterator<T>& start, const ics::Iterator<T
   int count = 0;
   for (; start != stop; ++start)
     count += enqueue(*start);
-
   return count;
 }
 
@@ -224,7 +209,7 @@ HeapPriorityQueue<T>& HeapPriorityQueue<T>::operator = (const HeapPriorityQueue<
   if (rhs == *this)
     return *this;
   clear();
-  this->ensure_length(rhs.used);
+  ensure_length(rhs.used);
   gt   = rhs.gt;  //gt is in the base class
   enqueue(rhs.ibegin(), rhs.iend());
   ++mod_count;
@@ -236,9 +221,7 @@ template<class T>
 bool HeapPriorityQueue<T>::operator == (const PriorityQueue<T>& rhs) const {
   if (this == &rhs)
     return true;
-  if (used != rhs.size())
-    return false;
-  if (gt != rhs.gt)
+  if (used != rhs.size()||gt != rhs.gt)
     return false;
   //KLUDGE: should check for same == function used to prioritize, but cannot unless
   //  it is made part of the PriorityQueue class (should it be? protected)?
@@ -301,9 +284,6 @@ auto HeapPriorityQueue<T>::end () const -> HeapPriorityQueue<T>::Iterator {
   return Iterator(const_cast<HeapPriorityQueue<T>*>(this),false);
 }
 
-
-
-
 //Insert Iterator constructor/methods here: see array_priority_queue.hpp
 
 template<class T>
@@ -334,7 +314,8 @@ HeapPriorityQueue<T>::Iterator::Iterator(const Iterator& i)
 
 
 template<class T>
-HeapPriorityQueue<T>::Iterator::~Iterator() {}
+HeapPriorityQueue<T>::Iterator::~Iterator() {
+}
 
 
 template<class T>
@@ -349,17 +330,12 @@ T HeapPriorityQueue<T>::Iterator::erase() {
   can_erase = false;
   T value = it.peek();
   // erase in actual code.
-  int index = -1;
-  for (int i = 0; i < ref_pq->size(); i++)
-    if (ref_pq->pq[i] == value) {
-      index = i;
-      break;
-    }
-  if (index > -1) {
-    ref_pq->pq[index] = ref_pq->pq[--ref_pq->used];
-    ref_pq->percolate_down(index);
-    expected_mod_count = ref_pq->mod_count;
-  }
+	int i;
+	for (i = 0; i < ref_pq->size() && ref_pq->pq[i] != value; i++)
+		;
+	ref_pq->pq[i] = ref_pq->pq[--ref_pq->used];
+	ref_pq->percolate_down(i);
+	expected_mod_count = ref_pq->mod_count;
   return value;
 }
 
@@ -367,7 +343,7 @@ T HeapPriorityQueue<T>::Iterator::erase() {
 template<class T>
 std::string HeapPriorityQueue<T>::Iterator::str() const {
   std::ostringstream answer;
-  answer << *(this->ref_pq);
+  answer << *ref_pq;
   answer << "(current = ";
   answer << it;
   answer << ")";
@@ -481,7 +457,8 @@ template<class T>
 void HeapPriorityQueue<T>::percolate_up(int i) {
   // find parent and go up.
   int parentIndex = parent(i);
-  if (is_root(i) || !gt(pq[i], pq[parentIndex])) return;
+  if (is_root(i) || !gt(pq[i], pq[parentIndex])) 
+	  return;
   std::swap(pq[parentIndex], pq[i]);
   percolate_up(parentIndex); // parentIndex now become's i.
 }
@@ -497,8 +474,8 @@ void HeapPriorityQueue<T>::percolate_down(int i) {
   int higher_priority = gt(pq[left_child(i)], pq[right_child(i)]) ? left_child(i) : right_child(i);
 
   // continuation step
-  if (!gt(pq[higher_priority], pq[i])) return;
-  else {
+  if (gt(pq[higher_priority], pq[i])) 
+  {
     std::swap(pq[higher_priority], pq[i]);
     percolate_down(higher_priority);
   }
