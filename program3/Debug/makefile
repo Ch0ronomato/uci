@@ -44,7 +44,7 @@ all: program3.exe
 program3.exe: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MinGW C++ Linker'
-	g++ -L"C:\Users\Ian\workspace\courselib\Debug" -L"C:\Users\Ian\workspace\googletestlib\make" -o "program3.exe" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L"C:\Users\Shaun\OneDrive\Eclipse\workspace\courselib\Debug" -L"C:\Users\Shaun\OneDrive\Eclipse\workspace\googletestlib\make" -o "program3.exe" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
