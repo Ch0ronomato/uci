@@ -1,0 +1,2 @@
+working command:
+gcc -lpthread csapp.c shellex.c
