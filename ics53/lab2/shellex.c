@@ -1,8 +1,3 @@
-
-
-
-
-
 /* $begin shellmain */
 #include "csapp.h"
 #define MAXARGS   128
@@ -62,8 +57,7 @@ void eval(char *cmdline)
     int bg;              /* Should the job run in bg or fg? */
     pid_t pid;           /* Process id */
     
-	RedirectionPaths rpath = init_r_paths();
-	
+	RedirectionPaths rpath = init_r_paths();	
 	
     strcpy(buf, cmdline);
     bg = parseline(buf, argv, &rpath); 
