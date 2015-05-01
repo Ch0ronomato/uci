@@ -13,13 +13,13 @@ RedirectionPaths init_r_paths(){
 	rpath.in = NULL;
 	rpath.out = NULL;
 	rpath.err = NULL;
+	return rpath;
 }
 
 /* function prototypes */
 void eval(char *cmdline);
 int parseline(char *buf, char **argv, RedirectionPaths*);
 int builtin_command(char **argv);
-
 int redirect_stream(int, char*);
 
 void bgreap_handle(int sig){
@@ -57,13 +57,13 @@ void eval(char *cmdline)
     int bg;              /* Should the job run in bg or fg? */
     pid_t pid;           /* Process id */
     
-	RedirectionPaths rpath = init_r_paths();	
+    RedirectionPaths rpath = init_r_paths();	
 	
     strcpy(buf, cmdline);
     bg = parseline(buf, argv, &rpath); 
 	
-	if(rpath.out != NULL)
-		printf("stdout redirection: %s\n",rpath.out);
+    if(rpath.out != NULL)
+        printf("stdout redirection: %s\n",rpath.out);
 	
     if (argv[0] == NULL)  
 		return;   /* Ignore empty lines */
@@ -75,11 +75,12 @@ void eval(char *cmdline)
 		if(rpath.out != NULL)
 			redirect_stream(1,rpath.out);
 		if(rpath.err != NULL)
-			redirect_stream(2,rpath.err);
-	    if (execve(argv[0], argv, environ) < 0) {
-		printf("%s: Command not found.\n", argv[0]);
-		exit(0);
-	    }
+		    redirect_stream(2,rpath.err);
+	        if (execve(argv[0], argv, environ) < 0) {
+		        printf("%s: Command not found.\n", argv[0]);
+		        exit(0);
+	        }
+            }
 	}
 
 	/* Parent waits for foreground job to terminate */
@@ -90,7 +91,7 @@ void eval(char *cmdline)
 	}
 	else
 	    printf("%d %s", pid, cmdline);
-    }
+    
     return;
 }
 
@@ -171,6 +172,10 @@ int redirect_stream(int stream, char* filename){
 	switch(stream){
 	case 0:
 		file = open(filename,O_RDONLY);
+        if (file <= 0) {
+            printf("You done goofed. %s does not exist\n", filename);
+            return -1;
+        }
 		break;
 	case 1:
 		file = open(filename,O_WRONLY|O_CREAT,0666);
