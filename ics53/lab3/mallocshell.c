@@ -11,6 +11,7 @@ typedef struct memcmd_s
 {
 	char *raw_command;
 	char *args;
+	int argc;
 	options_t command;
 } memcmd_t;
 
@@ -30,6 +31,7 @@ memcmd_t init_command() {
 	memcmd_t to_return;
 	to_return.raw_command = NULL;
 	to_return.args = NULL;
+	to_return.argc = 0;
 	to_return.command = NA;
 	return to_return;
 }
@@ -61,8 +63,9 @@ void eval(char *cmdline)
     cmdobj.raw_command = cmdline;
 
     strcpy(buf, cmdline);
-    parseline(buf, argv, &cmdobj); 
+    if (!parseline(buf, argv, &cmdobj)) { return; } // Don't do anything.
 	
+
     return;
 }
 /* $end eval */
@@ -73,7 +76,7 @@ int parseline(char *buf, char **argv, memcmd_t *rpath)
 {
     char *delim;         /* Points to first space delimiter */
     int argc;            /* Number of args */
-    int bg;              /* Background job? */
+    int valid = 1; 		 /* Return quit */
 
     buf[strlen(buf)-1] = ' ';  /* Replace trailing '\n' with space */
     while (*buf && (*buf == ' ')) /* Ignore leading spaces */
@@ -81,41 +84,25 @@ int parseline(char *buf, char **argv, memcmd_t *rpath)
 
     /* Build the argv list */
     argc = 0;
-  //   while ((delim = strchr(buf, ' '))) {
-		// *delim = '\0';
-		
-		// if(strcmp(buf,"<")==0){
-		// 	mode = PT_STDIN;
-		// }else if(strcmp(buf,">")==0){
-		// 	mode = PT_STDOUT;
-		// }else if(strcmp(buf,"2>")==0){
-		// 	mode = PT_STDERR;
-		// }else{
-		// 	switch(mode){
-		// 	case PT_ARG:
-		// 		argv[argc++] = buf;
-		// 		break;
-		// 	case PT_STDIN:
-		// 		rpath->in = buf;
-		// 		break;
-		// 	case PT_STDOUT:
-		// 		rpath->out = buf;
-		// 		break;
-		// 	case PT_STDERR:
-		// 		rpath->err = buf;
-		// 		break;
-		// 	}
-		// 	mode = PT_ARG;
-		// }
-		
-		// buf = delim + 1;
-		// while (*buf && (*buf == ' ')) /* Ignore spaces */
-		// 	buf++;
-  //   }
-    argv[argc] = NULL;
-    
-    if (argc == 0)  /* Ignore blank line */
-	return 1;
+    while ((delim = strchr(buf, ' '))) {
+		/* Replace the current index with the null terminator */
+		/* so strcmp stops at it. */
+		*delim = '\0'; 
 
-    return bg;
+		if (!strcmp(buf, "allocate")) { printf("Allocating\n"); }
+		else if (!strcmp(buf, "free")) { printf("Freeing\n"); }
+		else if (!strcmp(buf, "blocklist")) { printf("blocklist-ing\n"); }
+		else if (!strcmp(buf, "writeheap")) { printf("writeheap-ing\n"); }
+		else if (!strcmp(buf, "printheap")) { printf("printheap-ing\n"); }
+		else if (!strcmp(buf, "bestfit")) { printf("Best fit\n"); }
+		else if (!strcmp(buf, "firstfit")) { printf("First fit\n"); }
+		else if (!strcmp(buf, "quit")) { printf("Quiting\n"); exit(0); }
+		else { printf("Invalid command!\n"); valid = 0; } /* enter some error state. */
+		
+		buf = delim + 1; /* progression step, next character. */
+		while (*buf && (*buf == ' ')) /* Ignore spaces */
+			buf++;
+    }
+    argv[argc] = NULL;
+    return valid;
 }
