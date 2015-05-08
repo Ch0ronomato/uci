@@ -25,7 +25,7 @@ static char *mem_max_addr; /* Max legal heap addr plus 1*/
 /* 
  * mem_init - Initialize the memory system model
  */
-void mem_init(void)
+void *mem_init(void)
 {
     mem_heap = (char *)Malloc(MAX_HEAP);
     mem_brk = (char *)mem_heap;               

@@ -1,5 +1,9 @@
 /* $begin shellmain */
+#include <stdio.h>
+#include <string.h>
 #include "csapp.h"
+#include "mm.h"
+
 #define MAXARGS   128
 
 typedef enum {ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA} options_t;
@@ -15,7 +19,7 @@ memcmd_t init_command();
 void eval(char *cmdline);
 int parseline(char *buf, char **argv, memcmd_t*);
 int allocate(int size, int lastId); /* Allocates ${size} blocks and returns next id ({$lastId} + 1) */
-int free(int id); /* Frees the memory at id ${id} */
+int freeblock(int id); /* Frees the memory at id ${id} */
 void blocklist(); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
 int writelist(int id, char data, int n); /* Will write ${data} ${n} times at mem pos ${id} */
 void printlist(int id, int n); /* Will print data at mem pos ${id} ${n} times */
@@ -61,65 +65,53 @@ void eval(char *cmdline)
 	
     return;
 }
-
-/* If first arg is a builtin command, run it and return true */
-int builtin_command(char **argv) 
-{
-    if (!strcmp(argv[0], "quit")) /* quit command */
-		exit(0);  
-    if (!strcmp(argv[0], "&"))    /* Ignore singleton & */
-		return 1;
-    return 0;                     /* Not a builtin command */
-}
 /* $end eval */
 
 /* $begin parseline */
 /* parseline - Parse the command line and build the argv array */
-int parseline(char *buf, char **argv, RedirectionPaths *rpath) 
+int parseline(char *buf, char **argv, memcmd_t *rpath) 
 {
     char *delim;         /* Points to first space delimiter */
     int argc;            /* Number of args */
     int bg;              /* Background job? */
-	
-	ParseMode mode = PT_ARG;
-	
+
     buf[strlen(buf)-1] = ' ';  /* Replace trailing '\n' with space */
     while (*buf && (*buf == ' ')) /* Ignore leading spaces */
 		buf++;
 
     /* Build the argv list */
     argc = 0;
-    while ((delim = strchr(buf, ' '))) {
-		*delim = '\0';
+  //   while ((delim = strchr(buf, ' '))) {
+		// *delim = '\0';
 		
-		if(strcmp(buf,"<")==0){
-			mode = PT_STDIN;
-		}else if(strcmp(buf,">")==0){
-			mode = PT_STDOUT;
-		}else if(strcmp(buf,"2>")==0){
-			mode = PT_STDERR;
-		}else{
-			switch(mode){
-			case PT_ARG:
-				argv[argc++] = buf;
-				break;
-			case PT_STDIN:
-				rpath->in = buf;
-				break;
-			case PT_STDOUT:
-				rpath->out = buf;
-				break;
-			case PT_STDERR:
-				rpath->err = buf;
-				break;
-			}
-			mode = PT_ARG;
-		}
+		// if(strcmp(buf,"<")==0){
+		// 	mode = PT_STDIN;
+		// }else if(strcmp(buf,">")==0){
+		// 	mode = PT_STDOUT;
+		// }else if(strcmp(buf,"2>")==0){
+		// 	mode = PT_STDERR;
+		// }else{
+		// 	switch(mode){
+		// 	case PT_ARG:
+		// 		argv[argc++] = buf;
+		// 		break;
+		// 	case PT_STDIN:
+		// 		rpath->in = buf;
+		// 		break;
+		// 	case PT_STDOUT:
+		// 		rpath->out = buf;
+		// 		break;
+		// 	case PT_STDERR:
+		// 		rpath->err = buf;
+		// 		break;
+		// 	}
+		// 	mode = PT_ARG;
+		// }
 		
-		buf = delim + 1;
-		while (*buf && (*buf == ' ')) /* Ignore spaces */
-			buf++;
-    }
+		// buf = delim + 1;
+		// while (*buf && (*buf == ' ')) /* Ignore spaces */
+		// 	buf++;
+  //   }
     argv[argc] = NULL;
     
     if (argc == 0)  /* Ignore blank line */

@@ -1,0 +1,3 @@
+gcc -pthread -o memshell csapp.c memlib.c mm.c mallocshell.c
+
+you also need to make a config file, which is retarded. That's why I included mine. 
