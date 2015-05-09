@@ -1,5 +1,6 @@
 /* $begin shellmain */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "csapp.h"
 #include "mm.h"
@@ -10,7 +11,7 @@ typedef enum {ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA} opti
 typedef struct memcmd_s
 {
 	char *raw_command;
-	char *args;
+	char **args;
 	int argc;
 	options_t command;
 } memcmd_t;
@@ -61,6 +62,7 @@ void eval(char *cmdline)
     
     memcmd_t cmdobj = init_command();
     cmdobj.raw_command = cmdline;
+    cmdobj.args = argv;
 
     strcpy(buf, cmdline);
     if (!parseline(buf, argv, &cmdobj)) { return; } // Don't do anything.
@@ -89,20 +91,27 @@ int parseline(char *buf, char **argv, memcmd_t *rpath)
 		/* so strcmp stops at it. */
 		*delim = '\0'; 
 
-		if (!strcmp(buf, "allocate")) { printf("Allocating\n"); }
-		else if (!strcmp(buf, "free")) { printf("Freeing\n"); }
-		else if (!strcmp(buf, "blocklist")) { printf("blocklist-ing\n"); }
-		else if (!strcmp(buf, "writeheap")) { printf("writeheap-ing\n"); }
-		else if (!strcmp(buf, "printheap")) { printf("printheap-ing\n"); }
-		else if (!strcmp(buf, "bestfit")) { printf("Best fit\n"); }
-		else if (!strcmp(buf, "firstfit")) { printf("First fit\n"); }
+		if (!strcmp(buf, "allocate")) { rpath->command = ALLOC; }
+		else if (!strcmp(buf, "free")) { rpath->command = FREE; }
+		else if (!strcmp(buf, "blocklist")) { rpath->command = BLOCKLIST; }
+		else if (!strcmp(buf, "writeheap")) { rpath->command = HWRITE; }
+		else if (!strcmp(buf, "printheap")) { rpath->command = HREAD; }
+		else if (!strcmp(buf, "bestfit")) { rpath->command = BESTFIT; }
+		else if (!strcmp(buf, "firstfit")) { rpath->command = FIRSTFIT; }
 		else if (!strcmp(buf, "quit")) { printf("Quiting\n"); exit(0); }
-		else { printf("Invalid command!\n"); valid = 0; } /* enter some error state. */
+		else { 
+			if (rpath->command != NA) { /* Argument */
+				rpath->args[rpath->argc] = malloc(sizeof(char));
+				strcpy(rpath->args[rpath->argc++], buf);
+			}
+			else /* enter some error state. */
+				valid = 0;
+		}
 		
 		buf = delim + 1; /* progression step, next character. */
 		while (*buf && (*buf == ' ')) /* Ignore spaces */
 			buf++;
     }
-    argv[argc] = NULL;
+    rpath->args[rpath->argc] = NULL;
     return valid;
 }
