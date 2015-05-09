@@ -1,3 +1,6 @@
 gcc -pthread -o memshell csapp.c memlib.c mm.c mallocshell.c
 
 you also need to make a config file, which is retarded. That's why I included mine. 
+
+The csapp website just uploaded the config file Harris wants us to use, so I added it instead :)
+-sean
