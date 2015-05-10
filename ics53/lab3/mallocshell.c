@@ -7,7 +7,7 @@
 
 #define MAXARGS   128
 
-typedef enum {ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA} options_t;
+typedef enum { ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA } options_t;
 typedef struct memcmd_s {
 	char *raw_command;
 	char **args;
@@ -32,7 +32,7 @@ int freeblock(int id); /* Frees the memory at id ${id} */
 void blocklist(); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
 int writeheap(int id, char data, int n); /* Will write ${data} ${n} times at mem pos ${id} */
 void printlist(int id, int n); /* Will print data at mem pos ${id} ${n} times */
-int switchfit(int type); /* Will switch memory location algorithm. 0 is firstfit, 1 is bestfit */ 
+int switchfit(int type); /* Will switch memory location algorithm. 0 is firstfit, 1 is bestfit */
 static void *best_fit(size_t asize); /* Implementation of the best fit memory management algorithm */
 
 memcmd_t init_command() {
@@ -45,59 +45,59 @@ memcmd_t init_command() {
 }
 
 int main() {
-    char cmdline[MAXLINE]; /* Command line */
-    heapblock_t *list = malloc(sizeof(heapblock_t));
-    list->id = last->size = last->allocated = 0;
-    list->bp = NULL;
-    list->next = NULL;
-    while (1) {
+	char cmdline[MAXLINE]; /* Command line */
+	heapblock_t *list = malloc(sizeof(heapblock_t));
+	list->id = last->size = last->allocated = 0;
+	list->bp = NULL;
+	list->next = NULL;
+	while (1) {
 		/* Read */
-		printf("> ");                   
-		Fgets(cmdline, MAXLINE, stdin); 
+		printf("> ");
+		Fgets(cmdline, MAXLINE, stdin);
 		if (feof(stdin))
-		    exit(0);
+			exit(0);
 
 		/* Evaluate */
 		eval(cmdline, list);
-    } 
+	}
 }
 /* $end shellmain */
-  
+
 /* $begin eval */
 /* eval - Evaluate a command line */
 void eval(char *cmdline, heapblock_t *list) {
-    char *argv[MAXARGS]; /* Argument list execve() */
-    char buf[MAXLINE];   /* Holds modified command line */
-    
-    memcmd_t cmdobj = init_command();
-    cmdobj.raw_command = cmdline;
-    cmdobj.args = argv;
+	char *argv[MAXARGS]; /* Argument list execve() */
+	char buf[MAXLINE];   /* Holds modified command line */
 
-    strcpy(buf, cmdline);
-    if (!parseline(buf, argv, &cmdobj)) { return; } // Don't do anything.
-    operate(cmdobj, list);
+	memcmd_t cmdobj = init_command();
+	cmdobj.raw_command = cmdline;
+	cmdobj.args = argv;
 
-    return;
+	strcpy(buf, cmdline);
+	if (!parseline(buf, argv, &cmdobj)) { return; } // Don't do anything.
+	operate(cmdobj, list);
+
+	return;
 }
 /* $end eval */
 
 /* $begin parseline */
 /* parseline - Parse the command line and build the argv array */
 int parseline(char *buf, char **argv, memcmd_t *rpath) {
-    char *delim;         /* Points to first space delimiter */
-    int argc;            /* Number of args */
-    int valid = 1; 		 /* Return quit */
+	char *delim;         /* Points to first space delimiter */
+	int argc;            /* Number of args */
+	int valid = 1; 		 /* Return quit */
 
-    buf[strlen(buf)-1] = ' ';  /* Replace trailing '\n' with space */
-    while (*buf && (*buf == ' ')) /* Ignore leading spaces */
+	buf[strlen(buf) - 1] = ' ';  /* Replace trailing '\n' with space */
+	while (*buf && (*buf == ' ')) /* Ignore leading spaces */
 		buf++;
 
-    /* Build the argv list */
-    argc = 0;
-    while ((delim = strchr(buf, ' '))) {
+	/* Build the argv list */
+	argc = 0;
+	while ((delim = strchr(buf, ' '))) {
 		/* Replace the current index with the null terminator */
 		/* so strcmp stops at it. */
-		*delim = '\0'; 
+		*delim = '\0';
 
 		if (!strcmp(buf, "allocate")) { rpath->command = ALLOC; }
 		else if (!strcmp(buf, "free")) { rpath->command = FREE; }
@@ -107,7 +107,7 @@ int parseline(char *buf, char **argv, memcmd_t *rpath) {
 		else if (!strcmp(buf, "bestfit")) { rpath->command = BESTFIT; }
 		else if (!strcmp(buf, "firstfit")) { rpath->command = FIRSTFIT; }
 		else if (!strcmp(buf, "quit")) { printf("Quiting\n"); exit(0); }
-		else { 
+		else {
 			if (rpath->command != NA) { /* Argument */
 				rpath->args[rpath->argc] = malloc(sizeof(char));
 				strcpy(rpath->args[rpath->argc++], buf);
@@ -115,30 +115,41 @@ int parseline(char *buf, char **argv, memcmd_t *rpath) {
 			else /* enter some error state. */
 				valid = 0;
 		}
-		
+
 		buf = delim + 1; /* progression step, next character. */
 		while (*buf && (*buf == ' ')) /* Ignore spaces */
 			buf++;
-    }
-    rpath->args[rpath->argc] = NULL;
-    return valid;
+	}
+	rpath->args[rpath->argc] = NULL;
+	return valid;
 }
 
 void operate(memcmd_t metadata, heapblock_t *data) {
 	heapblock_t *last = data;
-	while(last->next != NULL) last = last->next;
+	while (last->next != NULL) last = last->next;
 	if (metadata.command == ALLOC) {
 		if (metadata.argc != 1) printf("Bad arguments. Allocate needs 1 argument.\n");
 		else allocate(atoi(metadata.args[0]), last);
-	} else if (metadata.command == FREE) {
+	}
+	else if (metadata.command == FREE) {
 		if (metadata.argc != 1) printf("Bad arguments. Free needs 1 argument.\n");
 		else freeblock(atoi(metadata.args[0]));
-	} else if (metadata.command == BLOCKLIST) {
+	}
+	else if (metadata.command == BLOCKLIST) {
 		if (metadata.argc != 0) printf("Bad arguments. Blocklist needs 0 arguments.\n");
 		else blocklist();
-	} else if (metadata.command == HWRITE) {
+	}
+	else if (metadata.command == HWRITE) {
 		if (metadata.argc != 3) printf("Bad arguments. Write block needs 3 arguments.\n");
 		else writeheap(atoi(metadata.args[0]), *metadata.args[1], atoi(metadata.args[2]));
+	}
+	else if (metadata.command == BESTFIT){
+		if (metadata.argc != 0) printf("Bad arguments. Bestfit needs 0 arguments. \n");
+		else switchfit(1);
+	}
+	else if (metadata.command == FIRSTFIT){
+		if (metadata.argc != 0) printf("Bad arguments. Firstfit needs 0 arguments. \n");
+		else switchfit(2);
 	}
 }
 
@@ -154,8 +165,6 @@ int freeblock(int id) {
 	return 0;
 }
 
-
-
 /* implemented function in mm.c
 easier to implement there because
 of access to mm.c's macros" */
@@ -165,5 +174,10 @@ void blocklist() {
 }
 
 int writeheap(int id, char data, int size) {
+	return 0;
+}
+
+int switchfit(int type){
+	mm_set_fit_mode(type);
 	return 0;
 }
