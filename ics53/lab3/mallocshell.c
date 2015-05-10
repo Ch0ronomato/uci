@@ -8,19 +8,24 @@
 #define MAXARGS   128
 
 typedef enum {ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA} options_t;
-typedef struct memcmd_s
-{
+typedef struct memcmd_s {
 	char *raw_command;
 	char **args;
 	int argc;
 	options_t command;
 } memcmd_t;
+typedef struct heapblock_s {
+	int id, size, allocated;
+	void *bp;
+	heapblock_s *next;
+} heapblock_t;
 
 /* function prototypes */
 memcmd_t init_command();
-void eval(char *cmdline);
+void eval(char *cmdline, int id);
 int parseline(char *buf, char **argv, memcmd_t*);
-int allocate(int size, int lastId); /* Allocates ${size} blocks and returns next id ({$lastId} + 1) */
+void operate(memcmd_t metadata);
+void allocate(int size, int id); /* Allocates ${size} blocks */
 int freeblock(int id); /* Frees the memory at id ${id} */
 void blocklist(); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
 int writelist(int id, char data, int n); /* Will write ${data} ${n} times at mem pos ${id} */
@@ -37,9 +42,9 @@ memcmd_t init_command() {
 	return to_return;
 }
 
-int main() 
-{
+int main() {
     char cmdline[MAXLINE]; /* Command line */
+    int id = 1;
     while (1) {
 		/* Read */
 		printf("> ");                   
@@ -48,15 +53,14 @@ int main()
 		    exit(0);
 
 		/* Evaluate */
-		eval(cmdline);
+		eval(cmdline, id);
     } 
 }
 /* $end shellmain */
   
 /* $begin eval */
 /* eval - Evaluate a command line */
-void eval(char *cmdline) 
-{
+void eval(char *cmdline, int id) {
     char *argv[MAXARGS]; /* Argument list execve() */
     char buf[MAXLINE];   /* Holds modified command line */
     
@@ -74,8 +78,7 @@ void eval(char *cmdline)
 
 /* $begin parseline */
 /* parseline - Parse the command line and build the argv array */
-int parseline(char *buf, char **argv, memcmd_t *rpath) 
-{
+int parseline(char *buf, char **argv, memcmd_t *rpath) {
     char *delim;         /* Points to first space delimiter */
     int argc;            /* Number of args */
     int valid = 1; 		 /* Return quit */
@@ -114,4 +117,40 @@ int parseline(char *buf, char **argv, memcmd_t *rpath)
     }
     rpath->args[rpath->argc] = NULL;
     return valid;
+}
+
+void operate(memcmd_t metadata) {
+	if (metadata.command == ALLOC) {
+		if (metadata.argc != 1) printf("Bad arguments. Allocate needs 1 argument.\n");
+		else allocate(atoi(metadata.args[0]));
+	} else if (metadata.command == FREE) {
+		if (metadata.argc != 1) printf("Bad arguments. Free needs 1 argument.\n");
+		else freeblock(atoi(metadata.args[0]));
+	} else if (metadata.command == BLOCKLIST) {
+		if (metadata.argc != 0) printf("Bad arguments. Blocklist needs 0 arguments.\n");
+		else blocklist();
+	} else if (metadata.command == HWRITE) {
+		if (metadata.argc != 3) printf("Bad arguments. Write block needs 3 arguments.\n");
+		else writeheap(atoi(metadata.args[0]), metadata.args[1], atoi(metadata.args[2]));
+	}
+}
+
+void allocate(int size, int id) {
+	heapblock_t hb;
+	hb.size = size;
+	hb.allocated = 0;
+	hb.id = id++;
+	hb.bp = mm_alloc(size);
+}
+
+int freeblock(int id) {
+
+}
+
+void blocklist() {
+
+}
+
+int writeheap(int id, char data, int size) {
+
 }
