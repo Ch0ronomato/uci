@@ -388,3 +388,17 @@ void checkheap(int verbose)
 	printf("Bad epilogue header\n");
 }
 
+
+
+/* added this function to be called by the blocklist function
+it was easier to implement here since it has access to macros */
+
+void mm_blocklist(){
+	if (heap_listp == 0)
+		mm_init();
+	char *bp = heap_listp;
+	printf("Size\tAllocated\tStart\t\t\tEnd\n");
+	for (bp = heap_listp; GET_SIZE(HDRP(bp)) > 0; bp = NEXT_BLKP(bp)) {
+		printf("%d\t%s\t\t%p\t\t%p\n", GET_SIZE(HDRP(bp)), GET_ALLOC(HDRP(bp)) ? "yes" : "no", HDRP(bp), FTRP(bp));
+	}
+}

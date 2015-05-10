@@ -154,8 +154,14 @@ int freeblock(int id) {
 	return 0;
 }
 
-void blocklist() {
 
+
+/* implemented function in mm.c
+easier to implement there because
+of access to mm.c's macros" */
+
+void blocklist() {
+	mm_blocklist();
 }
 
 int writeheap(int id, char data, int size) {

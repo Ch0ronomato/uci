@@ -15,3 +15,5 @@ typedef struct {
 } team_t;
 
 extern team_t team;
+
+void mm_blocklist(void);
