@@ -30,8 +30,8 @@ void operate(memcmd_t metadata, int *id, heapblock_t *data);
 void allocate(int size, int *id, heapblock_t *last); /* Allocates ${size} blocks */
 int freeblock(int id, heapblock_t *list); /* Frees the memory at id ${id} */
 void blocklist(heapblock_t *list); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
-int writeheap(int id, char data, int n); /* Will write ${data} ${n} times at mem pos ${id} */
-void printlist(int id, int n); /* Will print data at mem pos ${id} ${n} times */
+int writeheap(int id, char to_write, int n, heapblock_t *data); /* Will write ${data} ${n} times at mem pos ${id} */
+void printlist(int id, int n, heapblock_t *list); /* Will print data at mem pos ${id} ${n} times */
 int switchfit(int type); /* Will switch memory location algorithm. 0 is firstfit, 1 is bestfit */ 
 static void *best_fit(size_t asize); /* Implementation of the best fit memory management algorithm */
 
@@ -127,20 +127,29 @@ int parseline(char *buf, char **argv, memcmd_t *rpath) {
 }
 
 void operate(memcmd_t metadata, int *id, heapblock_t *data) {
-	if (metadata.command == ALLOC) {
-		heapblock_t *last = data;
-		while(last->next != NULL) last = last->next;
-		if (metadata.argc != 1) printf("Bad arguments. Allocate needs 1 argument.\n");
-		else allocate(atoi(metadata.args[0]), id, last);
-	} else if (metadata.command == FREE) {
-		if (metadata.argc != 1) printf("Bad arguments. Free needs 1 argument.\n");
-		else freeblock(atoi(metadata.args[0]), data);
-	} else if (metadata.command == BLOCKLIST) {
-		if (metadata.argc != 0) printf("Bad arguments. Blocklist needs 0 arguments.\n");
-		else blocklist(data);
-	} else if (metadata.command == HWRITE) {
-		if (metadata.argc != 3) printf("Bad arguments. Write block needs 3 arguments.\n");
-		else writeheap(atoi(metadata.args[0]), *metadata.args[1], atoi(metadata.args[2]));
+	heapblock_t *last = data;
+	switch(metadata.command) {
+		case ALLOC:			
+			while(last->next != NULL) last = last->next;
+			if (metadata.argc != 1) printf("Bad arguments. Allocate needs 1 argument.\n");
+			else allocate(atoi(metadata.args[0]), id, last);
+			break;
+		case FREE:
+			if (metadata.argc != 1) printf("Bad arguments. Free needs 1 argument.\n");
+			else freeblock(atoi(metadata.args[0]), data);
+			break;
+		case BLOCKLIST:
+			if (metadata.argc != 0) printf("Bad arguments. Blocklist needs 0 arguments.\n");
+			else blocklist(data);
+			break;
+		case HWRITE:
+			if (metadata.argc != 3) printf("Bad arguments. Write block needs 3 arguments.\n");
+			else writeheap(atoi(metadata.args[0]), *metadata.args[1], atoi(metadata.args[2]), data);
+			break;
+		case HREAD:
+			if (metadata.argc != 2) printf("Bad arguments. Printheap requires 2 arguments");
+			else printlist(atoi(metadata.args[0]), atoi(metadata.args[1]), data);
+			break;
 	}
 }
 
@@ -184,6 +193,29 @@ void blocklist(heapblock_t *data) {
 			start->bp + start->size);
 }
 
-int writeheap(int id, char data, int size) {
-	return 0;
+int writeheap(int id, char to_write, int size, heapblock_t *data) {
+	heapblock_t *finder = data->next;
+	size_t chunksize = sizeof(to_write);
+	int writes = 0, offset = 0;
+	
+	/* find our block and write to it */
+	while (finder != NULL && finder->id != id) { finder = finder->next;}
+	if (finder == NULL) return 0;
+	for (; writes < size && offset < finder->size; writes++) {
+		*(finder->bp + offset) = to_write;
+		offset += chunksize;
+	}
+	finder->allocated = 1;
+	return 1;
+}
+
+void printlist(int id, int n, heapblock_t *list) {
+	/* find our block */	
+	int i = 0;
+	heapblock_t *finder = list->next;
+	while (finder != NULL && finder->id != id) { finder = finder->next; }
+	for (; i < n; i++) {
+		printf("%c", *(finder->bp + (sizeof(char) * i)));
+	}
+	printf("\n");
 }
