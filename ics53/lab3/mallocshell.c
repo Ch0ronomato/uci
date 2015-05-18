@@ -7,7 +7,7 @@
 
 #define MAXARGS   128
 
-typedef enum {ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA} options_t;
+typedef enum { ALLOC, FREE, BLOCKLIST, HWRITE, HREAD, BESTFIT, FIRSTFIT, NA } options_t;
 typedef struct memcmd_s {
 	char *raw_command;
 	char **args;
@@ -54,17 +54,17 @@ int main() {
     list->next = NULL;
     while (1) {
 		/* Read */
-		printf("> ");                   
-		Fgets(cmdline, MAXLINE, stdin); 
+		printf("> ");
+		Fgets(cmdline, MAXLINE, stdin);
 		if (feof(stdin))
-		    exit(0);
+			exit(0);
 
 		/* Evaluate */
 		eval(cmdline, &id, list);
     } 
 }
 /* $end shellmain */
-  
+
 /* $begin eval */
 /* eval - Evaluate a command line */
 void eval(char *cmdline, int *id, heapblock_t *list) {
@@ -86,20 +86,20 @@ void eval(char *cmdline, int *id, heapblock_t *list) {
 /* $begin parseline */
 /* parseline - Parse the command line and build the argv array */
 int parseline(char *buf, char **argv, memcmd_t *rpath) {
-    char *delim;         /* Points to first space delimiter */
-    int argc;            /* Number of args */
-    int valid = 1; 		 /* Return quit */
+	char *delim;         /* Points to first space delimiter */
+	int argc;            /* Number of args */
+	int valid = 1; 		 /* Return quit */
 
-    buf[strlen(buf)-1] = ' ';  /* Replace trailing '\n' with space */
-    while (*buf && (*buf == ' ')) /* Ignore leading spaces */
+	buf[strlen(buf) - 1] = ' ';  /* Replace trailing '\n' with space */
+	while (*buf && (*buf == ' ')) /* Ignore leading spaces */
 		buf++;
 
-    /* Build the argv list */
-    argc = 0;
-    while ((delim = strchr(buf, ' '))) {
+	/* Build the argv list */
+	argc = 0;
+	while ((delim = strchr(buf, ' '))) {
 		/* Replace the current index with the null terminator */
 		/* so strcmp stops at it. */
-		*delim = '\0'; 
+		*delim = '\0';
 
 		if (!strcmp(buf, "allocate")) { rpath->command = ALLOC; }
 		else if (!strcmp(buf, "free")) { rpath->command = FREE; }
@@ -109,7 +109,7 @@ int parseline(char *buf, char **argv, memcmd_t *rpath) {
 		else if (!strcmp(buf, "bestfit")) { rpath->command = BESTFIT; }
 		else if (!strcmp(buf, "firstfit")) { rpath->command = FIRSTFIT; }
 		else if (!strcmp(buf, "quit")) { printf("Quiting\n"); exit(0); }
-		else { 
+		else {
 			if (rpath->command != NA) { /* Argument */
 				rpath->args[rpath->argc] = malloc(sizeof(char));
 				strcpy(rpath->args[rpath->argc++], buf);
@@ -117,13 +117,13 @@ int parseline(char *buf, char **argv, memcmd_t *rpath) {
 			else /* enter some error state. */
 				valid = 0;
 		}
-		
+
 		buf = delim + 1; /* progression step, next character. */
 		while (*buf && (*buf == ' ')) /* Ignore spaces */
 			buf++;
-    }
-    rpath->args[rpath->argc] = NULL;
-    return valid;
+	}
+	rpath->args[rpath->argc] = NULL;
+	return valid;
 }
 
 void operate(memcmd_t metadata, int *id, heapblock_t *data) {
