@@ -24,15 +24,15 @@ struct heapblock_s {
 
 /* function prototypes */
 memcmd_t init_command();
-void eval(char *cmdline, heapblock_t *list);
+void eval(char *cmdline, int *id, heapblock_t *list);
 int parseline(char *buf, char **argv, memcmd_t*);
-void operate(memcmd_t metadata, heapblock_t *data);
-void allocate(int size, heapblock_t *last); /* Allocates ${size} blocks */
-int freeblock(int id); /* Frees the memory at id ${id} */
-void blocklist(); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
-int writeheap(int id, char data, int n); /* Will write ${data} ${n} times at mem pos ${id} */
-void printlist(int id, int n); /* Will print data at mem pos ${id} ${n} times */
-int switchfit(int type); /* Will switch memory location algorithm. 0 is firstfit, 1 is bestfit */
+void operate(memcmd_t metadata, int *id, heapblock_t *data);
+void allocate(int size, int *id, heapblock_t *last); /* Allocates ${size} blocks */
+int freeblock(int id, heapblock_t *list); /* Frees the memory at id ${id} */
+void blocklist(heapblock_t *list); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
+int writeheap(int id, char to_write, int n, heapblock_t *data); /* Will write ${data} ${n} times at mem pos ${id} */
+void printlist(int id, int n, heapblock_t *list); /* Will print data at mem pos ${id} ${n} times */
+int switchfit(int type); /* Will switch memory location algorithm. 0 is firstfit, 1 is bestfit */ 
 static void *best_fit(size_t asize); /* Implementation of the best fit memory management algorithm */
 
 memcmd_t init_command() {
@@ -45,12 +45,14 @@ memcmd_t init_command() {
 }
 
 int main() {
-	char cmdline[MAXLINE]; /* Command line */
-	heapblock_t *list = malloc(sizeof(heapblock_t));
-	list->id = last->size = last->allocated = 0;
-	list->bp = NULL;
-	list->next = NULL;
-	while (1) {
+    char cmdline[MAXLINE]; /* Command line */
+    mem_init(); /* initialize our memory lib */
+    int id = 1;
+    heapblock_t *list = malloc(sizeof(heapblock_t));
+    list->id = list->size = list->allocated = 0;
+    list->bp = NULL;
+    list->next = NULL;
+    while (1) {
 		/* Read */
 		printf("> ");
 		Fgets(cmdline, MAXLINE, stdin);
@@ -58,26 +60,26 @@ int main() {
 			exit(0);
 
 		/* Evaluate */
-		eval(cmdline, list);
-	}
+		eval(cmdline, &id, list);
+    } 
 }
 /* $end shellmain */
 
 /* $begin eval */
 /* eval - Evaluate a command line */
-void eval(char *cmdline, heapblock_t *list) {
-	char *argv[MAXARGS]; /* Argument list execve() */
-	char buf[MAXLINE];   /* Holds modified command line */
+void eval(char *cmdline, int *id, heapblock_t *list) {
+    char *argv[MAXARGS]; /* Argument list execve() */
+    char buf[MAXLINE];   /* Holds modified command line */
+    
+    memcmd_t cmdobj = init_command();
+    cmdobj.raw_command = cmdline;
+    cmdobj.args = argv;
 
-	memcmd_t cmdobj = init_command();
-	cmdobj.raw_command = cmdline;
-	cmdobj.args = argv;
+    strcpy(buf, cmdline);
+    if (!parseline(buf, argv, &cmdobj)) { return; } // Don't do anything.
+    operate(cmdobj, id, list);
 
-	strcpy(buf, cmdline);
-	if (!parseline(buf, argv, &cmdobj)) { return; } // Don't do anything.
-	operate(cmdobj, list);
-
-	return;
+    return;
 }
 /* $end eval */
 
@@ -124,58 +126,111 @@ int parseline(char *buf, char **argv, memcmd_t *rpath) {
 	return valid;
 }
 
-void operate(memcmd_t metadata, heapblock_t *data) {
+void operate(memcmd_t metadata, int *id, heapblock_t *data) {
 	heapblock_t *last = data;
-	while (last->next != NULL) last = last->next;
-	if (metadata.command == ALLOC) {
-		if (metadata.argc != 1) printf("Bad arguments. Allocate needs 1 argument.\n");
-		else allocate(atoi(metadata.args[0]), last);
-	}
-	else if (metadata.command == FREE) {
-		if (metadata.argc != 1) printf("Bad arguments. Free needs 1 argument.\n");
-		else freeblock(atoi(metadata.args[0]));
-	}
-	else if (metadata.command == BLOCKLIST) {
-		if (metadata.argc != 0) printf("Bad arguments. Blocklist needs 0 arguments.\n");
-		else blocklist();
-	}
-	else if (metadata.command == HWRITE) {
-		if (metadata.argc != 3) printf("Bad arguments. Write block needs 3 arguments.\n");
-		else writeheap(atoi(metadata.args[0]), *metadata.args[1], atoi(metadata.args[2]));
-	}
-	else if (metadata.command == BESTFIT){
-		if (metadata.argc != 0) printf("Bad arguments. Bestfit needs 0 arguments. \n");
-		else switchfit(1);
-	}
-	else if (metadata.command == FIRSTFIT){
-		if (metadata.argc != 0) printf("Bad arguments. Firstfit needs 0 arguments. \n");
-		else switchfit(2);
+	switch(metadata.command) {
+		case ALLOC:			
+			while(last->next != NULL) last = last->next;
+			if (metadata.argc != 1) printf("Bad arguments. Allocate needs 1 argument.\n");
+			else allocate(atoi(metadata.args[0]), id, last);
+			break;
+		case FREE:
+			if (metadata.argc != 1) printf("Bad arguments. Free needs 1 argument.\n");
+			else freeblock(atoi(metadata.args[0]), data);
+			break;
+		case BLOCKLIST:
+			if (metadata.argc != 0) printf("Bad arguments. Blocklist needs 0 arguments.\n");
+			else blocklist(data);
+			break;
+		case HWRITE:
+			if (metadata.argc != 3) printf("Bad arguments. Write block needs 3 arguments.\n");
+			else writeheap(atoi(metadata.args[0]), *metadata.args[1], atoi(metadata.args[2]), data);
+			break;
+		case HREAD:
+			if (metadata.argc != 2) printf("Bad arguments. Printheap requires 2 arguments");
+			else printlist(atoi(metadata.args[0]), atoi(metadata.args[1]), data);
+			break;
+		case BESTFIT:
+			if (metadata.argc != 0) printf("Bad arguments. Best fit requries 0 arguments\n");
+			else switchfit(1);
+			break;
+		case FIRSTFIT:
+			if (metadata.argc != 0) printf("Bad arguments. First fit requries 0 arguments\n");
+			else switchfit(2);
+			break;
 	}
 }
 
-void allocate(int size, heapblock_t *last) {
-	heapblock_t hb;
-	hb.size = size;
-	hb.allocated = 0;
-	hb.id = last->id + 1;
-	hb.bp = (char*)mm_malloc(size);
+void allocate(int size, int *id, heapblock_t *last) {
+	heapblock_t *hb = malloc(sizeof(heapblock_t));
+	hb->size = size;
+	hb->allocated = 0;
+	hb->id = (*id)++;
+	hb->bp = (char*)mm_malloc(size);
+	hb->next = NULL;
+	last->next = hb;
 }
 
-int freeblock(int id) {
-	return 0;
+int freeblock(int id, heapblock_t *data) {
+	/* find the block we want and free using mm_free */ 
+	/* and delete the linked list entry. */
+	if (data->next == NULL) {
+		printf("No blocks have been allocated\n");
+		return 0;
+	}
+	heapblock_t *first = data, *to_delete = data->next;
+	while (to_delete != NULL) {
+		if (to_delete->id == id) {
+			mm_free(to_delete->bp);
+			first->next = to_delete->next;
+			free (to_delete);
+			return 1;
+		}
+		first = first->next, to_delete = to_delete->next;
+	}
+}
+
+void blocklist(heapblock_t *data) {
+	printf("Size\tAllocated\tStart\tEnd\n");
+	heapblock_t *start = data->next;
+	for (; start != NULL; start = start->next)
+		printf("%i\t%s\t%p\t%p\n", 
+			start->size, 
+			start->allocated == 1 ? "Yes" : "No", 
+			start->bp, 
+			start->bp + start->size);
+}
+
+int writeheap(int id, char to_write, int size, heapblock_t *data) {
+	heapblock_t *finder = data->next;
+	size_t chunksize = sizeof(to_write);
+	int writes = 0, offset = 0;
+	
+	/* find our block and write to it */
+	while (finder != NULL && finder->id != id) { finder = finder->next;}
+	if (finder == NULL) return 0;
+	for (; writes < size && offset < finder->size; writes++) {
+		*(finder->bp + offset) = to_write;
+		offset += chunksize;
+	}
+	finder->allocated = 1;
+	return 1;
+}
+
+void printlist(int id, int n, heapblock_t *list) {
+	/* find our block */	
+	int i = 0;
+	heapblock_t *finder = list->next;
+	while (finder != NULL && finder->id != id) { finder = finder->next; }
+	for (; i < n; i++) {
+		printf("%c", *(finder->bp + (sizeof(char) * i)));
+	}
+	printf("\n");
 }
 
 /* implemented function in mm.c
 easier to implement there because
 of access to mm.c's macros" */
-
-void blocklist() {
-	mm_blocklist();
-}
-
-int writeheap(int id, char data, int size) {
-	return 0;
-}
 
 int switchfit(int type){
 	mm_set_fit_mode(type);
