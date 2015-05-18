@@ -29,7 +29,7 @@ int parseline(char *buf, char **argv, memcmd_t*);
 void operate(memcmd_t metadata, int *id, heapblock_t *data);
 void allocate(int size, int *id, heapblock_t *last); /* Allocates ${size} blocks */
 int freeblock(int id, heapblock_t *list); /* Frees the memory at id ${id} */
-void blocklist(heapblock_t *list); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
+void blocklist(); /* Will print all blocks. Uses HDRP(), FTRP(), NEXTBLK() */
 int writeheap(int id, char to_write, int n, heapblock_t *data); /* Will write ${data} ${n} times at mem pos ${id} */
 void printlist(int id, int n, heapblock_t *list); /* Will print data at mem pos ${id} ${n} times */
 int switchfit(int type); /* Will switch memory location algorithm. 0 is firstfit, 1 is bestfit */ 
@@ -190,15 +190,8 @@ int freeblock(int id, heapblock_t *data) {
 	}
 }
 
-void blocklist(heapblock_t *data) {
-	printf("Size\tAllocated\tStart\tEnd\n");
-	heapblock_t *start = data->next;
-	for (; start != NULL; start = start->next)
-		printf("%i\t%s\t%p\t%p\n", 
-			start->size, 
-			start->allocated == 1 ? "Yes" : "No", 
-			start->bp, 
-			start->bp + start->size);
+void blocklist() {
+	mm_blocklist();
 }
 
 int writeheap(int id, char to_write, int size, heapblock_t *data) {
