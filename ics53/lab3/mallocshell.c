@@ -150,6 +150,14 @@ void operate(memcmd_t metadata, int *id, heapblock_t *data) {
 			if (metadata.argc != 2) printf("Bad arguments. Printheap requires 2 arguments");
 			else printlist(atoi(metadata.args[0]), atoi(metadata.args[1]), data);
 			break;
+		case BESTFIT:
+			if (metadata.argc != 0) printf("Bad arguments. Best fit requries 0 arguments\n");
+			else switchfit(1);
+			break;
+		case FIRSTFIT:
+			if (metadata.argc != 0) printf("Bad arguments. First fit requries 0 arguments\n");
+			else switchfit(2);
+			break;
 	}
 }
 
@@ -218,4 +226,13 @@ void printlist(int id, int n, heapblock_t *list) {
 		printf("%c", *(finder->bp + (sizeof(char) * i)));
 	}
 	printf("\n");
+}
+
+/* implemented function in mm.c
+easier to implement there because
+of access to mm.c's macros" */
+
+int switchfit(int type){
+	mm_set_fit_mode(type);
+	return 0;
 }
