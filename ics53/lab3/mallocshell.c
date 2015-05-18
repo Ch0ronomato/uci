@@ -147,7 +147,7 @@ void operate(memcmd_t metadata, int *id, heapblock_t *data) {
 			else writeheap(atoi(metadata.args[0]), *metadata.args[1], atoi(metadata.args[2]), data);
 			break;
 		case HREAD:
-			if (metadata.argc != 2) printf("Bad arguments. Printheap requires 2 arguments");
+			if (metadata.argc != 2) printf("Bad arguments. Printheap requires 2 arguments.\n");
 			else printlist(atoi(metadata.args[0]), atoi(metadata.args[1]), data);
 			break;
 		case BESTFIT:
@@ -169,6 +169,7 @@ void allocate(int size, int *id, heapblock_t *last) {
 	hb->bp = (char*)mm_malloc(size);
 	hb->next = NULL;
 	last->next = hb;
+	printf("%d\n", hb->id);
 }
 
 int freeblock(int id, heapblock_t *data) {
