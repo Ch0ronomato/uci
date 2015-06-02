@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
 void process_req(){
 	//Prefer to work with FILE
 	FILE *client_f = fdopen(appdat->client_fd,"r");
-	char buffer[MAXLINE], hostname[MAXLINE], path[MAXLINE];
+	char buffer[MAXLINE], response[MAXLINE], hostname[MAXLINE], path[MAXLINE];
 	char *request_uri, *host_address_ptr, *rest;
 	int size = -1, port;
 	struct sockaddr_in clientaddr = appdat->clientaddr;
@@ -113,18 +113,32 @@ void process_req(){
 		return;
 	}
 	
-	rest = request_uri[size + 1];
+	rest = &request_uri[size + 1];
 	// we have a good url, lets parse it and get our end data.
 	if (parse_uri(request_uri, hostname, path, &port) < 0) {
 		printf("Failed to parse url %s", request_uri);
 		return;
 	}
 	else {
-		FILE *server_fd = fdopen(open_clientfd(hostname, port), 'a');
-		fprintf(server_fd, "GET /", strlen("GET /"));
-		fprintf(server_fd, path, strlen(path));
-		fprintf(server_fd, " HTTP/1.0\r\n", strlen(" HTTP/1.0\r\n"));
-		fprintf(server_fd, rest, strlen(rest));
+		int n = 0, response_len = 0, server_fd = open_clientfd(hostname, port);
+		FILE *server_f;
+		rio_t rio;
+		
+		rio_writen(server_fd, "GET /", strlen("GET /"));
+		rio_writen(server_fd, path, strlen(path));
+		rio_writen(server_fd, " HTTP/1.0\r\n", strlen(" HTTP/1.0\r\n"));
+		rio_writen(server_fd, rest, strlen(rest));
+		
+		
+		// read the response
+		Rio_readinitb(&rio, server_fd);
+		while( (n = rio_readn(server_fd, response, MAXLINE)) > 0 ) {
+			response_len += n;
+		}
+		server_f = fdopen(server_fd, "r");
+		// test
+		fgets(response, MAXLINE, server_f);
+		printf("Response: %s", response);
 	}
 	//close connection
 	fclose(client_f);
@@ -198,33 +212,4 @@ int parse_uri(char *uri, char *hostname, char *pathname, int *port)
     }
 
     return 0;
-}
-
-int open_clientfd(char *hostname, int port) 
-{
-    int clientfd;
-    struct hostent hostent, *hp = &hostent;
-    struct hostent *temp_hp;
-    struct sockaddr_in serveraddr;
-
-    if ((clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-	return -1; /* check errno for cause of error */
-
-    temp_hp = gethostbyname(hostname);
-    if (temp_hp != NULL)
-	hostent = *temp_hp; /* copy */
-    
-    /* Fill in the server's IP address and port */
-    if (temp_hp == NULL)
-	return -2; /* check h_errno for cause of error */
-    bzero((char *) &serveraddr, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    bcopy((char *)hp->h_addr, 
-	  (char *)&serveraddr.sin_addr.s_addr, hp->h_length);
-    serveraddr.sin_port = htons(port);
-
-    /* Establish a connection with the server */
-    if (connect(clientfd, (SA *) &serveraddr, sizeof(serveraddr)) < 0)
-	return -1;
-    return clientfd;
 }
