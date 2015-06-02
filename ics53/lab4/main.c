@@ -33,6 +33,8 @@ int parse_uri(char *uri, char *target_addr, char *path, int  *port);
 void format_log_entry(char *logstring, struct sockaddr_in *sockaddr, char *uri, int size);
 
 int get_uri_size(char*);
+void read_response_stream(int, FILE*, int, char*);
+void read_whole_stream(int, FILE*, char*);
 int ensure_get_version(char*);
 void process_req();
 void print_this_ip();
@@ -78,7 +80,7 @@ int main(int argc, char** argv) {
 void process_req(){
 	//Prefer to work with FILE
 	FILE *client_f = fdopen(appdat->client_fd,"r");
-	char buffer[MAXLINE], response[MAXLINE], hostname[MAXLINE], path[MAXLINE];
+	char buffer[MAXLINE], request[MAXLINE], response[MAXLINE], hostname[MAXLINE], path[MAXLINE];
 	char *request_uri, *host_address_ptr, *rest;
 	int size = -1, port;
 	struct sockaddr_in clientaddr = appdat->clientaddr;
@@ -92,21 +94,17 @@ void process_req(){
 			   AF_INET);
 	host_address_ptr = inet_ntoa(clientaddr.sin_addr);
 	
-	// get any data in the packet.
-	// at this point, buffer should be the request 
-	// we want to process.
-	fgets(buffer,MAXLINE,client_f);
-	printf("Requested: %s",buffer);
+	read_whole_stream(MAXLINE, client_f, request);
 	
 	// We don't handle POST, PUT, or DELETE requests.
-	if (strncmp(buffer, "GET ", strlen("GET "))) {
+	if (strncmp(request, "GET ", strlen("GET "))) {
 		printf("process_request: Received non-GET request\n");
 		fclose(client_f);
 		return;
 	}
 	
 	// filter out the "GET " from the request
-	request_uri = buffer + 4;
+	request_uri = request + 4;
 	size = get_uri_size(request_uri);
 	if (!ensure_get_version(&request_uri[size + 1])) {
 		printf("Not proper GET version");
@@ -121,24 +119,13 @@ void process_req(){
 	}
 	else {
 		int n = 0, response_len = 0, server_fd = open_clientfd(hostname, port);
-		FILE *server_f;
-		rio_t rio;
 		
 		rio_writen(server_fd, "GET /", strlen("GET /"));
 		rio_writen(server_fd, path, strlen(path));
 		rio_writen(server_fd, " HTTP/1.0\r\n", strlen(" HTTP/1.0\r\n"));
 		rio_writen(server_fd, rest, strlen(rest));
 		
-		
-		// read the response
-		Rio_readinitb(&rio, server_fd);
-		while( (n = rio_readn(server_fd, response, MAXLINE)) > 0 ) {
-			response_len += n;
-		}
-		server_f = fdopen(server_fd, "r");
-		// test
-		fgets(response, MAXLINE, server_f);
-		printf("Response: %s", response);
+		read_response_stream(server_fd, client_f, MAXLINE, response);
 	}
 	//close connection
 	fclose(client_f);
@@ -212,4 +199,27 @@ int parse_uri(char *uri, char *hostname, char *pathname, int *port)
     }
 
     return 0;
+}
+
+void read_whole_stream(int size, FILE *stream, char *response) {
+	char buffer[size];
+	while (fgets(buffer,size,stream) != NULL) {
+		// copy.
+		strcat(response, buffer);
+		if (strcmp(buffer, "\r\n") == 0)
+			break;
+	}
+}
+
+void read_response_stream(int server_fd, FILE *client_f, int size, char *response) {
+	rio_t rio;
+    int response_len = 0, n;
+	char buffer[size];
+	Rio_readinitb(&rio, server_fd);
+    while( (n = rio_readn(server_fd, buffer, size)) > 0 ) {
+		response_len += n;
+		fprintf(client_f, buffer, n);
+		bzero(buffer, MAXLINE);
+    }
+	close(server_fd);
 }
