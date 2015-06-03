@@ -231,13 +231,13 @@ int read_response_stream(int client_f, int size, char *hostname, char *path, cha
 	rio_writen(server_fd, rest, strlen(rest));
 	fflush(stdout);
 	Rio_readinitb(&rio, server_fd);
-    while( (n = rio_readn(server_fd, buffer, size)) > 0 ) {
+    	while( (n = rio_readn(server_fd, buffer, size)) > 0 ) {
 		response_len += n;
 		printf("Recieved: %d\n", n);
 		fflush(stdout);
 		rio_writen(client_f, buffer, n);
 		bzero(buffer, MAXLINE);
-    }
+    	}
 	close(server_fd);
 	return response_len;
 }
