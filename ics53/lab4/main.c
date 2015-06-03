@@ -111,12 +111,14 @@ void process_req(){
 	size = get_uri_size(request_uri);
 	if (!ensure_get_version(&request_uri[size + 1])) {
 		printf("Not proper GET version");
+		request[0] = '\0';
 		return;
 	}
 	rest = &request_uri[size + 1]  + strlen("HTTP/1.0\r\n");
 	// we have a good url, lets parse it and get our end data.
 	if (parse_uri(request_uri, hostname, path, &port) < 0) {
 		printf("Failed to parse url %s", request_uri);
+		request[0] = '\0';
 		return;
 	}
 	else {
