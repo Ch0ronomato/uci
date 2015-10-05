@@ -21,7 +21,7 @@ int main(int argc, char ** args)
     printf("Error: no input file specified\nUsage: average numbers.dat\n");
     exit(1);
   }
-  char * filename = "numbers.dat";
+  char * filename = args[argc - 1];
   /* Use this line to verify you got the correct filename: */
   printf("Reading numbers from file %s\n", filename);
   /**/
