@@ -1,0 +1,4 @@
+CPU
+Memory
+Storage (hard disk)
+Other resources (Network, CD-ROM, etc)
