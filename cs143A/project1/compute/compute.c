@@ -11,7 +11,8 @@ float getAverage(int data[], int datasize, int *max, int *min) {
 	// initialize values, and run algorithm
 	*max = -1;
 	*min = 99999;
-	for (int i = 0; i < datasize; i++) {
+	int i;
+	for (i = 0; i < datasize; i++) {
 		int value = data[i];
 		*max = *max < value ? value : *max;
 		*min = *min > value ? value : *min;
