@@ -23,7 +23,7 @@ int main(int argc, char ** args)
   }
   char * filename = args[argc - 1];
   /* Use this line to verify you got the correct filename: */
-  printf("Reading numbers from file %s\n", filename);
+  // printf("Reading numbers from file %s\n", filename);
   /**/
 
   // Open the file and verify it opened properly
@@ -36,7 +36,8 @@ int main(int argc, char ** args)
 
   // Declare (and maybe initialize) any necessary variables before reading from the file
   char *line;
-  int avg = 0, count = 0;
+  float avg = 0;
+  int count = 0;
   size_t len = 0;
   ssize_t linesRead = 0;
 
@@ -57,7 +58,7 @@ int main(int argc, char ** args)
   // Lastly, print the result
   // NOTE: ensure that the actual average is on the SECOND line all by itself
   // or you may not receive credit for your program!
-  printf("Average was %i\n", (avg / count));
+  printf("Average was \n%f\n", (avg / count));
 
   // SUCCESS!
   return 0;
