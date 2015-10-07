@@ -3,11 +3,12 @@
 #include <string>
 #include <vector>
 #include "statements.hpp"
+#include "writer.hpp"
 class Jumpt : public Statement
 {
 public:
 	Jumpt(std::string);
-	Grammar* parse();
+	Grammar* parse(Writer&);
 	std::vector<std::string>* getKeywords();
 };
 #endif

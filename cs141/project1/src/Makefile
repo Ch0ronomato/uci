@@ -1,7 +1,7 @@
 EXECNAME=SIMPLESEM
 OBJNAME=-o $(EXECNAME)
 BUILD=g++
-FILES=set.cpp halt.cpp jump.cpp jumpt.cpp main.cpp
+FILES=set.cpp halt.cpp jump.cpp jumpt.cpp writer.cpp main.cpp
 all:
 	$(BUILD) $(OBJNAME) $(FILES)
 
