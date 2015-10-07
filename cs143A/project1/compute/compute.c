@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int getAverage(int data[], int datasize, int *max, int *min) {
+float getAverage(int data[], int datasize, int *max, int *min) {
 	ssize_t readLines = 0;
 	size_t len = 0;
-	int count = 0, avg = 0;
+	int count = 0;
+	double avg = 0;
 	char *line;
 
 	// initialize values, and run algorithm
@@ -23,11 +24,12 @@ int main() {
 	// read filename from stdin
 	char name[100];
 	int data[100];
-	int i = 0, max, min, avg;
+	int i = 0, max, min;
+	double avg;
 	while (fgets(name, 100, stdin) != NULL) {
 		data[i++] = strtol(name, NULL, 10);
 	}
 	avg = getAverage(data, i, &max, &min);
-	printf("max: %i\nmin: %i\naverage: %i", max, min, avg);
+	printf("max: %i\nmin: %i\naverage: %f", max, min, avg);
 	return 0;
 }
