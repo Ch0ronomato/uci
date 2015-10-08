@@ -24,6 +24,5 @@ Grammar* Halt::parse(Writer& w) {
 	_msLine = parseCommand(_msLine, "halt ", "HALT ");
 	if (isExpr(_msLine, w)) 
 		cout << "Halt========Is expression with halt" << endl;
-	w.write("Halt");
 	return this;
 }

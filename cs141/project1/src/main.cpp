@@ -24,7 +24,7 @@ int main(int argc, char ** argv) {
 	string file(argv[argc - 1]);
 	string outs = file + ".out";
 	string line;
-	ifstream ifs(file);
+	ifstream ifs(file.c_str());
 	Writer w(outs);
 
 	// open file, read contents.

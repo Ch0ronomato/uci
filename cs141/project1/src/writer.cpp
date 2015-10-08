@@ -11,7 +11,7 @@ using std::endl;
 using std::ofstream;
 
 Writer::Writer(string filename) {
-	_mofsFile.open(filename);
+	_mofsFile.open(filename.c_str());
 }
 
 void Writer::write(string line) {

@@ -1,6 +1,6 @@
 #include "grammer.hpp"
 #include "statements.hpp"
-#include "Jumpt.hpp"
+#include "jumpt.hpp"
 #include "writer.hpp"
 #include <string>
 #include <vector>
