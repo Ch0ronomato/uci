@@ -49,10 +49,10 @@ public:
 		bool good = true;
 		good = isFactor(s, w);
 		if (good) w = "Term\n" + w;
-		/*if (s.find_first_of(ops) != std::string::npos) {
+		if (s.find_first_of(ops) != std::string::npos) {
 			// process as normal;
 			good = handleOpsBubble(s, ops, false);
-		} */
+		}
 		return good;
 	};
 	bool isNumber(const std::string& s, std::string& w) {
