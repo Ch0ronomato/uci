@@ -19,10 +19,9 @@ vector<string>* Halt::getKeywords() {
 	return _mvKeywords;
 }
 
-Grammar* Halt::parse(Writer& w) {
+Grammar* Halt::parse() {
 	if (_msLine.find(",") != string::npos) return NULL; // no comma args;
 	_msLine = parseCommand(_msLine, "halt ", "HALT ");
-	if (isExpr(_msLine, w)) 
-		cout << "Halt========Is expression with halt" << endl;
+	if (isExpr(_msLine)) 
 	return this;
 }

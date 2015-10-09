@@ -8,7 +8,7 @@ class Jumpt : public Statement
 {
 public:
 	Jumpt(std::string);
-	Grammar* parse(Writer&);
+	Grammar* parse();
 	std::vector<std::string>* getKeywords();
 };
 #endif

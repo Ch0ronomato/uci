@@ -15,47 +15,43 @@ using std::ifstream;
 
 Statement* parseLine(string line);
 void sanitizeString(string& line);
-void processLine(Statement *nonterm, Writer& w);
+void processLine(Statement *nonterm);
 int main(int argc, char ** argv) {
 	if (argc < 2) {
 		cout << "Please run with filename (ex: SIMPLESEM file.S)" << endl;
 		return 1;
 	}
 	string file(argv[argc - 1]);
-	string outs = file + ".out";
 	string line;
 	ifstream ifs(file.c_str());
-	Writer w(outs);
 
 	// open file, read contents.
 	int i = 0;
 	if (ifs.is_open()) {
-		w.write("Program");
 		while(ifs.good()) {
 			std::getline(ifs, line);
-			sanitizeString(line);	
-			processLine(parseLine(line), w);
-			cout << "Processed line " << i++ << endl;
+			sanitizeString(line);
+			cout << line << endl;
+			cout << "---------------------" << endl;	
+			processLine(parseLine(line));
+			cout << "---------------------" << endl;	
 		}
 		ifs.close();
 	}
+	return 0;
 }
 
 Statement* parseLine(string line) {
 	if (line.find("set") == 0 || line.find("SET") == 0) {
-		cout << "Picked Set to deal with " << line << endl;
 		return new Set(line);
 	}
 	else if (line.find("jumpt") == 0 || line.find("JUMPT") == 0) {
-		cout << "Picked Jumpt to deal with " << line << endl;
 		return new Jumpt(line);
 	}
 	else if (line.find("jump") == 0 || line.find("JUMP") == 0) {
-		cout << "Picked Jump to deal with " << line << endl;
 		return new Jump(line);
 	}
 	else if (line.find("halt") == 0 || line.find("HALT") == 0) {
-		cout << "Picked Halt to deal with " << line << endl;
 		return new Halt(line);
 	}
 	else
@@ -69,11 +65,10 @@ void sanitizeString(string& line) {
 	}
 }
 
-void processLine(Statement *nonterm, Writer& w) {
+void processLine(Statement *nonterm) {
 	if (nonterm != NULL) {
-		nonterm->parse(w);
-		w.write("Statement");
-		w.flush();
+		cout << "Statement" << endl;
+		nonterm->parse();
 		delete nonterm;
 	}
 }

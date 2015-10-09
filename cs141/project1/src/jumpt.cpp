@@ -1,7 +1,6 @@
 #include "grammer.hpp"
 #include "statements.hpp"
 #include "jumpt.hpp"
-#include "writer.hpp"
 #include <string>
 #include <vector>
 #include <iostream>
@@ -19,22 +18,22 @@ vector<string>* Jumpt::getKeywords() {
 	return _mvKeywords;
 }
 
-Grammar* Jumpt::parse(Writer& w) {
+Grammar* Jumpt::parse() {
 	if (_msLine.find(",") == string::npos) return NULL; // needs comma args.
 	string left, right;
 	_msLine = parseCommand(_msLine, "jumpt ", "JUMPT ");
 	if (!getArguments(_msLine, &left, &right)) return NULL;
-	if (isExpr(left, w)) {}
+	cout << "Jumpt" << endl;
+	if (isExpr(left)) {}
 
 	// split right by token args (!=, ==, >, <, >=, <=)
 	int pos = right.find_first_of("!=><");	
 	if (right[pos + 1] == '=') {
-		isExpr(right.substr(0, pos), w);
-		isExpr(right.substr(pos + 3), w);
+		isExpr(right.substr(0, pos));
+		isExpr(right.substr(pos + 3));
 	} else {
-		isExpr(right.substr(0, pos), w);
-		isExpr(right.substr(pos + 2), w);
+		isExpr(right.substr(0, pos));
+		isExpr(right.substr(pos + 2));
 	}
-	w.write("Jumpt");
 	return this; 
 }

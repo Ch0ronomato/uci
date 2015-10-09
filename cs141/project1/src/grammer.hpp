@@ -1,7 +1,6 @@
 #ifndef GRAMMAR_H
 #define GRAMMAR_H
 #include <string>
-#include "writer.hpp"
 /**
  * Grammar 
  * Simple parser abstract class. Each class that inherits this
@@ -15,7 +14,7 @@
 class Grammar
 {
 public:
-	virtual Grammar* parse(Writer& w) = 0;
+	virtual Grammar* parse() = 0;
 protected:
 	std::string parseCommand(std::string _msLine, std::string keywordLow, std::string keywordUpper) {
 		if (_msLine.find(keywordUpper) == std::string::npos && _msLine.find(keywordLow) == std::string::npos) return "";

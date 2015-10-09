@@ -8,7 +8,7 @@ class Halt : public Statement
 {
 public:
 	Halt(std::string);
-	Grammar* parse(Writer&);
+	Grammar* parse();
 	std::vector<std::string>* getKeywords();
 };
 #endif

@@ -25,7 +25,7 @@ vector<string>* Set::getKeywords() {
 	return _mvKeywords;
 }
 
-Grammar* Set::parse(Writer& w) {
+Grammar* Set::parse() {
 	if (_msLine.find(",") == string::npos) return NULL;
 	// parse out the keyword of the command
 	string left = "", right = "";
@@ -33,8 +33,8 @@ Grammar* Set::parse(Writer& w) {
 	if (!getArguments(_msLine, &left, &right)) return NULL; 
 	
 	// ensure both arguments are expressions;
-	if ((isExpr(left, w) || isKeyword(left)) && (isExpr(right, w) || isKeyword(right))) {
-		w.write("Set");
+	cout << "Set" << endl;
+	if ((isExpr(left) || isKeyword(left)) && (isExpr(right) || isKeyword(right))) {
 		return this;
 	}
 	else return NULL;
