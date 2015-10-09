@@ -22,8 +22,8 @@ vector<string>* Jump::getKeywords() {
 Grammar* Jump::parse() {
 	if (_msLine.find(",") != string::npos) return NULL; // no comma args.
 	_msLine = parseCommand(_msLine, "jump ", "JUMP ");
+	cout << "Jump" << endl;
 	if (isExpr(_msLine)) { 
-		cout << "Jump" << endl;
 		return this;
 	}
 	else return NULL;	

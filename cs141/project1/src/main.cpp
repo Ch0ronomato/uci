@@ -28,13 +28,11 @@ int main(int argc, char ** argv) {
 	// open file, read contents.
 	int i = 0;
 	if (ifs.is_open()) {
+		cout << "Program" << endl;
 		while(ifs.good()) {
 			std::getline(ifs, line);
 			sanitizeString(line);
-			cout << line << endl;
-			cout << "---------------------" << endl;	
 			processLine(parseLine(line));
-			cout << "---------------------" << endl;	
 		}
 		ifs.close();
 	}

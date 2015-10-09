@@ -22,6 +22,6 @@ vector<string>* Halt::getKeywords() {
 Grammar* Halt::parse() {
 	if (_msLine.find(",") != string::npos) return NULL; // no comma args;
 	_msLine = parseCommand(_msLine, "halt ", "HALT ");
-	if (isExpr(_msLine)) 
+	isExpr(_msLine); 
 	return this;
 }

@@ -2,7 +2,7 @@ import math
 i = 2
 # when is n^2 > 10nlogn
 while i > 1:
-	if (i**2) > (10 * i * (math.log(i))):
+	if (i**2) > (10 * i * (math.log(i, 2))):
 		print i;
 		break;
 	i += 1
