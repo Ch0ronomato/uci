@@ -35,7 +35,7 @@ protected:
 class Statement : public Grammar
 {
 public:
-	Statement(std::string line) : _msLine(line), isInStatement(false) { }
+	Statement(std::string line) : _msLine(line), isInStatement(false), isInTerm(false) { }
 	virtual ~Statement() = 0;
 	virtual Grammar* parse() = 0;
 	virtual std::vector<std::string>* getKeywords() = 0;
@@ -56,9 +56,9 @@ public:
 		}
 		else {
 			good = isTerm(s, w);
-			if (good && !isInStatement) std::cout << "Expr\n" << w << std::endl;
-			else if (good && isInStatement) std::cout << w << std::endl; 
-			if (s[0] == 'D' && s.find_first_of(ops) == std::string::npos) {
+			if (good && !isInStatement && w != "") std::cout << "Expr\n" << w << std::endl;
+			else if (good && isInStatement && w != "") std::cout << w << std::endl; 
+			if (s[0] == 'D') {
 				isInStatement = false;
 				good = isExpr(s.substr(2, s.find(']') - 2));
 			}
@@ -72,11 +72,37 @@ public:
 	bool isTerm(const std::string& s, std::string& w) {
 		std::string ops = "*%/";
 		bool good = true;
-		good = isFactor(s, w);
-		if (good) w = "Term\n" + w;
-		if (s.find_first_of(ops) != std::string::npos) {
+		if (s[0] != 'D' && (s[0] == '(' || s.find(')') != std::string::npos)) {
+			// parse out the parens and be done.
+			std::string copy = s;
+			if (s[0] == '(') {
+				copy = copy.substr(copy.find('(') + 1);
+			} else {
+				copy = copy.substr(0, copy.find(')'));
+			}
+			w = "";
+			isInStatement = false;
+			isExpr(copy);
+			good = true;
+		}
+		else if (s[0] != 'D' && s.find_first_of(ops) != std::string::npos) {
 			// process as normal;
-			good = handleOpsBubble(s, ops, false);
+			isInTerm = true;
+			std::string copy = s + ops[0];
+			copy.erase(std::remove(copy.begin(), copy.end(), ']'), copy.end());
+			size_t pos = copy.find_first_of(ops);
+			while (pos != std::string::npos && good) {
+				isFactor(copy.substr(0, pos), w);
+				copy.erase(0, pos + 1);
+				pos = copy.find_first_of(ops);
+				if (copy.find_first_of(ops) != std::string::npos) w = "\n" + w;
+			}
+			isInTerm = false;
+			w = "Term\n" + w;
+		}
+		else {	
+			good = isFactor(s, w);
+			if (good && !isInTerm) w = "Term\n" + w;
 		}
 		return good;
 	};
@@ -88,7 +114,9 @@ public:
 		return good;
 	};
 	bool isFactor(const std::string& s, std::string& w) {
-		bool good = s[0] == 'D' ? true : isNumber(s, w); 
+		bool good;
+		if (s[0] == 'D') good = true;
+		else good = isNumber(s, w);
 		if (good && s[0] != 'D') w = "Factor\n" + w;
 		else w = "Factor"; 
 		return good;	 
@@ -119,22 +147,23 @@ protected:
 	std::vector<std::string> *_mvKeywords;
 private: 
 	bool isInStatement; 
+	bool isInTerm; 
 	bool handleOpsBubble(const std::string& s, std::string ops, bool op) {
 		std::string copy = s + ops[0];
 		bool good = true;
 		std::string output="";
 		size_t pos = copy.find_first_of(ops);
 		if (op) std::cout << "Expr" << std::endl;
-		else std::cout << "Term" << std::endl;
 		while (pos != std::string::npos && good) {
 			std::string temp = copy.substr(0, pos);
 			isInStatement = true;	
-			good = temp[0] == 'D' ? isExpr(temp) : isTerm(temp, output);
+			good = (temp[0] == 'D' || temp[0] == '(' || temp.find(')') != std::string::npos) ? isExpr(temp) : isTerm(temp, output);
 			copy = copy.erase(0, pos + 1);
 			pos = copy.find_first_of(ops);
 			if (output != "") std::cout << output << std::endl;
 			output = "";	
 		} 
+		isInStatement = false;
 		return good;		
 	}
 };

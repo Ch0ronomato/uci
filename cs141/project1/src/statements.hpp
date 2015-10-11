@@ -39,19 +39,42 @@ public:
 			}
 		}
 		
-		// output part of algorithm, and split.
-		// if (s[0] == 'D' && s[1] == '[') good = good && isExpr(s.substr(2, s.find(']') - 2));
-		// if (s[0] == '(') good = good && isExpr(s.substr(1, s.find(')') - 1));
 		return good;
 	};
 	bool isTerm(const std::string& s, std::string& w) {
-		std::string ops = "*/%";
+		std::string ops = "*%/";
 		bool good = true;
-		good = isFactor(s, w);
-		if (good) w = "Term\n" + w;
-		if (s.find_first_of(ops) != std::string::npos) {
+		if (s[0] != 'D' && (s[0] == '(' || s.find(')') != std::string::npos)) {
+			// parse out the parens and be done.
+			std::string copy = s;
+			if (s[0] == '(') {
+				copy = copy.substr(copy.find('(') + 1);
+			} else {
+				copy = copy.substr(0, copy.find(')'));
+			}
+			w = "";
+			isInStatement = false;
+			isExpr(copy);
+			good = true;
+		}
+		else if (s[0] != 'D' && s.find_first_of(ops) != std::string::npos) {
 			// process as normal;
-			good = handleOpsBubble(s, ops, false);
+			isInTerm = true;
+			std::string copy = s + ops[0];
+			copy.erase(std::remove(copy.begin(), copy.end(), ']'), copy.end());
+			size_t pos = copy.find_first_of(ops);
+			while (pos != std::string::npos && good) {
+				isFactor(copy.substr(0, pos), w);
+				copy.erase(0, pos + 1);
+				pos = copy.find_first_of(ops);
+				if (copy.find_first_of(ops) != std::string::npos) w = "\n" + w;
+			}
+			isInTerm = false;
+			w = "Term\n" + w;
+		}
+		else {	
+			good = isFactor(s, w);
+			if (good && !isInTerm) w = "Term\n" + w;
 		}
 		return good;
 	};
