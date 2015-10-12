@@ -41,85 +41,20 @@ public:
 	virtual std::vector<std::string>* getKeywords() = 0;
 	bool isExpr(std::string s) {
 		std::string output = "";
-		return isExpr(s, output);
-	};
-	bool isExpr(std::string s, std::string& w) {
-		std::string ops = "+-";
-		bool good = true;
 		s.erase(std::remove(s.begin(), s.end(), ' '), s.end());
-		// Recursive branching.
-		// If we have a line with a data read in it (e.g. D[]) then 
-		// we need to make sure there is no sign of an operator. else
-		// wait until the data read is parsed out
-		if (s.find_first_of(ops) != std::string::npos) {
-			good = handleOpsBubble(s, ops, true);
-		}
-		else {
-			good = isTerm(s, w);
-			if (good && !isInStatement && w != "") std::cout << "Expr\n" << w << std::endl;
-			else if (good && isInStatement && w != "") std::cout << w << std::endl; 
-			if (s[0] == 'D') {
-				isInStatement = false;
-				good = isExpr(s.substr(2, s.find(']') - 2));
-			}
-		}
-		
-		// output part of algorithm, and split.
-		// if (s[0] == 'D' && s[1] == '[') good = good && isExpr(s.substr(2, s.find(']') - 2));
-		// if (s[0] == '(') good = good && isExpr(s.substr(1, s.find(')') - 1));
-		return good;
+		isExpr(s, output);
+		std::cout << output;
+		return true;
 	};
-	bool isTerm(const std::string& s, std::string& w) {
-		std::string ops = "*%/";
-		bool good = true;
-		if (s[0] != 'D' && (s[0] == '(' || s.find(')') != std::string::npos)) {
-			// parse out the parens and be done.
-			std::string copy = s;
-			if (s[0] == '(') {
-				copy = copy.substr(copy.find('(') + 1);
-			} else {
-				copy = copy.substr(0, copy.find(')'));
-			}
-			w = "";
-			isInStatement = false;
-			isExpr(copy);
-			good = true;
-		}
-		else if (s[0] != 'D' && s.find_first_of(ops) != std::string::npos) {
-			// process as normal;
-			isInTerm = true;
-			std::string copy = s + ops[0];
-			copy.erase(std::remove(copy.begin(), copy.end(), ']'), copy.end());
-			size_t pos = copy.find_first_of(ops);
-			while (pos != std::string::npos && good) {
-				isFactor(copy.substr(0, pos), w);
-				copy.erase(0, pos + 1);
-				pos = copy.find_first_of(ops);
-				if (copy.find_first_of(ops) != std::string::npos) w = "\n" + w;
-			}
-			isInTerm = false;
-			w = "Term\n" + w;
-		}
-		else {	
-			good = isFactor(s, w);
-			if (good && !isInTerm) w = "Term\n" + w;
-		}
-		return good;
-	};
+	bool isExpr(std::string s, std::string& w);
+	bool isTerm(const std::string& s, std::string& w);
+	bool isFactor(const std::string& s, std::string& w);
 	bool isNumber(const std::string& s, std::string& w) {
 		std::string::const_iterator it = s.begin();
 		while (it != s.end() && std::isdigit(*it) != false) { it++; }
 		bool good = !s.empty() && it == s.end();
-		if (good) w = "Number" + w;
+		if (good) w += "Number\n";
 		return good;
-	};
-	bool isFactor(const std::string& s, std::string& w) {
-		bool good;
-		if (s[0] == 'D') good = true;
-		else good = isNumber(s, w);
-		if (good && s[0] != 'D') w = "Factor\n" + w;
-		else w = "Factor"; 
-		return good;	 
 	};
 	bool isKeyword(const std::string& s) {
 		getKeywords();
@@ -145,31 +80,159 @@ public:
 protected:
 	std::string _msLine;
 	std::vector<std::string> *_mvKeywords;
-private: 
 	bool isInStatement; 
 	bool isInTerm; 
-	bool handleOpsBubble(const std::string& s, std::string ops, bool op) {
-		std::string copy = s + ops[0];
-		bool good = true;
-		std::string output="";
-		size_t pos = copy.find_first_of(ops);
-		if (op) std::cout << "Expr" << std::endl;
-		while (pos != std::string::npos && good) {
-			std::string temp = copy.substr(0, pos);
-			isInStatement = true;	
-			good = (temp[0] == 'D' || temp[0] == '(' || temp.find(')') != std::string::npos) ? isExpr(temp) : isTerm(temp, output);
-			copy = copy.erase(0, pos + 1);
-			pos = copy.find_first_of(ops);
-			if (output != "") std::cout << output << std::endl;
-			output = "";	
-		} 
-		isInStatement = false;
-		return good;		
-	}
+	bool isInFactor;
 };
 
 inline Statement::~Statement() {}
+// generic base class for recursive instantiation.
+class Recurrence : public Statement
+{
+public: 
+	Recurrence(std::string s, bool isStatement, bool isTerm, bool isFactor);
+	Grammar* parse();
+	std::vector<std::string>* getKeywords();
+	std::string toPrint;
+};
 
+Recurrence::Recurrence(std::string s, bool isStatement, bool isTerm, bool isFactor) : Statement(s) {
+	_mvKeywords = new vector<string>();
+	isInStatement = isStatement;
+	isInTerm = isTerm;
+	isInFactor = isFactor;
+}
+
+std::vector<std::string>* Recurrence::getKeywords() {
+	return _mvKeywords;
+}
+
+bool Statement::isExpr(std::string s, std::string& w) {
+	// split by plus or minus, as long as they aren't nested at all.
+	std::string ops = "+-";
+	if (s.find_first_of(ops) == std::string::npos) {
+		// no operators, yay!
+		w += "Expr\n";
+		isTerm(s, w);
+	} else if (s.find_first_of("()[]") == std::string::npos) {
+		std::string copy = s + ops[0];
+		size_t pos = copy.find_first_of(ops);
+		w += "Expr\n";
+		Recurrence *r;
+		while (pos != std::string::npos) {
+			// process the invidual halfs.
+			r = new Recurrence(copy.substr(0, pos), true, false, false);
+			r->parse();
+			w += r->toPrint;
+			delete r;
+			copy.erase(0, pos + 1);
+			pos = copy.find_first_of(ops);	
+		}
+	} else {
+		int nestCount = 0, lastPos = 0;
+		bool any = false;
+		w += "Expr\n";
+		std::string copy = s;
+		Recurrence *r;
+		for (int i = 0; i < s.length(); i++) {
+			if (s[i] == '(' || s[i] == '[') nestCount++;
+			else if (s[i] == ')' || s[i] == ']') nestCount--;
+			else if (nestCount == 0 && ops.find_first_of(s[i]) != std::string::npos) {
+				// we found an operator, that is not nested. Cut, and process.
+				std::string term = copy.substr(lastPos, i);
+				r = new Recurrence(term, true, false, false);
+				r->parse();
+				w += r->toPrint;
+				delete r;
+				lastPos = i;
+				any = true;
+			}
+		}	
+		
+		// call isTerm on the last piece.
+		if (any) isTerm(copy.substr(lastPos + 1), w);
+		else isTerm(copy, w);
+	}
+	return true;
+};
+bool Statement::isTerm(const std::string& s, std::string& w) {
+	std::string ops = "*/%";
+	if (s.find_first_of(ops) == std::string::npos) {
+		// no operators, yay!
+		w += "Term\n";
+		isFactor(s, w);
+	} else if (s.find_first_of("()[]") == std::string::npos) {
+		// Seperate terms
+		std::string copy = s + ops[0];
+		size_t pos = copy.find_first_of(ops);
+		Recurrence *r;
+		w += "Term\n";
+		while (pos != std::string::npos) {
+			// process the invidual halfs.
+			r = new Recurrence(copy.substr(0, pos), false, true, false);
+			r->parse();
+			w += r->toPrint;
+			delete r;
+			copy.erase(0, pos + 1);
+			pos = copy.find_first_of(ops);	
+		}
+	} else {
+		int nestCount = 0, lastPos = 0;
+		bool any = false;
+		std::string copy = s;
+		Recurrence *r;
+		w += "Term\n";
+		for (int i = 0; i < s.length(); i++) {
+			if (s[i] == '(' || s[i] == '[') nestCount++;
+			else if (s[i] == ')' || s[i] == ']') nestCount--;
+			else if (nestCount == 0 && ops.find_first_of(s[i]) != std::string::npos) {
+				// we found an operator, that is not nested. Cut, and process.
+				std::string term = copy.substr(lastPos, i);
+				r = new Recurrence(term, false, true, false);
+				r->parse();
+				w += r->toPrint;
+				delete r;
+				lastPos = i;
+				any = true;
+			}
+		}	
+		
+		// call isTerm on the last piece.
+		if (any) isFactor(copy.substr(lastPos), w);
+		else isFactor(copy, w);
+	}
+	return false;
+};
+bool Statement::isFactor(const std::string& s, std::string& w) {
+	if (s[0] == 'D' && s[1] == '[') {
+		// nested expression...yaaay.
+		w += "Factor\n";
+		Recurrence *r = new Recurrence(s.substr(2, s.rfind(']', s.length()) - 2), false, false, false); // allowed to expressions.
+		r->parse();
+		w += r->toPrint;
+	} else if (s[0] == '(') {
+		w+= "Factor\n";
+		Recurrence *r = new Recurrence(s.substr(1, s.rfind(')', s.length()) - 1), false, false, false); // allowed to be expressions.
+		r->parse();
+		w += r->toPrint;
+	} else {
+		w += "Factor\n";
+		isNumber(s, w);
+	}
+	return false;
+};
+
+Grammar* Recurrence::parse() {
+	if (isInFactor)
+		isNumber(_msLine, toPrint);
+	else if (isInTerm)
+		isFactor(_msLine, toPrint);
+	else if (isInStatement)
+		isTerm(_msLine, toPrint);
+	else
+		isExpr(_msLine, toPrint);
+	return this;
+}
 class Halt : public Statement
 {
 public:
@@ -189,7 +252,6 @@ vector<string>* Halt::getKeywords() {
 Grammar* Halt::parse() {
 	if (_msLine.find(",") != string::npos) return NULL; // no comma args;
 	_msLine = parseCommand(_msLine, "halt ", "HALT ");
-	isExpr(_msLine); 
 	return this;
 }
 
@@ -289,7 +351,7 @@ Grammar* Set::parse() {
 	
 	// ensure both arguments are expressions;
 	cout << "Set" << endl;
-	if ((isExpr(left) || isKeyword(left)) && (isExpr(right) || isKeyword(right))) {
+	if ((isKeyword(left) || isExpr(left)) && (isKeyword(right) || isExpr(right))) {
 		return this;
 	}
 	else return NULL;

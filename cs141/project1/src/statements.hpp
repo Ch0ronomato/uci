@@ -122,7 +122,8 @@ private:
 		bool good = true;
 		std::string output="";
 		size_t pos = copy.find_first_of(ops);
-		if (op) std::cout << "Expr" << std::endl;
+		
+		if (op) { if (s[0] != '(') { std::cout << "Expr" << std::endl; }}`
 		else std::cout << "Term" << std::endl;
 		while (pos != std::string::npos && good) {
 			std::string temp = copy.substr(0, pos);
