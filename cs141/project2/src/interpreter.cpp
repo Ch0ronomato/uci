@@ -1,10 +1,12 @@
 #include <string>
+#include <sstream>
 #include <algorithm>
 #include <vector>
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
 
+using std::stringstream;
 using std::ifstream;
 using std::string;
 using std::vector;
@@ -102,7 +104,10 @@ public:
 		std::string::const_iterator it = s.begin();
 		while (it != s.end() && std::isdigit(*it) != false) { it++; }
 		bool good = !s.empty() && it == s.end();
-		if (good) w = std::stoi(s); 
+		if (good) { 
+			stringstream ss(s);
+			ss >> w;
+		} 
 		return good;
 	};
 	bool isKeyword(const std::string& s) {
@@ -503,7 +508,7 @@ int main(int argc, char ** argv) {
 	string line;
 	ifstream ifs(file.c_str());
 	inputIn.open(dataFile.c_str());
-	output.open(file + ".out");
+	output.open((file + ".out").c_str());
 	// prefill D, init C
 	PC = 0;
 	run_bit = true;
