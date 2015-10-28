@@ -18,6 +18,7 @@ void *getAverage(void *args) {
 		data->sum += *data->begin;
 		data->begin++;
 	}
+	if(data->tid != 4) pthread_exit(args); 
 	return NULL;
 }
 
@@ -43,9 +44,15 @@ int main() {
 	int opsPerThread = floor(i / (NUM_THREADS + 1));
 	pthread_t threads[NUM_THREADS];
 	threadargs_t *args[NUM_THREADS + 1];
+	
+	// joinablility in threads.
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	
 	for (j = 0; j < NUM_THREADS; j++) {
 		args[j] = makeData(j, data, opsPerThread);
-		pthread_create(&threads[j], NULL, getAverage, (void *) args[j]); 
+		pthread_create(&threads[j], &attr, getAverage, (void *) args[j]); 
 	}
 
 	// do main thread.
@@ -58,7 +65,10 @@ int main() {
 	for (j = 0; j < NUM_THREADS; j++) {
 		pthread_join(threads[j], NULL);
 		avg += args[j]->sum;
+		free(args[j]);
 	}
 	printf("Average = %f", avg / i);
+
+	// free my data
 	return 0;
 }
