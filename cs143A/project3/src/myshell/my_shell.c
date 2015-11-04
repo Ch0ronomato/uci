@@ -1,3 +1,5 @@
+// Ian Schweer
+// 22514022
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/wait.h>

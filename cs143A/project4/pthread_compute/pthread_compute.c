@@ -1,3 +1,4 @@
+// Ian Schweer, 22514022
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
@@ -10,13 +11,22 @@ typedef struct threadargs_s {
 	int *end;
 	long tid;
 	int sum;
+	int min;
+	int max;
 } threadargs_t;
 
 void *getAverage(void *args) {
 	threadargs_t *data = (threadargs_t *)args;
 	while (data->begin != data->end) {
-		data->sum += *data->begin;
+		int val = *data->begin;
+		data->sum += val; 
 		data->begin++;
+		if (val > data->max) {
+			data->max = val; 
+		} 
+		if (val < data->min) {
+			data->min = val; 
+		}
 	}
 	if(data->tid != 4) pthread_exit(args); 
 	return NULL;
@@ -28,15 +38,18 @@ threadargs_t *makeData(long id, int data[], int ops) {
 	arg->begin = &data[id * ops];
 	arg->end = &data[(1 + id) * ops];
 	arg->sum = 0;
+	arg->min = BUFSIZ; 
+	arg->max = -1 * BUFSIZ;
 	return arg; 
 }
 
 int main() {
 	char name[BUFSIZ];
 	int data[BUFSIZ];
-	int i = 0, j = 0;
+	int i = 0, j = 0, globmin, globmax;
 	float avg = 0.0f;
 	while (fgets(name, BUFSIZ, stdin) != NULL) {
+		if (name[0] == '\n') continue;
 		data[i++] = strtol(name, NULL, 10);
 	}
 
@@ -60,14 +73,18 @@ int main() {
 	args[j]->end = &data[i];
 	getAverage((void *) args[j]);
 	avg += args[j]->sum;
+	globmin = args[j]->min;
+	globmax = args[j]->max;	
 
 	// join and exit
 	for (j = 0; j < NUM_THREADS; j++) {
 		pthread_join(threads[j], NULL);
 		avg += args[j]->sum;
+		globmin = globmin > args[j]->min ? args[j]->min : globmin;
+		globmax = globmax < args[j]->max ? args[j]->max : globmax;
 		free(args[j]);
 	}
-	printf("Average = %f", avg / i);
+	printf("Max:%i\nMin:%i\nAverage:%f", globmax, globmin, avg / i);
 
 	// free my data
 	return 0;

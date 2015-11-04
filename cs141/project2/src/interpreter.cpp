@@ -507,8 +507,22 @@ int main(int argc, char ** argv) {
 	string file(argv[argc - 2]), dataFile(argv[argc - 1]);
 	string line;
 	ifstream ifs(file.c_str());
+	if (ifs.fail()) {
+		std::cerr << "init: Errors accessing source file "
+			<< file << std::endl;
+		exit(-2);
+	}
 	inputIn.open(dataFile.c_str());
+	if (inputIn.fail()) {
+		std::cerr << "init: Errors accessing input file " << dataFile << std::endl;
+		exit(-2);
+	}
 	output.open((file + ".out").c_str());
+	if (output.fail()) {
+		std::cerr << "init: Errors accessing output file " 
+			<< file + ".out" << std::endl;
+		exit(-2);
+	}
 	// prefill D, init C
 	PC = 0;
 	run_bit = true;
@@ -528,7 +542,6 @@ int main(int argc, char ** argv) {
 
 	// run code.
 	while (run_bit && PC < C.size()) {
-		cout << "Processed line " << PC << " : " << C.at(PC) << endl;
 		processLine(parseLine(C.at(PC)));	
 		PC++;
 	}

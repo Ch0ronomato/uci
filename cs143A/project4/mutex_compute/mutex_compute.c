@@ -1,3 +1,4 @@
+// Ian Schweer, 22514022
 #include <stdlib.h>
 #include <errno.h>
 #include <math.h>
@@ -10,6 +11,8 @@ typedef struct threadargs_s {
 	long tid;
 	int sum;
 	int count;
+	int min;
+	int max;
 } threadargs_t;
 
 pthread_mutex_t mutexfgets;
@@ -35,6 +38,8 @@ void *getAverage(void *args) {
 		}
 		data->sum += input;
 		data->count++;
+		data->max = data->max < input ? input : data->max;
+		data->min = data->min > input ? input : data->min;
 	}
 	if(data->tid != 4) pthread_exit(args); 
 	return NULL;
@@ -45,11 +50,13 @@ threadargs_t *makeData(long id) {
 	arg->tid = id + 1;
 	arg->sum = 0;
 	arg->count = 0;
+	arg->min = BUFSIZ;
+	arg->max = -1 * BUFSIZ - 1;
 	return arg; 
 }
 
 int main() {
-	int j = 0, i = 0;
+	int j = 0, i = 0, globmin = 0, globmax = 0;
 	float avg = 0.0f;
 	pthread_mutex_init(&mutexfgets, NULL);
 
@@ -72,15 +79,19 @@ int main() {
 	getAverage((void *) args[j]);
 	avg += args[j]->sum;
 	i += args[j]->count;
+	globmin = args[j]->min;
+	globmax = args[j]->max;
 
 	// join and exit
 	for (j = 0; j < NUM_THREADS; j++) {
 		pthread_join(threads[j], NULL);
 		avg += args[j]->sum;
 		i += args[j]->count;
+		globmin = globmin > args[j]->min ? args[j]->min : globmin;
+		globmax = globmax < args[j]->max ? args[j]->max : globmax; 
 		free(args[j]);
 	}
-	printf("Average = %f", avg /(double)i);
+	printf("Max:%i\nMin:%i\nAverage:%f", globmax, globmin, avg /(double)i);
 	pthread_attr_destroy(&attr);
 	pthread_mutex_destroy(&mutexfgets);
 	return 0;
