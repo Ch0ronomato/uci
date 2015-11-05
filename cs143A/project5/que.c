@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "que.h"
-
+#include <pthread.h>
+#include <semaphore.h>
+#include <time.h>
 
 static ELE _que[QUE_MAX];
 static int _front = 0, _rear = 0;
@@ -9,14 +11,15 @@ extern int producers_working;
 
 static int matches = 0;
 
-pthread_mutext_t m;
-
+pthread_mutex_t m;
+sem_t sem_full;
+sem_t sem_empty;
 void add_match()
 {
     //Note: you will need to lock this update because it is a race condition
-    pthread_mutex_lock(m);
+    pthread_mutex_lock(&m);
     matches++;
-    pthread_mutex_unlock(m);
+    pthread_mutex_unlock(&m);
 }
 
 void report_matches(char *pattern)
@@ -27,6 +30,8 @@ void report_matches(char *pattern)
 int que_init()
 {
 	pthread_mutex_init(&m, NULL);
+	sem_init(&sem_full, 0, 0);
+	sem_init(&sem_empty, 0, 0);
 }
 
 void que_error(char *msg)
@@ -47,26 +52,45 @@ int que_is_empty()
 
 void que_enq(ELE v)
 {
-    // replace this spin with something better.....
-    while (que_is_full()) // note this is not right
-        ;
-    if ( que_is_full() )
-        que_error("enq on full queue");
+    if (que_is_full())
+	sem_wait(&sem_empty);
+    int max = 1000000, i = 0;
+    while(que_is_full() && i < max)
+	;
+	// que_error("Enqueue on full queue");
+    pthread_mutex_lock(&m);
     _que[_rear++] = v;
     if ( _rear >= QUE_MAX )
         _rear = 0;
+    pthread_mutex_unlock(&m);
+    if (que_is_full()) sem_post(&sem_full);
 }
 
 ELE que_deq()
 {
-    // replace this spin with something better.....
-    while (producers_working && que_is_empty()) // note this is not right
-        ;
-    if ( que_is_empty() )
-        que_error("deq on empty queue");
-    ELE ret = _que[_front++];
+    if (producers_working && que_is_empty()) { 
+	struct timespec s;
+	s.tv_sec = 1;
+	s.tv_nsec = 1;
+	int r;
+	if ((r = sem_timedwait(&sem_full, &s)) == -1) {
+		return (ELE){.string = " "};
+	} 
+    }
+    int max = 10000000, i=0;
+    while (que_is_empty() && i < max)
+	;
+    if (i == max) return (ELE){.string = " "};
+    pthread_mutex_lock(&m);
+    int x = _front;
+    _front++;
+    ELE ret = _que[x];
+    _que[x].string[0] = '\0';
     if ( _front >= QUE_MAX )
         _front = 0;
+    pthread_mutex_unlock(&m);
+    if (que_is_empty()) 
+    	sem_post(&sem_empty);
     return ret;
 }
 
