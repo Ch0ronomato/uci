@@ -1,0 +1,21 @@
+Ian Schweer
+22514022
+
+The dining philosophers problem says there are six philosophers and six chopsticks (or forks if you're using the original definition). Each philosopher must switch between eating their meal
+and thinking. However, each philosopher requires two chopsticks: the one on their left, and the one on the right. This leads to an issue with syncronizing the chopsticks called deadlock.
+
+Deadlock is when the number of processes (Philosophers) need more resources then avaliable (Chopsticsk). Deadlock requires four properties:
+	1. Mutal exclusion
+	2. Hold and Wait
+	3. No preemption
+	4. Circular wait.
+
+
+The philosphers need chopsticks to eat, so he cannot share his chopstick (this satisifies mutal exclusion). Each philosopher will hold the current chopstick
+they have and wait for the other one (this satisifies hold and wait). No preemption means a philosopher can't steal the a chopstick from a fellow philosopher.
+For circular wait, each philospher who has one chopstick is waiting on the two adjacent philosophers to eat his yummy food. If One philosopher is waiting on another
+who is also waiting, this becomes circular. 
+
+One way to avoid this deadlock is having each philosopher only pick up both resources when they're ready (Avoidance). You could also have a philosopher put a chopstick
+down if he notices he can't pick up the other (Prevention). You could have the philosophers decide at random who has to put their chopstick down to the rest can
+continue (Recovery). Or just let some of them starve (Ignore it).  
