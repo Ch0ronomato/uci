@@ -23,15 +23,24 @@ int cmpnode(const void *a, const void *b) {
 	return strcasecmp((*(node_t *)a).name, (*(node_t *)b).name);
 }
 
+int cmpstr(const void *a, const void *b) {
+	const char **s1 = (const char **)a;
+	const char **s2 = (const char **)b;
+	return strcasecmp(*s1, *s2);
+}
 void iterateDirectory(node_t *data, int length) {
 	struct passwd *pwd;
 	struct group *grp;
-	struct tm *tm;
+	struct tm *tm, *curr;
 	char datestring[256];
 	int modecount = 9;
 	mode_t modes[] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
 	char outs[] = {'r', 'w', 'x'};
 	int i;
+	
+	// get the current time.
+	time_t rawtime;
+	time(&rawtime);
 	for (i = 0; i < length; i++) {
 		if (S_ISDIR(data[i].statbuf.st_mode))
 			printf("d");
@@ -59,16 +68,22 @@ void iterateDirectory(node_t *data, int length) {
 		printf("%5jd ", data[i].statbuf.st_size);	
 		tm = localtime(&data[i].statbuf.st_mtime);
 
-		strftime(datestring, sizeof(datestring), "%b %e %R", tm);
-		printf("%s %s\n", datestring, data[i].dp->d_name);
+		if (difftime(rawtime, mktime(tm)) < 15768000) { 
+			strftime(datestring, sizeof(datestring), "%b %e %R", tm);
+			printf("%s %s\n", datestring, data[i].dp->d_name);
+		} else {
+			strftime(datestring, sizeof(datestring), "%b %e %Y", tm);
+			printf("%s %s\n", datestring, data[i].dp->d_name);
+		}
 	}
 }
 
-node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files, int *j, long *size) {
+node_t* getfiles(char *path, char *explore[], node_t *files, int *j, long *size) {
 	struct dirent *dp;
 	struct stat statbuf;
 	DIR *_dir = opendir(path);
-	int i = 0;
+	int i = 0, dircount = 0, k = 0;
+	char *dirs[BUFSIZ];
 	long pathsize = 0;
 	while (path[i++] != '\0') {};
 	if (path[i - 2] != '/') {
@@ -86,13 +101,21 @@ node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files
 		files[i].name = dp->d_name;
 		files[i].dp = dp;
 		if (S_ISDIR(files[i].statbuf.st_mode)) {
-			explore[*explore_length] = (char*) malloc(BUFSIZ);
-			strcpy(explore[(*explore_length)++], name);
+			dirs[dircount] = (char *) malloc(strlen(name));
+			strcpy(dirs[dircount++], name);
 		}
 		pathsize += (long)files[i].statbuf.st_blocks;
 		i++;
 	}
+	qsort(dirs, dircount, sizeof(char *), cmpstr);
+	qsort(files, *j, sizeof(node_t), cmpnode);
 	*j = i;
+	printf("%s:\ntotal %d\n", path, (pathsize / 2));
+	iterateDirectory(files, i); 
+	printf("\n");
+	for (i = 0; i < dircount; i++) {
+		getfiles(dirs[i], explore, files, &k, size); 
+	}
 	*size = pathsize;
 	return files;
 } 
@@ -108,12 +131,8 @@ int main(int argc, char **argv) {
 	explore[0] = path;
 	// iterate over all files in directory
 	for(; i < explore_length; i++) {
-		printf("%s:\n", explore[i]);
-		ret = getfiles(explore[i], explore, &explore_length, nodes, &j, &size);
-		printf("total %d\n", (size / 2));
+		ret = getfiles(explore[i], explore, nodes, &j, &size);
 		qsort(nodes, j, sizeof(node_t), cmpnode);
-		iterateDirectory(ret, j);
-		j = 0;
 	}
 	// print out directory information.
 	return 0;

@@ -51,15 +51,15 @@ int getfiles(char *path, node_t *files, int *j) {
 		strcpy(name, path);
 		strcat(name, dp->d_name);
 		if (dp->d_name[0] == '.') continue;
-		if (stat(name, &statbuf)== -1)
+		if (lstat(name, &statbuf)== -1)
 			continue;
 		if (S_ISDIR(statbuf.st_mode))
-			size += getfiles(name, files, j) + ((statbuf.st_blocks * 512) / 1000) + 4;
+			size += getfiles(name, files, j) + ((statbuf.st_blocks * 512) / 1000); 
 		else size += (statbuf.st_blocks * 512) / 1000;
 	}
 	files[*j].name = (char*) malloc(BUFSIZ);
 	strcpy(files[*j].name, path); 
-	files[*j].size = size;
+	files[*j].size = size == 0 ? 4 : size + 4;
 	(*j)++;
 	return size;
 } 
