@@ -15,62 +15,31 @@
 #include <stdint.h>
 
 typedef struct node {
+	int size;
 	char *name;
-	struct dirent *dp;
-	struct stat statbuf;
 } node_t;
 
 int cmpnode(const void *a, const void *b) {
-	return strcasecmp((*(node_t *)a).name, (*(node_t *)b).name);
+	node_t *left = (node_t *)a, *right = (node_t *)b;
+	if (left->size == right->size) return strcasecmp(left->name, right->name);
+	else return left->size - right->size;	
 }
 
 void iterateDirectory(node_t *data, int length) {
-	struct passwd *pwd;
-	struct group *grp;
-	struct tm *tm;
-	char datestring[256];
-	int modecount = 9;
-	mode_t modes[] = {S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IXOTH};
-	char outs[] = {'r', 'w', 'x'};
-	int i;
+	int i, j = 0;
 	for (i = 0; i < length; i++) {
-		/*if (S_ISDIR(data[i].statbuf.st_mode))
-			printf("d");
-		else
-			printf("-");
-
-		int j = 0;
-		for (j = 0; j < modecount; j++)
-			if (data[j].statbuf.st_mode & modes[j])
-				printf("%c", outs[j % 3]);
-			else
-				printf("-");
-		printf("%2d", data[i].statbuf.st_nlink);
-
-		if ((pwd = getpwuid(data[i].statbuf.st_uid)) != NULL)
-			printf(" %-8.8s", pwd->pw_name);
-		else
-			printf(" %-8d", data[i].statbuf.st_uid);
-
-		if ((grp = getgrgid(data[i].statbuf.st_gid)) != NULL)
-			printf(" %-6.8s", grp->gr_name);
-		else
-			printf(" %-8d", data[i].statbuf.st_gid);
-
-		printf("%5jd ", data[i].statbuf.st_size);	
-		tm = localtime(&data[i].statbuf.st_mtime);
-
-		strftime(datestring, sizeof(datestring), "%b %e %R", tm);
-		printf("%s %s\n", datestring, data[i].dp->d_name);*/
+		while(data[i].name[++j] != '\0');
+		data[i].name[j - 1] = '\0';
+		printf("%-7ld %s\n", data[i].size, data[i].name);
 	}
+		
 }
 
-node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files, int *j) {
+int getfiles(char *path, node_t *files, int *j) {
 	struct dirent *dp;
 	struct stat statbuf;
 	DIR *_dir = opendir(path);
-	int i = 0;
-	long pathsize = 0;
+	int i = 0, size = 0;
 	while (path[i++] != '\0') {};
 	if (path[i - 2] != '/') {
 		path[i - 1] = '/';
@@ -84,36 +53,26 @@ node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files
 		if (dp->d_name[0] == '.') continue;
 		if (stat(name, &statbuf)== -1)
 			continue;
-		if (S_ISDIR(statbuf.st_mode)) {
-			explore[*explore_length] = (char*) malloc(BUFSIZ);
-			strcpy(explore[(*explore_length)++], name);
-			files[i].name = dp->d_name;
-			files[i].dp = dp;
-			stat(name, &files[i].statbuf);
-			i++;
-		}
+		if (S_ISDIR(statbuf.st_mode))
+			size += getfiles(name, files, j);
+		else size += statbuf.st_blocks;
 	}
-	*j = i;
-	return files;
+	files[*j].name = (char*) malloc(BUFSIZ);
+	strcpy(files[*j].name, path); 
+	files[*j].size = size;
+	(*j)++;
+	return size;
 } 
 int main(int argc, char **argv) {
 	// get the "current" directory.
 	char *path = "./";
-	char *explore[BUFSIZ];
-	node_t nodes[BUFSIZ], *ret;
+	node_t nodes[BUFSIZ];
 	int ifiles = 0, explore_length = 1, i = 0, j = 0;
 	if (argc == 2)
 		path = argv[1];
-	explore[0] = path;
-	
-	// iterate over all files in directory
-	for(; i < explore_length; i++) {
-		printf("%s:\n", explore[i]);
-		ret = getfiles(explore[i], explore, &explore_length, nodes, &j);
-		qsort(nodes, j, sizeof(node_t), cmpnode);
-		iterateDirectory(ret, j);
-		j = 0;
-	}
+	getfiles(path, nodes, &j);
+	qsort(nodes, j, sizeof(node_t), cmpnode);
+	iterateDirectory(nodes, j);
 	// print out directory information.
 	return 0;
 }
