@@ -54,8 +54,8 @@ int getfiles(char *path, node_t *files, int *j) {
 		if (stat(name, &statbuf)== -1)
 			continue;
 		if (S_ISDIR(statbuf.st_mode))
-			size += getfiles(name, files, j);
-		else size += statbuf.st_blocks;
+			size += getfiles(name, files, j) + ((statbuf.st_blocks * 512) / 1000) + 4;
+		else size += (statbuf.st_blocks * 512) / 1000;
 	}
 	files[*j].name = (char*) malloc(BUFSIZ);
 	strcpy(files[*j].name, path); 
