@@ -1,0 +1,4 @@
+all:
+	gcc -o mydu mydu.c -ggdb
+clean:
+	rm mydu

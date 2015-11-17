@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <pwd.h>
@@ -33,7 +34,7 @@ void iterateDirectory(node_t *data, int length) {
 	char outs[] = {'r', 'w', 'x'};
 	int i;
 	for (i = 0; i < length; i++) {
-		if (S_ISDIR(data[i].statbuf.st_mode))
+		/*if (S_ISDIR(data[i].statbuf.st_mode))
 			printf("d");
 		else
 			printf("-");
@@ -60,11 +61,11 @@ void iterateDirectory(node_t *data, int length) {
 		tm = localtime(&data[i].statbuf.st_mtime);
 
 		strftime(datestring, sizeof(datestring), "%b %e %R", tm);
-		printf("%s %s\n", datestring, data[i].dp->d_name);
+		printf("%s %s\n", datestring, data[i].dp->d_name);*/
 	}
 }
 
-node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files, int *j, long *size) {
+node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files, int *j) {
 	struct dirent *dp;
 	struct stat statbuf;
 	DIR *_dir = opendir(path);
@@ -81,19 +82,18 @@ node_t* getfiles(char *path, char *explore[], int *explore_length, node_t *files
 		strcpy(name, path);
 		strcat(name, dp->d_name);
 		if (dp->d_name[0] == '.') continue;
-		if (stat(name, &files[i].statbuf)== -1)
+		if (stat(name, &statbuf)== -1)
 			continue;
-		files[i].name = dp->d_name;
-		files[i].dp = dp;
-		if (S_ISDIR(files[i].statbuf.st_mode)) {
+		if (S_ISDIR(statbuf.st_mode)) {
 			explore[*explore_length] = (char*) malloc(BUFSIZ);
 			strcpy(explore[(*explore_length)++], name);
+			files[i].name = dp->d_name;
+			files[i].dp = dp;
+			stat(name, &files[i].statbuf);
+			i++;
 		}
-		pathsize += (long)files[i].statbuf.st_blocks;
-		i++;
 	}
 	*j = i;
-	*size = pathsize;
 	return files;
 } 
 int main(int argc, char **argv) {
@@ -102,15 +102,14 @@ int main(int argc, char **argv) {
 	char *explore[BUFSIZ];
 	node_t nodes[BUFSIZ], *ret;
 	int ifiles = 0, explore_length = 1, i = 0, j = 0;
-	long size;
 	if (argc == 2)
 		path = argv[1];
 	explore[0] = path;
+	
 	// iterate over all files in directory
 	for(; i < explore_length; i++) {
 		printf("%s:\n", explore[i]);
-		ret = getfiles(explore[i], explore, &explore_length, nodes, &j, &size);
-		printf("total %d\n", (size / 2));
+		ret = getfiles(explore[i], explore, &explore_length, nodes, &j);
 		qsort(nodes, j, sizeof(node_t), cmpnode);
 		iterateDirectory(ret, j);
 		j = 0;
