@@ -1,0 +1,9 @@
+Ian Schweer, 22514022
+jumpt 3, D[0] == value_one
+jumpt 5, D[0] == value_two
+jumpt 7, D[0] == value_three
+set write, D[0] + 1
+jump 8
+set write, D[0] + 2
+jump 8
+set write, D[0] + 3

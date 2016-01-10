@@ -1,0 +1,3 @@
+Ian Schweer
+When we open /foo/bar, we first search the current inode, starting at the master block for the segment containing foo. Then we open that inode
+, a begin reading the foo inode, transversing it's layers of indirections until we find the segment containing data for bar, then we open the bar lnode, and begin reading it's data. 

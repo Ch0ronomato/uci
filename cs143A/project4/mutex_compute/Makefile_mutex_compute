@@ -1,0 +1,6 @@
+all:
+	gcc -o compute mutex_compute.c -lpthread -lm
+debug:
+	gcc -o compute mutex_compute.c -lpthread -ggdb -lm
+clean:
+	rm compute

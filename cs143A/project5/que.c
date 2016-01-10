@@ -1,3 +1,5 @@
+// Ian Schweer
+// 22514022
 #include <stdio.h>
 #include <stdlib.h>
 #include "que.h"

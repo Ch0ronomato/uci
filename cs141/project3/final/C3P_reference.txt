@@ -1,0 +1,37 @@
+set 2, read
+set 1, 3
+set 1, D[1] + 1
+set 0, D[1]
+set D[1], 35
+set D[1] + 1, 0
+set D[1] + 2, 2
+set 0, D[1]
+set 1, (D[1] + 3) + 2
+jumpt 14, D[D[D[0] + 2]] > 2
+set D[0] - 1, 1
+set 1, D[0]
+set 0, D[D[0] + 1]
+jump D[D[1]]
+set D[0] + 4, D[D[D[0] + 2]] - 2
+set 1, D[1] + 1
+set D[1], 22
+set D[1] + 1, D[0]
+set D[1] + 2, D[0] + 4
+set 0, D[1]
+set 1, (D[1] + 3) + 2
+jump 9
+set D[0] + 3, D[D[1] - 1]
+set D[0] + 4, D[D[D[0] + 2]] - 1
+set D[1], 30
+set D[1] + 1, D[0]
+set D[1] + 2, D[0] + 4
+set 0, D[1]
+set 1, (D[1] + 3) + 2
+jump 9
+set D[0] + 3, D[D[1] - 1] + D[D[0] + 3]
+set D[0] - 1, D[D[0] + 3]
+set 1, D[0]
+set 0, D[D[0] + 1]
+jump D[D[1]]
+set write, D[D[1] - 1]
+halt

@@ -1,0 +1,6 @@
+Ian Schweer, 22514022
+Mutal exclusion, progress, no starvation and efficent. Essentially, the critical section needs to be
+an area of code that will finish, and only allow one thread in. Mutal exclusion, mutex, means only one
+thread enters the critical section. Progress means that something can eventually leave the critical section (for example releasing a lock). Starvation shouldn't happen because then another thread can't enter
+the critical section. The critical section should also be pretty fast, at least fast enough where it
+doesn't take forever for one thread to finish.

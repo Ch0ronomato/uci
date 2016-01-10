@@ -1,0 +1,43 @@
+Ian Schweer, 22514022
+Parameters require a method to keep track of additional data in their activation records. Parameters, either by reference
+or by value need to come after the dynamic link but before the local variables (or whatever configuration the implementor
+chooses, as long as it's consistent). Below are templates for calling and returning for either call by reference or by
+value:
+
+Call, Pass by Reference:
+set 1, D[1] + 1    	Setup our return value space (assume one spot is enough)
+set D[1], 35	   	Set the return pointer value, in this case line 35	
+set D[1] + 1, D[0] 	Set the dynamic link
+set D[1] + 2, 2    	Set the address of the variable as a parameter.
+set 0, D[1]		Set the return pointer to it's new address
+set 1, (D[1] + 3) + 2	Set the stack pointer to point to the next free memory address (it's current value, plus 3 (RP, DL, Param) + 2 (local variable, return value))
+
+Caveat, if the reference needs to point to an expression, or something without an address, we have to give it one.
+set D[0] + 4, D[D[D[0] + 2]] - 2	Assign expression to a free memory location
+set 1, D[1] + 1				Setup our return value space
+set D[1], 22				Set the return pointer value, in this case line 22
+set D[1] + 1, D[0]			Set the dynamic link
+set D[1] + 2, D[0] + 4			Set the address of the variable as a parameter
+set 0, D[1]				Set the return pointer to it's new address
+set 1, (D[1] + 3) + 2			Set the stack to point to a next free memory address
+
+Return, Pass by Reference
+set D[0] + 3, D[D[1] - 1] + D[D[0] + 3] Compute our return value
+set D[0] - 1, D[D[0] + 3]		Set the calle's return value
+set 1, D[0]				Restore the stack pointer
+set 0, D[D[0] + 1]			Restore the frame pointer
+
+Call, Pass by Value:
+
+set 1, D[1] + 1				Setup our return value space.
+set D[1], 21				Set the return pointer value for this AR, in this case 21
+set D[1] + 1, D[0]			Set the dynamic link
+set D[1] + 2, D[D[0] + 2] - 2		Set the value of the variable as a parameter
+set 0, D[1]				Set the return pointer to it's new address
+set 1, (D[1] + 2) + 2			Set the stack to point to the next free memory address
+
+Return, Pass by Value:
+set D[0] - 1, D[D[0] + 3]		Set the return value for the calle
+set 1, D[0]				Restore the stack pointer
+set 0, D[D[0] + 1]			Restore the frame pointer
+jump D[D[1]]				Jump to return

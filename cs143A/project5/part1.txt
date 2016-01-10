@@ -1,0 +1,8 @@
+Ian Schweer
+22514022
+SJF, SRTF and priority can result in starvation, all for similar reasons.
+Shortest job first will result in starvation if some task X arrives after 0 and has a large burst time. For any task Y that arrives while X is not running, it is possible for Y to go infront of X if it's burst time is smaller. If seemingly infinite tasks of similar, or less, burst times to Y arrive, X will never run.
+
+For shortest remaining job first, if X has an incredibly large burst time, and many tasks arrive while X isn't running / never started running, then X will be starved.
+
+For priority, if X has a low priority, does not arrive at first, and multiple tasks arrive with a higher priority, X will starve 
