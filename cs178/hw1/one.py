@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+np.random.seed(0)
+get_ipython().magic("matplotlib inline")
 iris = np.genfromtxt("data/iris.txt", delimiter=None)
 Y = iris[:, -1]
 X = iris[:,0:-1]

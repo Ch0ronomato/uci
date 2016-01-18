@@ -25,7 +25,7 @@ public class Compiler {
         }
 
         Token t = s.next();
-        while (t.is(Token.Kind.EOF) == false) {
+        while (!t.is(Token.Kind.EOF)) {
                 System.out.println(t);
                 t = s.next();
         }
