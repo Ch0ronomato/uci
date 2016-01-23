@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <map>
 
 using std::cout;
 using std::endl;
@@ -11,6 +12,8 @@ using std::string;
 using std::vector;
 using std::ostream;
 using std::stringstream;
+using std::pair;
+using std::map;
 
 /**
  * @todo: Implement event dispatcher. 
@@ -20,7 +23,9 @@ using std::stringstream;
  */
 
 class PCB;
-typedef vector<PCB *>::iterator pcb_iter_t;
+typedef vector<PCB *>::iterator pcb_ptr_iter_t;
+typedef vector<pair<int,PCB *>>::iterator pcb_ptr_int_iter_t;
+typedef vector<PCB>::iterator pcb_iter_t;
 class EventDispatcher;
 
 class EventListener {
@@ -30,7 +35,7 @@ public:
 	 * Method returns a process control block that is being deleted
 	 * to the event dispatcher, or null if it is not being deleted.
 	 */
-	virtual EventListener* on_delete(char name) = 0;
+	virtual EventListener* on_delete(string name) = 0;
 	/**
 	 * on_request
 	 * Method to get a resource of name ${name}
@@ -38,22 +43,23 @@ public:
 	 * @todo: change name to on_get_resource
 	 */
 	virtual EventListener* on_request(string name) = 0;
-	virtual void has_deleted(char name) = 0;
+	virtual void has_deleted(string name) = 0;
 };
 
 class EventDispatcher {
 public:
 	EventDispatcher() : listeners() {};
-	EventListener* fire_on_delete(char name);
-	void fire_has_deleted(char name);
+	EventListener* fire_on_delete(const string& name);
+	void fire_has_deleted(string name);
 	EventListener* fire_on_request(string name);
+	void fire_on_release(int id);
 	void register_listener(EventListener *listener);
 	void unregister_listener(EventListener *listener);
 private:
 	vector<EventListener*> listeners;
 };
 
-EventListener* EventDispatcher::fire_on_delete(char name) {
+EventListener* EventDispatcher::fire_on_delete(const string& name) {
 	EventListener *to_delete = nullptr;
 	for (EventListener *listener : listeners) {
 		to_delete = listener->on_delete(name);
@@ -73,7 +79,7 @@ EventListener* EventDispatcher::fire_on_request(string name) {
 	return to_delete;
 }
 
-void EventDispatcher::fire_has_deleted(char name) {
+void EventDispatcher::fire_has_deleted(string name) {
 	for (EventListener *listener : listeners) {
 		listener->has_deleted(name);
 	}
@@ -124,40 +130,43 @@ typedef struct status_s {
 class RCB : public EventListener {
 public:
 	RCB();
-	RCB(int id, string name);
+	RCB(int arg_id, string arg_name, int arg_allocated);
 	int id;
+	int total;
+	int allocated;
 	string name;
 	status_t status;
-	vector<PCB *> waiting_list;
+	vector<pair<int, PCB *>> waiting_list;
 	friend ostream& operator<<(ostream& outs, RCB &obj);
-	virtual EventListener* on_delete(char arg_name) { return nullptr; }
+	virtual EventListener* on_delete(string arg_name) { return nullptr; }
 	virtual EventListener* on_request(string arg_name) {
 		return !name.compare(arg_name) ? this : nullptr;
 	}
-	virtual void has_deleted(char name) { }
+	virtual void has_deleted(string name) { }
 };
 
 RCB::RCB() { 
 	id = -1;
 	name = "";
 	status.status = FREE;
+	total = allocated = 0;
 }
-RCB::RCB(int arg_id, string arg_name) {
+RCB::RCB(int arg_id, string arg_name, int arg_allocated) {
 	id = arg_id;
 	name = arg_name;
 	status.status = FREE;
+	allocated = 0;
+	total = arg_allocated;
 }
 
 ostream& operator<<(ostream& outs, RCB &obj) {
 	outs << "Resource (" << obj.name << ") in status ";
-	switch (obj.status.status) {
-		case FREE:
-			outs << "FREE";
-			break;
-		case ALLOCATED:
+	switch (obj.total - obj.allocated) {
+		case 0:
 			outs << "ALLOCATED";
 			break;
 		default:
+			outs << "FREE(" << obj.total - obj.allocated << ")";
 			break;
 	} 
 
@@ -173,23 +182,33 @@ ostream& operator<<(ostream& outs, RCB &obj) {
  */
 class PCB : public EventListener {
 public:
-	PCB(int id, char name, int priority) : id(id), name(name), priority(priority) {} ;
+	PCB(int id, string name, int priority) : id(id), name(name), priority(priority), resource_to_amount_map() 
+	{
+		resource_to_amount_map["R1"] = 0;
+		resource_to_amount_map["R2"] = 0;
+		resource_to_amount_map["R3"] = 0;
+		resource_to_amount_map["R4"] = 0;
+	};
+	PCB (const PCB& copy) : id(copy.id), name(copy.name), 
+		resource_to_amount_map(copy.resource_to_amount_map),
+		state(copy.state), creation_tree(copy.creation_tree),
+		priority(copy.priority) { }
 	int id;
-	char name;
+	string name;
+	map<string, int> resource_to_amount_map;
 	vector<RCB *> resources;
 	status_t state;
 	vector<PCB *> creation_tree;
 	int priority;
-	virtual EventListener* on_delete(char arg_name) {
-		if (name != arg_name) return nullptr;
-		else return this;
+	virtual EventListener* on_delete(string arg_name) {
+		return !name.compare(arg_name) ? this : nullptr;
 	};
 
-	virtual void has_deleted(char arg_name) {
-		pcb_iter_t k = creation_tree.begin();
+	virtual void has_deleted(string arg_name) {
+		pcb_ptr_iter_t k = creation_tree.begin();
 		while (k != creation_tree.end()) {
 			PCB *i = *k;
-			if (i->name == arg_name) break;
+			if (!i->name.compare(arg_name)) break;
 			k++;
 		}
 
@@ -199,7 +218,7 @@ public:
 	virtual EventListener* on_request(string name) { return nullptr; };
 
 	friend ostream& operator<<(ostream& outs, PCB &obj) {
-		outs << "Process (" << obj.id << ") in status ";
+		/*outs << "Process (" << obj.id << ") in status ";
 		switch (obj.state.status) {
 			case READY:
 				outs << "READY";
@@ -214,7 +233,8 @@ public:
 				break;
 		} 
 		outs << " with priority " << obj.priority;
-		outs << " with " << obj.creation_tree.size() << " children";
+		outs << " with " << obj.creation_tree.size() << " children";*/
+		outs << obj.name;
 		return outs;
 	}
 };
@@ -282,7 +302,7 @@ bool ListManager::delete_pcb_from_list(PCB *to_delete) {
 	if (list == nullptr) return false;
 
 	// find to_delete and erase it.
-	vector<PCB>::iterator iter = list->begin();
+	pcb_iter_t iter = list->begin();
 	while (iter != list->end()) {
 		if (iter->id == to_delete->id)
 			break;
@@ -302,12 +322,12 @@ bool ListManager::delete_pcb_from_list(PCB *to_delete) {
  */
 class ShellManager {
 public:
-	ShellManager(ListManager *list_manager, PCB *root_process);
+	ShellManager(ListManager *list_manager);
 	PCB* get_current_process() { return delete_current_process ? nullptr : current_process; };
-	void create(PCB *parent_id, char name, int priority);
-	void destroy(char name);
-	void allocate_resource(PCB *process, string name);
-	void release_resource(string name);
+	void create(PCB *parent_id, string name, int priority);
+	void destroy(string name);
+	void allocate_resource(PCB *process, string name, int amount);
+	void release_resource(string name, int amount);
 	void list_processes_tree();
 	void list_processes_tree(PCB *start, string spacer = "");
 	void list_resources();
@@ -317,6 +337,7 @@ private:
 	void kill_tree(PCB *to_delete);
 	void preempt_put_on_ready(PCB *px);
 	void preempt_put_on_wait(PCB *px);
+	void release_resource_enqueue_waiting_process(RCB *r);
 	int processId; // strictly increasing.
 	ListManager *list_manager;
 	PCB *root_process;
@@ -327,14 +348,12 @@ private:
 	bool delete_current_process;
 };
 
-ShellManager::ShellManager(ListManager *list_manager, PCB *root_process)
+ShellManager::ShellManager(ListManager *list_manager)
 	: processId(1), list_manager(list_manager), 
-	root_process(root_process), current_process(root_process), 
+	root_process(nullptr), current_process(nullptr), 
 	event_dispatcher(), resources(), delete_current_process(false) { 
-	event_dispatcher.register_listener(root_process); 
-
-	RCB *r1 = new RCB(0, "R1"), *r2 = new RCB(1, "R2");
-	RCB *r3 = new RCB(2, "R3"), *r4 = new RCB(3, "R4");
+	RCB *r1 = new RCB(0, "R1", 1), *r2 = new RCB(1, "R2", 2);
+	RCB *r3 = new RCB(2, "R3", 3), *r4 = new RCB(3, "R4", 4);
 	event_dispatcher.register_listener(r1);
 	event_dispatcher.register_listener(r2);
 	event_dispatcher.register_listener(r3);
@@ -356,7 +375,11 @@ ShellManager::ShellManager(ListManager *list_manager, PCB *root_process)
  *	Insert into Ready List
  *	Schedule
  */
-void ShellManager::create(PCB *parent, char name, int priority) {
+void ShellManager::create(PCB *parent, string name, int priority) {
+	if (event_dispatcher.fire_on_delete(name) != nullptr) {
+		cout << "Error";
+		return;
+	}
 	PCB *new_process = new PCB(++processId, name, priority);
 
 	// initialize states.
@@ -383,17 +406,16 @@ void ShellManager::create(PCB *parent, char name, int priority) {
  *	Kill subtree
  *	Schedule
  */
-void ShellManager::destroy(char name) {
+void ShellManager::destroy(string name) {
 	PCB *to_delete = (PCB*)event_dispatcher.fire_on_delete(name);
-	event_dispatcher.unregister_listener(to_delete);	
-	vector<PCB>::iterator iter;
-	if (to_delete == nullptr)
+	if (to_delete == nullptr) {
+		cout << "Error";
 		return;
+	}
 	else {
+		event_dispatcher.unregister_listener(to_delete);	
+		pcb_iter_t iter;
 		delete_current_process = to_delete->state.status == RUNNING;
-		if (!list_manager->delete_pcb_from_list(to_delete)) {
-			cout << "Error! Could not delete pcb from list" << endl;
-		}
 		kill_tree(to_delete);
 		event_dispatcher.fire_has_deleted(name);
 	}
@@ -401,16 +423,42 @@ void ShellManager::destroy(char name) {
 }
 
 void ShellManager::kill_tree(PCB *item) {
-	pcb_iter_t iter = item->creation_tree.begin();
-	for (; iter != item->creation_tree.end(); iter++) {
-		event_dispatcher.unregister_listener(*iter);
-		list_manager->delete_pcb_from_list(*iter);
-		kill_tree(*iter);
+	pcb_ptr_iter_t iter = item->creation_tree.begin();
+	event_dispatcher.unregister_listener(item);
+	list_manager->delete_pcb_from_list(item);
+	for (auto r_iter = item->resources.begin(); r_iter != item->resources.end(); r_iter++) {
+		(*r_iter)->allocated -= item->resource_to_amount_map[(*r_iter)->name];
+		item->resource_to_amount_map[(*r_iter)->name] = 0;
+		release_resource_enqueue_waiting_process(*r_iter);
 	}
+	for (; iter != item->creation_tree.end(); iter++)
+		kill_tree(*iter);
 	item->creation_tree.erase(item->creation_tree.begin(), item->creation_tree.end());
 	delete item;
 }
 
+/**
+ * ShellManager::release_resource_enqueue_waiting_process
+ * Method will remove a waiting process from the wait queue on
+ * resource release.
+ */
+void ShellManager::release_resource_enqueue_waiting_process(RCB *r) {
+	pcb_ptr_int_iter_t waitlist_iter = r->waiting_list.begin();
+	while (r->allocated < r->total && waitlist_iter != r->waiting_list.end()) {
+		if ((r->allocated + waitlist_iter->first) <= r->total) {
+			r->allocated+= waitlist_iter->first;
+			waitlist_iter->second->resource_to_amount_map[r->name] += waitlist_iter->first;
+			list_manager->delete_pcb_from_list(waitlist_iter->second);
+			waitlist_iter->second->state.status = READY;
+			waitlist_iter->second->state.list = list_manager->get_ready_list();
+			list_manager->get_ready_list()->push_back(*waitlist_iter->second);
+			waitlist_iter++;
+		} else {
+			break;
+		}
+	}
+	r->waiting_list.erase(r->waiting_list.begin(), waitlist_iter);
+}
 /**
  * ShellManager::release_resource
  * Method to release a resource to the process world.
@@ -420,19 +468,13 @@ void ShellManager::kill_tree(PCB *item) {
  * If there is process waiting on the resource (aka in the processes wait list)
  * run it.
  */
-void ShellManager::release_resource(string name) {
+void ShellManager::release_resource(string name, int amount) {
 	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
-	if (r == nullptr) cout << "Error" << endl;
-	if (r->waiting_list.empty()) {
-		r->status.status = FREE;
-	} else {
-		PCB *p = r->waiting_list[0];
-		p->state.status = READY;
-		p->state.list = list_manager->get_ready_list();
-		list_manager->get_ready_list()->push_back(*p);
-		r->waiting_list.erase(r->waiting_list.begin());
-	}
-
+	if (r == nullptr) { cout << "Error: No resource to release" << endl; return; }
+	if (amount > current_process->resource_to_amount_map[name]) { cout << "Error" << endl; return;}
+	r->allocated -= amount;
+	current_process->resource_to_amount_map[name] -= amount;
+	release_resource_enqueue_waiting_process(r);
 	schedule();
 }
 
@@ -440,17 +482,24 @@ void ShellManager::release_resource(string name) {
  * ShellManager::allocate_resource
  * Method to allocate a resource for a process
  */
-void ShellManager::allocate_resource(PCB *process, string name) {
+void ShellManager::allocate_resource(PCB *process, string name, int amount) {
 	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
-	if (r == nullptr) cout << "Error, no resource" << endl;
-	if (r->status.status == FREE) {
-		r->status.status = ALLOCATED;
-		process->resources.push_back(r);
+	if (r == nullptr) { 
+		cout << "Error";
+		return;
+	}
+	if (r->total < amount) {
+		cout << "Error";
+		return;
+	}
+	process->resources.push_back(r);
+	if (r->allocated + amount <= r->total) {
+		r->allocated += amount;
+		process->resource_to_amount_map[name] += amount;
 	} else {
 		process->state.status = BLOCKED;
 		process->state.list = list_manager->get_blocked_list();
-		r->waiting_list.push_back(process);
-		list_manager->delete_pcb_from_list(process);
+		r->waiting_list.push_back(pair<int, PCB*>(amount, process));
 	}
 	schedule();
 }
@@ -488,12 +537,13 @@ void ShellManager::list_resources() {
  */
 void ShellManager::preempt_put_on_ready(PCB *px) {
 	list_manager->get_ready_list()->push_back(*current_process);
-	current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+	string t = (*px).name;
+	current_process = (PCB *)event_dispatcher.fire_on_delete(t); 
 	current_process->state.status = RUNNING;
 	list_manager->get_running_list()->erase(list_manager->get_running_list()->begin());
 	list_manager->get_running_list()->push_back(*current_process);
 	// delete the current entry from the ready list.
-	vector<PCB>::iterator iter = list_manager->get_ready_list()->begin();
+	pcb_iter_t iter = list_manager->get_ready_list()->begin();
 	while (iter->id != current_process->id) iter++;
 	list_manager->get_ready_list()->erase(iter);
 }
@@ -505,7 +555,7 @@ void ShellManager::preempt_put_on_wait(PCB *px) {
 	list_manager->get_running_list()->erase(list_manager->get_running_list()->begin());
 	list_manager->get_running_list()->push_back(*current_process);
 	// delete the current entry from the ready list.
-	vector<PCB>::iterator iter = list_manager->get_ready_list()->begin();
+	pcb_iter_t iter = list_manager->get_ready_list()->begin();
 	while (iter->id != current_process->id) iter++;
 	list_manager->get_ready_list()->erase(iter);
 }
@@ -523,16 +573,17 @@ void ShellManager::schedule() {
 	// find the highest priority item in the ready list.
 	int level_two = 0, level_one = 0, level_zero = 0;
 	PCB *processes[3], *px = nullptr;
-	for (PCB p : *list_manager->get_ready_list()) {
-		if (p.priority == 0 && level_zero < 1) {
+	pcb_iter_t p = list_manager->get_ready_list()->begin();
+	for (; p != list_manager->get_ready_list()->end(); p++) {
+		if (p->priority == 0 && level_zero < 1) {
 			level_zero++;
-			processes[2] = &p;
-		} else if (p.priority == 1 && level_one < 1) {
+			processes[2] = &(*p);
+		} else if (p->priority == 1 && level_one < 1) {
 			level_one++;
-			processes[1] = &p;
-		} else if (p.priority == 2 && level_two < 1) {
+			processes[1] = &(*p);
+		} else if (p->priority == 2 && level_two < 1) {
 			level_two++;
-			processes[0] = &p;
+			processes[0] = &(*p);
 		}
 	}
 	
@@ -545,8 +596,9 @@ void ShellManager::schedule() {
 	}
 	if (get_current_process() == nullptr) { // dead process
 		current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+		list_manager->delete_pcb_from_list(current_process);
 		current_process->state.status = RUNNING;
-		list_manager->get_running_list()->push_back(*current_process);
+		list_manager->get_running_list()->push_back(*current_process);		
 		delete_current_process = false;
 	} else if (get_current_process()->priority < px->priority) { // higher priority
 		// preempt
@@ -560,9 +612,27 @@ void ShellManager::schedule() {
 
 void ShellManager::timeout() {
 	int x = current_process->priority;
-	current_process->priority = 0;
+	PCB *y = current_process;
+	current_process->priority = x - 1;
 	schedule();
-	current_process->priority = x;
+	y->priority = x;
+
+	pcb_iter_t iter = list_manager->get_ready_list()->begin();
+	while (iter != list_manager->get_ready_list()->end() && iter->id != y->id) {iter++;}
+	if (list_manager->get_ready_list()->end() != iter) iter->priority = x;
+}
+
+void ShellManager::init() {
+	// start over.
+	resources[0].allocated = 0;
+	resources[1].allocated = 0;
+	resources[2].allocated = 0;
+	resources[3].allocated = 0;
+	if (root_process != nullptr) kill_tree(root_process);
+	root_process = new PCB(1, "Init", 0);
+	processId = 1;
+	ListManager::get_instance()->get_running_list()->push_back(current_process);
+	event_dispatcher.register_listener(root_process);
 }
 
 const string INIT_CMD = "init";
@@ -586,49 +656,55 @@ vector<string> split_args(string input_args) {
 	return tokens;
 }
 
-vector<string> prompt(PCB *current_process) {
-	cout << *current_process << endl;
+vector<string> prompt(PCB *current_process, bool init, bool error) {
+	if (init && !error)
+		cout << *current_process << endl;
+	else if (error)
+		cout << "Error";
 	string input;
-	cout << ">>> ";
 	getline(cin, input);
 	return split_args(input);
 }
 
 int main() {
 	// initialize the first process.
-	PCB current_process(1, '_', 0);
-	ListManager::get_instance()->get_running_list()->push_back(current_process);
-	ShellManager manager(ListManager::get_instance(), &current_process);	
+	ShellManager manager(ListManager::get_instance());	
+	bool initialized = false, error = false;
 	while (!ListManager::get_instance()->get_running_list()->empty()) {
-		vector<string> args = prompt(manager.get_current_process());
+		vector<string> args = prompt(manager.get_current_process(), initialized, error);
 		string input = args.at(0);
+		error = false;
 
 		if (!INIT_CMD.compare(input)) {
-			cout << "Init" << endl;
+			manager.init();
+			initialized = true;
+		}
+		else if (!initialized) {
+			error = true;
 		}
 		else if (!CREATE_CMD.compare(input)) {
-			manager.create(manager.get_current_process(), args[1][0], args[2][0] - '0');
+			error = manager.create(manager.get_current_process(), args[1], args[2][0] - '0');
 		}
 		else if (!DESTORY_CMD.compare(input)) {
-			manager.destroy(args[1][0]);
+			error = manager.destroy(args[1]);
 		}
 		else if (!REQUEST_CMD.compare(input)) {
-			manager.allocate_resource(manager.get_current_process(), args[1]);
+			error = manager.allocate_resource(manager.get_current_process(), args[1], args[2][0] - '0');
 		}
 		else if (!RELEASE_CMD.compare(input)) {
-			manager.release_resource(args[1]);
+			error = manager.release_resource(args[1], args[2][0] - '0');
 		}
 		else if (!TIMEOUT_CMD.compare(input)) {
-			cout << "Timeout" << endl;
+			error = manager.timeout();
 		}
 		else if (!LIST_PROCESSES_CMD.compare(input)) {
-			manager.list_processes_tree();
+			error = manager.list_processes_tree();
 		}
 		else if (!LIST_RESOURCES_CMD.compare(input)) {
-			manager.list_resources();
+			error = manager.list_resources();
 		}
-		else if (!HELP_CMD.compare(input)) {
-			cout << "Help" << endl;
+		else if (!input.compare("\n")) {
+			initialized = false;
 		}
 		else if (!QUIT_CMD.compare(input)) {
 			return 0;
