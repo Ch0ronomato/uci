@@ -1,0 +1,35 @@
+Ian Schweer
+22514022
+ischweer@uci.edu
+
+CS 131 PART B DESIGN:
+--------------------------------------------------------------------------------------
+This problem can still use the same palindrome algorithm described from part A, but 
+now the threads have to return to a manager to get their next assignment. 
+
+The manager classes assignment method will have the following logic:
+	given a thread t:
+	lock the assignment object
+	determine the next slice start and end index n and m
+	unlock the assignment object
+	assign t segment n-m
+
+The lock here is absolutely important to ensure no race conditions occur when accessing
+the slice indecies.
+
+Then each thread will use the following palindrome algorithm.
+findpalindrome:
+	given string str
+	create a diagonal array X
+	for i < length of string
+		X[i][i] = 1 (fill the diagonals)
+		left = 2
+		for left < (length of string)
+			for right < (length of string) - left + 1
+				if str[left] == str[right] && cl == 2) X[i][j] = 2, save start
+				else if (str[left] == str[right]) X[i][j] = L[i+1][j-1] + 2
+				else L[i][j] = max(L[i][j-1], L[i+1][j])
+
+	return L[0][n-1], start
+
+Then each thread will iterate over each line as in part A.

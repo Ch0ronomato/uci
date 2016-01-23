@@ -20,7 +20,7 @@ using std::stringstream;
  */
 
 class PCB;
-typedef vector<PCB>::iterator pcb_iter_t;
+typedef vector<PCB *>::iterator pcb_iter_t;
 class EventDispatcher;
 
 class EventListener {
@@ -178,7 +178,7 @@ public:
 	char name;
 	vector<RCB *> resources;
 	status_t state;
-	vector<PCB> creation_tree;
+	vector<PCB *> creation_tree;
 	int priority;
 	virtual EventListener* on_delete(char arg_name) {
 		if (name != arg_name) return nullptr;
@@ -186,9 +186,10 @@ public:
 	};
 
 	virtual void has_deleted(char arg_name) {
-		vector<PCB>::iterator k = creation_tree.begin();
+		pcb_iter_t k = creation_tree.begin();
 		while (k != creation_tree.end()) {
-			if (k->name == arg_name) break;
+			PCB *i = *k;
+			if (i->name == arg_name) break;
 			k++;
 		}
 
@@ -229,6 +230,8 @@ public:
 	vector<PCB>* get_ready_list() { return &ready_list; };
 	vector<PCB>* get_running_list() { return &running_list; };
 	vector<PCB>* get_blocked_list() { return &blocked_list; };
+	bool delete_pcb_from_list(PCB *to_delete);
+	vector<PCB>* find_pcb_list(PCB *to_find);
 	static ListManager* get_instance();
 private:
 	static ListManager *instance;
@@ -247,13 +250,60 @@ ListManager* ListManager::get_instance() {
 }
 
 /**
+ * ListManager::find_pcb_list
+ *
+ * Method to find a pcb in it's list.
+ */
+vector<PCB>* ListManager::find_pcb_list(PCB *to_delete) {
+	vector<PCB> *ptr_to_list = nullptr;
+	switch (to_delete->state.status) {
+		case READY:
+			return get_ready_list();
+		break;
+		case RUNNING:
+			return get_running_list();
+		break;
+		case BLOCKED:
+			return get_blocked_list();
+		break;
+		default:
+			return nullptr;
+		break;
+	}
+}
+
+/**
+ * ListManager::delete_pcb_from_list
+ *
+ * Method to find a pcb in it's list and delete it.
+ */
+bool ListManager::delete_pcb_from_list(PCB *to_delete) {
+	vector<PCB> *list = find_pcb_list(to_delete);
+	if (list == nullptr) return false;
+
+	// find to_delete and erase it.
+	vector<PCB>::iterator iter = list->begin();
+	while (iter != list->end()) {
+		if (iter->id == to_delete->id)
+			break;
+		iter++;
+	}
+	if (iter != list->end()) {
+		list->erase(iter);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
  * ShellManager
  * The actual manager of the shell. Will handle all actions related to processes and resources.
  */
 class ShellManager {
 public:
 	ShellManager(ListManager *list_manager, PCB *root_process);
-	PCB* get_current_process() { return current_process; };
+	PCB* get_current_process() { return delete_current_process ? nullptr : current_process; };
 	void create(PCB *parent_id, char name, int priority);
 	void destroy(char name);
 	void allocate_resource(PCB *process, string name);
@@ -262,8 +312,10 @@ public:
 	void list_processes_tree(PCB *start, string spacer = "");
 	void list_resources();
 private:
-	void schedule() {} ;
+	void schedule();
 	void kill_tree(PCB *to_delete);
+	void preempt_put_on_ready(PCB *px);
+	void preempt_put_on_wait(PCB *px);
 	int processId; // strictly increasing.
 	ListManager *list_manager;
 	PCB *root_process;
@@ -271,12 +323,13 @@ private:
 	EventDispatcher event_dispatcher;
 	const static int num_of_resources = 4;
 	RCB *resources[num_of_resources];
+	bool delete_current_process;
 };
 
 ShellManager::ShellManager(ListManager *list_manager, PCB *root_process)
 	: processId(1), list_manager(list_manager), 
 	root_process(root_process), current_process(root_process), 
-	event_dispatcher(), resources() { 
+	event_dispatcher(), resources(), delete_current_process(false) { 
 	event_dispatcher.register_listener(root_process); 
 
 	RCB *r1 = new RCB(0, "R1"), *r2 = new RCB(1, "R2");
@@ -310,7 +363,7 @@ void ShellManager::create(PCB *parent, char name, int priority) {
 	new_process->state.list = list_manager->get_ready_list();
 
 	// Link the PCB to the creation tree of the parent.
-	parent->creation_tree.push_back(*new_process);
+	parent->creation_tree.push_back(new_process);
 	list_manager->get_ready_list()->push_back(*new_process);
 
 	event_dispatcher.register_listener(new_process);
@@ -332,34 +385,28 @@ void ShellManager::create(PCB *parent, char name, int priority) {
 void ShellManager::destroy(char name) {
 	PCB *to_delete = (PCB*)event_dispatcher.fire_on_delete(name);
 	event_dispatcher.unregister_listener(to_delete);	
+	vector<PCB>::iterator iter;
 	if (to_delete == nullptr)
 		return;
 	else {
-		switch (to_delete->state.status) {
-			case READY:
-
-			break;
-			case RUNNING:
-
-			break;
-			case BLOCKED:
-
-			break;
-			default:
-
-			break;
+		delete_current_process = to_delete->state.status == RUNNING;
+		if (!list_manager->delete_pcb_from_list(to_delete)) {
+			cout << "Error! Could not delete pcb from list" << endl;
 		}
 		kill_tree(to_delete);
 		event_dispatcher.fire_has_deleted(name);
 	}
+	schedule();
 }
 
 void ShellManager::kill_tree(PCB *item) {
 	pcb_iter_t iter = item->creation_tree.begin();
 	for (; iter != item->creation_tree.end(); iter++) {
-		kill_tree(&(*iter));
-		item->creation_tree.erase(iter);
+		event_dispatcher.unregister_listener(*iter);
+		list_manager->delete_pcb_from_list(*iter);
+		kill_tree(*iter);
 	}
+	item->creation_tree.erase(item->creation_tree.begin(), item->creation_tree.end());
 	delete item;
 }
 
@@ -394,7 +441,7 @@ void ShellManager::release_resource(string name) {
  */
 void ShellManager::allocate_resource(PCB *process, string name) {
 	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
-	if (r == nullptr) cout << "Error" << endl;
+	if (r == nullptr) cout << "Error, no resource" << endl;
 	if (r->status.status == FREE) {
 		r->status.status = ALLOCATED;
 		process->resources.push_back(r);
@@ -402,17 +449,9 @@ void ShellManager::allocate_resource(PCB *process, string name) {
 		process->state.status = BLOCKED;
 		process->state.list = list_manager->get_blocked_list();
 		r->waiting_list.push_back(process);
-		list_manager->get_blocked_list()->push_back(*process);
-		auto i = list_manager->get_ready_list()->begin();
-		while (i != list_manager->get_ready_list()->end()) {
-			if (i->name == process->name)
-				break;
-			i++;
-		}
-
-		if (i != list_manager->get_ready_list()->end())
-			list_manager->get_ready_list()->erase(i);
+		list_manager->delete_pcb_from_list(process);
 	}
+	schedule();
 }
 /**
  * ShellManager::list_process
@@ -428,8 +467,8 @@ void ShellManager::list_processes_tree() {
  */
 void ShellManager::list_processes_tree(PCB *start, string spacer) {
 	cout << spacer << *start << endl;
-	for (auto& pcb : start->creation_tree) {
-		list_processes_tree(&pcb, spacer + "  ");
+	for (PCB *pcb : start->creation_tree) {
+		list_processes_tree(pcb, spacer + "  ");
 	}
 }
 
@@ -440,6 +479,81 @@ void ShellManager::list_processes_tree(PCB *start, string spacer) {
 void ShellManager::list_resources() {
 	for (int i = 0; i < num_of_resources; i++) {
 		cout << *resources[i] << endl;
+	}
+}
+
+/**
+ * ShellManager::preempt
+ */
+void ShellManager::preempt_put_on_ready(PCB *px) {
+	list_manager->get_ready_list()->push_back(*current_process);
+	current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+	current_process->state.status = RUNNING;
+	list_manager->get_running_list()->erase(list_manager->get_running_list()->begin());
+	list_manager->get_running_list()->push_back(*current_process);
+	// delete the current entry from the ready list.
+	vector<PCB>::iterator iter = list_manager->get_ready_list()->begin();
+	while (iter->id != current_process->id) iter++;
+	list_manager->get_ready_list()->erase(iter);
+}
+
+void ShellManager::preempt_put_on_wait(PCB *px) {
+	list_manager->get_blocked_list()->push_back(*current_process);
+	current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+	current_process->state.status = RUNNING;
+	list_manager->get_running_list()->erase(list_manager->get_running_list()->begin());
+	list_manager->get_running_list()->push_back(*current_process);
+	// delete the current entry from the ready list.
+	vector<PCB>::iterator iter = list_manager->get_ready_list()->begin();
+	while (iter->id != current_process->id) iter++;
+	list_manager->get_ready_list()->erase(iter);
+}
+
+/**
+ * ShellManager::schedule
+ * A preemptive priority scheduling algorithm.
+ * Sudo code from the lecture:
+ *
+ * find highest priority process p
+ * if (self->priority < p->priority || self->status.type != 'running' || self == null)
+ *   preempt(p, self)
+ */
+void ShellManager::schedule() {
+	// find the highest priority item in the ready list.
+	int level_two = 0, level_one = 0, level_zero = 0;
+	PCB *processes[3], *px = nullptr;
+	for (PCB p : *list_manager->get_ready_list()) {
+		if (p.priority == 0 && level_zero < 1) {
+			level_zero++;
+			processes[2] = &p;
+		} else if (p.priority == 1 && level_one < 1) {
+			level_one++;
+			processes[1] = &p;
+		} else if (p.priority == 2 && level_two < 1) {
+			level_two++;
+			processes[0] = &p;
+		}
+	}
+	
+	if (level_two == 1) px = processes[0];
+	else if (level_one == 1) px = processes[1];
+	else if (level_zero == 1) px = processes[2];
+	else { 
+		// couldn't find a waiting process
+		return;
+	}
+	if (get_current_process() == nullptr) { // dead process
+		current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+		current_process->state.status = RUNNING;
+		list_manager->get_running_list()->push_back(*current_process);
+		delete_current_process = false;
+	} else if (get_current_process()->priority < px->priority) { // higher priority
+		// preempt
+		current_process->state.status = READY;
+		preempt_put_on_ready(px);
+	}
+	else if (get_current_process()->state.status != RUNNING) { // timeout
+		preempt_put_on_wait(px);
 	}
 }
 
@@ -490,31 +604,31 @@ int main() {
 		if (!INIT_CMD.compare(input)) {
 			cout << "Init" << endl;
 		}
-		if (!CREATE_CMD.compare(input)) {
-			manager.create(&current_process, args[1][0], args[2][0] - '0');
+		else if (!CREATE_CMD.compare(input)) {
+			manager.create(manager.get_current_process(), args[1][0], args[2][0] - '0');
 		}
-		if (!DESTORY_CMD.compare(input)) {
+		else if (!DESTORY_CMD.compare(input)) {
 			manager.destroy(args[1][0]);
 		}
-		if (!REQUEST_CMD.compare(input)) {
+		else if (!REQUEST_CMD.compare(input)) {
 			manager.allocate_resource(manager.get_current_process(), args[1]);
 		}
-		if (!RELEASE_CMD.compare(input)) {
+		else if (!RELEASE_CMD.compare(input)) {
 			manager.release_resource(args[1]);
 		}
-		if (!TIMEOUT_CMD.compare(input)) {
+		else if (!TIMEOUT_CMD.compare(input)) {
 			cout << "Timeout" << endl;
 		}
-		if (!LIST_PROCESSES_CMD.compare(input)) {
+		else if (!LIST_PROCESSES_CMD.compare(input)) {
 			manager.list_processes_tree();
 		}
-		if (!LIST_RESOURCES_CMD.compare(input)) {
+		else if (!LIST_RESOURCES_CMD.compare(input)) {
 			manager.list_resources();
 		}
-		if (!HELP_CMD.compare(input)) {
+		else if (!HELP_CMD.compare(input)) {
 			cout << "Help" << endl;
 		}
-		if (!QUIT_CMD.compare(input)) {
+		else if (!QUIT_CMD.compare(input)) {
 			return 0;
 		}
 	}
