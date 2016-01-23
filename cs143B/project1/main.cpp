@@ -311,6 +311,7 @@ public:
 	void list_processes_tree();
 	void list_processes_tree(PCB *start, string spacer = "");
 	void list_resources();
+	void timeout();
 private:
 	void schedule();
 	void kill_tree(PCB *to_delete);
@@ -557,12 +558,13 @@ void ShellManager::schedule() {
 	}
 }
 
-/**
- * ShellManager::schedule
- * Preemptive priority scheduling.
- * Sudo code from text:
- *
- */
+void ShellManager::timeout() {
+	int x = current_process->priority;
+	current_process->priority = 0;
+	schedule();
+	current_process->priority = x;
+}
+
 const string INIT_CMD = "init";
 const string CREATE_CMD = "cr";
 const string DESTORY_CMD = "de";
