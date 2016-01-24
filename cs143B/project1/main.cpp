@@ -324,14 +324,15 @@ class ShellManager {
 public:
 	ShellManager(ListManager *list_manager);
 	PCB* get_current_process() { return delete_current_process ? nullptr : current_process; };
-	void create(PCB *parent_id, string name, int priority);
-	void destroy(string name);
-	void allocate_resource(PCB *process, string name, int amount);
-	void release_resource(string name, int amount);
+	bool create(PCB *parent_id, string name, int priority);
+	bool destroy(string name);
+	bool allocate_resource(PCB *process, string name, int amount);
+	bool release_resource(string name, int amount);
 	void list_processes_tree();
 	void list_processes_tree(PCB *start, string spacer = "");
 	void list_resources();
-	void timeout();
+	bool timeout();
+	bool init();
 private:
 	void schedule();
 	void kill_tree(PCB *to_delete);
@@ -375,10 +376,9 @@ ShellManager::ShellManager(ListManager *list_manager)
  *	Insert into Ready List
  *	Schedule
  */
-void ShellManager::create(PCB *parent, string name, int priority) {
+bool ShellManager::create(PCB *parent, string name, int priority) {
 	if (event_dispatcher.fire_on_delete(name) != nullptr) {
-		cout << "Error";
-		return;
+		return false;
 	}
 	PCB *new_process = new PCB(++processId, name, priority);
 
@@ -393,6 +393,7 @@ void ShellManager::create(PCB *parent, string name, int priority) {
 	event_dispatcher.register_listener(new_process);
 
 	schedule();
+	return true;
 }
 
 /**
@@ -406,20 +407,18 @@ void ShellManager::create(PCB *parent, string name, int priority) {
  *	Kill subtree
  *	Schedule
  */
-void ShellManager::destroy(string name) {
+bool ShellManager::destroy(string name) {
 	PCB *to_delete = (PCB*)event_dispatcher.fire_on_delete(name);
 	if (to_delete == nullptr) {
-		cout << "Error";
-		return;
+		return false;
 	}
-	else {
-		event_dispatcher.unregister_listener(to_delete);	
-		pcb_iter_t iter;
-		delete_current_process = to_delete->state.status == RUNNING;
-		kill_tree(to_delete);
-		event_dispatcher.fire_has_deleted(name);
-	}
+	event_dispatcher.unregister_listener(to_delete);	
+	pcb_iter_t iter;
+	delete_current_process = to_delete->state.status == RUNNING;
+	kill_tree(to_delete);
+	event_dispatcher.fire_has_deleted(name);
 	schedule();
+	return true;
 }
 
 void ShellManager::kill_tree(PCB *item) {
@@ -468,29 +467,26 @@ void ShellManager::release_resource_enqueue_waiting_process(RCB *r) {
  * If there is process waiting on the resource (aka in the processes wait list)
  * run it.
  */
-void ShellManager::release_resource(string name, int amount) {
+bool ShellManager::release_resource(string name, int amount) {
 	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
-	if (r == nullptr) { cout << "Error: No resource to release" << endl; return; }
-	if (amount > current_process->resource_to_amount_map[name]) { cout << "Error" << endl; return;}
+	if (r == nullptr || amount > current_process->resource_to_amount_map[name]) { 
+		return false; 
+	}
 	r->allocated -= amount;
 	current_process->resource_to_amount_map[name] -= amount;
 	release_resource_enqueue_waiting_process(r);
 	schedule();
+	return true;
 }
 
 /**
  * ShellManager::allocate_resource
  * Method to allocate a resource for a process
  */
-void ShellManager::allocate_resource(PCB *process, string name, int amount) {
+bool ShellManager::allocate_resource(PCB *process, string name, int amount) {
 	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
-	if (r == nullptr) { 
-		cout << "Error";
-		return;
-	}
-	if (r->total < amount) {
-		cout << "Error";
-		return;
+	if (r == nullptr || r->total < amount) { 
+		return false;
 	}
 	process->resources.push_back(r);
 	if (r->allocated + amount <= r->total) {
@@ -502,6 +498,7 @@ void ShellManager::allocate_resource(PCB *process, string name, int amount) {
 		r->waiting_list.push_back(pair<int, PCB*>(amount, process));
 	}
 	schedule();
+	return true;
 }
 /**
  * ShellManager::list_process
@@ -610,7 +607,7 @@ void ShellManager::schedule() {
 	}
 }
 
-void ShellManager::timeout() {
+bool ShellManager::timeout() {
 	int x = current_process->priority;
 	PCB *y = current_process;
 	current_process->priority = x - 1;
@@ -620,19 +617,22 @@ void ShellManager::timeout() {
 	pcb_iter_t iter = list_manager->get_ready_list()->begin();
 	while (iter != list_manager->get_ready_list()->end() && iter->id != y->id) {iter++;}
 	if (list_manager->get_ready_list()->end() != iter) iter->priority = x;
+	return true;
 }
 
-void ShellManager::init() {
+bool ShellManager::init() {
 	// start over.
-	resources[0].allocated = 0;
-	resources[1].allocated = 0;
-	resources[2].allocated = 0;
-	resources[3].allocated = 0;
+	resources[0]->allocated = 0;
+	resources[1]->allocated = 0;
+	resources[2]->allocated = 0;
+	resources[3]->allocated = 0;
 	if (root_process != nullptr) kill_tree(root_process);
 	root_process = new PCB(1, "Init", 0);
+	current_process = root_process;
 	processId = 1;
-	ListManager::get_instance()->get_running_list()->push_back(current_process);
+	ListManager::get_instance()->get_running_list()->push_back(*current_process);
 	event_dispatcher.register_listener(root_process);
+	return true;
 }
 
 const string INIT_CMD = "init";
@@ -658,9 +658,9 @@ vector<string> split_args(string input_args) {
 
 vector<string> prompt(PCB *current_process, bool init, bool error) {
 	if (init && !error)
-		cout << *current_process << endl;
+		cout << *current_process << " ";
 	else if (error)
-		cout << "Error";
+		cout << "error ";
 	string input;
 	getline(cin, input);
 	return split_args(input);
@@ -670,41 +670,43 @@ int main() {
 	// initialize the first process.
 	ShellManager manager(ListManager::get_instance());	
 	bool initialized = false, error = false;
-	while (!ListManager::get_instance()->get_running_list()->empty()) {
+	while (!ListManager::get_instance()->get_running_list()->empty() || !initialized) {
 		vector<string> args = prompt(manager.get_current_process(), initialized, error);
+		if (args.size() == 0) {
+			if (!initialized) break;
+			cout << endl;
+			initialized = false;
+			continue;
+		}
 		string input = args.at(0);
 		error = false;
 
 		if (!INIT_CMD.compare(input)) {
-			manager.init();
-			initialized = true;
+			initialized = manager.init();
 		}
 		else if (!initialized) {
 			error = true;
 		}
 		else if (!CREATE_CMD.compare(input)) {
-			error = manager.create(manager.get_current_process(), args[1], args[2][0] - '0');
+			error = !manager.create(manager.get_current_process(), args[1], args[2][0] - '0');
 		}
 		else if (!DESTORY_CMD.compare(input)) {
-			error = manager.destroy(args[1]);
+			error = !manager.destroy(args[1]);
 		}
 		else if (!REQUEST_CMD.compare(input)) {
-			error = manager.allocate_resource(manager.get_current_process(), args[1], args[2][0] - '0');
+			error = !manager.allocate_resource(manager.get_current_process(), args[1], args[2][0] - '0');
 		}
 		else if (!RELEASE_CMD.compare(input)) {
-			error = manager.release_resource(args[1], args[2][0] - '0');
+			error = !manager.release_resource(args[1], args[2][0] - '0');
 		}
 		else if (!TIMEOUT_CMD.compare(input)) {
-			error = manager.timeout();
+			error = !manager.timeout();
 		}
 		else if (!LIST_PROCESSES_CMD.compare(input)) {
-			error = manager.list_processes_tree();
+			manager.list_processes_tree();
 		}
 		else if (!LIST_RESOURCES_CMD.compare(input)) {
-			error = manager.list_resources();
-		}
-		else if (!input.compare("\n")) {
-			initialized = false;
+			manager.list_resources();
 		}
 		else if (!QUIT_CMD.compare(input)) {
 			return 0;
