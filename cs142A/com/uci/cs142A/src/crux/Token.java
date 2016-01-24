@@ -20,10 +20,10 @@ public class Token {
 		RETURN("return", true),
 		OPEN_PAREN("("),
 		CLOSE_PAREN(")"),
-		OPEN_BRACE("{"),
-		CLOSE_BRACE("}"),
-		OPEN_BRACKET("["),
-		CLOSE_BRACKET("]"),
+		OPEN_BRACKET("{"),
+		CLOSE_BRACKET("}"),
+		OPEN_BRACE("["),
+		CLOSE_BRACE("]"),
 		ADD("+"),
 		SUB("-"),
 		MUL("*"),
@@ -135,7 +135,10 @@ public class Token {
 	{
 		return charPos;
 	}
-	
+
+	public Kind kind() {
+		return this.kind;
+	}
 	// Return the lexeme representing or held by this token
 	public String lexeme()
 	{
@@ -242,8 +245,14 @@ public class Token {
 	private static int isValidIdentifierNumberOrFloat(String lexeme) {
 		if (!hasLetters(lexeme)) {
 			if (lexeme.charAt(0) != '.' && lexeme.contains(".")
-					&& lexeme.lastIndexOf('.') == lexeme.indexOf('.')) // ensure there is only one dot.
-				return 1;
+					&& lexeme.lastIndexOf('.') == lexeme.indexOf('.')) {
+				try {
+					Float.parseFloat(lexeme);
+					return 1;
+				} catch (Exception e) {
+					return 0;
+				}
+			}
 			else if (hasNumbers(lexeme)) return 2;
 			else return 0;
 		}

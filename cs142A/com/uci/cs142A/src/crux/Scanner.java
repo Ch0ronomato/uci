@@ -38,7 +38,9 @@ public class Scanner implements Iterable<Token> {
 			if (this.on_comment) {
 				this.on_comment = false;
 				// read until comment is over.
-				while (this.input.read() != 10 && this.input.read() != -1) {}
+				int temp = this.input.read();
+				while (temp != 10 && temp != -1) {temp = this.input.read(); }
+				this.input.read();
 				this.lineNum = 0;
 				this.charPos = 0;
 			}
@@ -50,7 +52,7 @@ public class Scanner implements Iterable<Token> {
 					this.charPos = 0;
 				}
 				if ((this.nextChar == 10) || ((char) this.nextChar == ' ')) return -1;
-				else return this.nextChar;
+				else return this.nextChar == -1 ? -2 : this.nextChar;
 			} else {
 				this.nextChar = this.lastChar;
 				this.lastChar = -1;
@@ -85,7 +87,7 @@ public class Scanner implements Iterable<Token> {
 		// skip any initial white space.
 		while (readChar() == -1) { }
 		this.lastChar = this.nextChar;
-		while (can_continue && readChar() != -1) {
+		while (can_continue && readChar() > -1) {
 			char next = (char)this.nextChar;
 			switch (munchSize) {
 				case EMPTY_STATE:
