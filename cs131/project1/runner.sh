@@ -1,0 +1,12 @@
+./LAB1 Timing_1.txt 2 1000 &&  ./LAB1 Timing_1.txt 2 9000 &&  ./LAB1 Timing_1.txt 2 20000
+./LAB1 Timing_1.txt 4 1000 &&  ./LAB1 Timing_1.txt 4 9000 &&  ./LAB1 Timing_1.txt 4 20000
+./LAB1 Timing_1.txt 8 1000 &&  ./LAB1 Timing_1.txt 8 9000 &&  ./LAB1 Timing_1.txt 8 20000
+./LAB1 Timing_1.txt 16 1000 && ./LAB1 Timing_1.txt 16 9000 && ./LAB1 Timing_1.txt 16 20000
+./LAB1 Timing_2.txt 2 1000 &&  ./LAB1 Timing_2.txt 2  9000 && ./LAB1 Timing_2.txt 2  20000
+./LAB1 Timing_2.txt 4 1000 &&  ./LAB1 Timing_2.txt 4  9000 && ./LAB1 Timing_2.txt 4  20000
+./LAB1 Timing_2.txt 8 1000 &&  ./LAB1 Timing_2.txt 8  9000 && ./LAB1 Timing_2.txt 8  20000
+./LAB1 Timing_2.txt 16 1000 && ./LAB1 Timing_2.txt 16 9000 && ./LAB1 Timing_2.txt 16 20000
+./LAB1 Timing_3.txt 2 1000 &&  ./LAB1 Timing_3.txt 2  9000 && ./LAB1 Timing_3.txt 2  20000
+./LAB1 Timing_3.txt 4 1000 &&  ./LAB1 Timing_3.txt 4  9000 && ./LAB1 Timing_3.txt 4  20000
+./LAB1 Timing_3.txt 8 1000 &&  ./LAB1 Timing_3.txt 8  9000 && ./LAB1 Timing_3.txt 8  20000
+./LAB1 Timing_3.txt 16 1000 && ./LAB1 Timing_3.txt 16 9000 && ./LAB1 Timing_3.txt 16 20000

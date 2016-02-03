@@ -1,3 +1,9 @@
+/**
+ * Ian Schweer
+ * 22514022
+ * ischweer@uci.edu
+ * CS 143B
+ */
 #include <iostream>
 #include <vector>
 #include <string>
@@ -193,6 +199,8 @@ public:
 		resource_to_amount_map(copy.resource_to_amount_map),
 		state(copy.state), creation_tree(copy.creation_tree),
 		priority(copy.priority) { }
+	~PCB() { // don't do anything 
+	}
 	int id;
 	string name;
 	map<string, int> resource_to_amount_map;
@@ -218,24 +226,28 @@ public:
 	virtual EventListener* on_request(string name) { return nullptr; };
 
 	friend ostream& operator<<(ostream& outs, PCB &obj) {
-		/*outs << "Process (" << obj.id << ") in status ";
-		switch (obj.state.status) {
-			case READY:
-				outs << "READY";
-				break;
-			case BLOCKED:
-				outs << "BLOCKED";
-				break;
-			case RUNNING:
-				outs << "RUNNING";
-				break;
-			default:
-				break;
-		} 
-		outs << " with priority " << obj.priority;
-		outs << " with " << obj.creation_tree.size() << " children";*/
 		outs << obj.name;
 		return outs;
+	}
+	bool checkChildren(PCB *to_delete) {
+		if (to_delete->id == id) return true;
+		if (creation_tree.empty() == false) {
+			pcb_ptr_iter_t iter = creation_tree.begin();
+			for (PCB *item : creation_tree) {
+				if (item->id == to_delete->id) {
+					creation_tree.erase(iter);
+					return true;
+				}
+				iter++;
+			}
+
+			for (PCB *item : creation_tree) {
+				if (item->checkChildren(item))
+					return true;
+			}
+		}
+
+		return false;
 	}
 };
 
@@ -253,6 +265,11 @@ public:
 	bool delete_pcb_from_list(PCB *to_delete);
 	vector<PCB>* find_pcb_list(PCB *to_find);
 	static ListManager* get_instance();
+	void clear_lists() { 
+		ready_list.clear();
+		running_list.clear();
+		blocked_list.clear();
+	}
 private:
 	static ListManager *instance;
 	vector<PCB> ready_list;
@@ -343,7 +360,7 @@ private:
 	ListManager *list_manager;
 	PCB *root_process;
 	PCB *current_process;
-	EventDispatcher event_dispatcher;
+	EventDispatcher *event_dispatcher;
 	const static int num_of_resources = 4;
 	RCB *resources[num_of_resources];
 	bool delete_current_process;
@@ -355,10 +372,11 @@ ShellManager::ShellManager(ListManager *list_manager)
 	event_dispatcher(), resources(), delete_current_process(false) { 
 	RCB *r1 = new RCB(0, "R1", 1), *r2 = new RCB(1, "R2", 2);
 	RCB *r3 = new RCB(2, "R3", 3), *r4 = new RCB(3, "R4", 4);
-	event_dispatcher.register_listener(r1);
-	event_dispatcher.register_listener(r2);
-	event_dispatcher.register_listener(r3);
-	event_dispatcher.register_listener(r4);
+	event_dispatcher = new EventDispatcher();
+	event_dispatcher->register_listener(r1);
+	event_dispatcher->register_listener(r2);
+	event_dispatcher->register_listener(r3);
+	event_dispatcher->register_listener(r4);
 	resources[0] = r1; 
 	resources[1] = r2;
 	resources[2] = r3; 
@@ -377,7 +395,7 @@ ShellManager::ShellManager(ListManager *list_manager)
  *	Schedule
  */
 bool ShellManager::create(PCB *parent, string name, int priority) {
-	if (event_dispatcher.fire_on_delete(name) != nullptr) {
+	if (event_dispatcher->fire_on_delete(name) != nullptr) {
 		return false;
 	}
 	PCB *new_process = new PCB(++processId, name, priority);
@@ -390,7 +408,7 @@ bool ShellManager::create(PCB *parent, string name, int priority) {
 	parent->creation_tree.push_back(new_process);
 	list_manager->get_ready_list()->push_back(*new_process);
 
-	event_dispatcher.register_listener(new_process);
+	event_dispatcher->register_listener(new_process);
 
 	schedule();
 	return true;
@@ -408,30 +426,42 @@ bool ShellManager::create(PCB *parent, string name, int priority) {
  *	Schedule
  */
 bool ShellManager::destroy(string name) {
-	PCB *to_delete = (PCB*)event_dispatcher.fire_on_delete(name);
-	if (to_delete == nullptr) {
+	PCB *to_delete = (PCB*)event_dispatcher->fire_on_delete(name);
+	if (to_delete == nullptr || current_process->checkChildren(to_delete) == false) {
 		return false;
 	}
-	event_dispatcher.unregister_listener(to_delete);	
+	event_dispatcher->unregister_listener(to_delete);	
 	pcb_iter_t iter;
 	delete_current_process = to_delete->state.status == RUNNING;
 	kill_tree(to_delete);
-	event_dispatcher.fire_has_deleted(name);
+	event_dispatcher->fire_has_deleted(name);
 	schedule();
 	return true;
 }
 
 void ShellManager::kill_tree(PCB *item) {
 	pcb_ptr_iter_t iter = item->creation_tree.begin();
-	event_dispatcher.unregister_listener(item);
+	event_dispatcher->unregister_listener(item);
 	list_manager->delete_pcb_from_list(item);
 	for (auto r_iter = item->resources.begin(); r_iter != item->resources.end(); r_iter++) {
-		(*r_iter)->allocated -= item->resource_to_amount_map[(*r_iter)->name];
-		item->resource_to_amount_map[(*r_iter)->name] = 0;
-		release_resource_enqueue_waiting_process(*r_iter);
+		if (item->state.status == BLOCKED) {
+			// remove from the waitlist.
+			pcb_ptr_int_iter_t wait_iter = (*r_iter)->waiting_list.begin();
+			while (wait_iter != (*r_iter)->waiting_list.end()) {
+				if (wait_iter->second->id == item->id) {
+					(*r_iter)->waiting_list.erase(wait_iter);
+					break;
+				}
+				wait_iter++;
+			} 
+		} else {
+			(*r_iter)->allocated -= item->resource_to_amount_map[(*r_iter)->name];
+			item->resource_to_amount_map[(*r_iter)->name] = 0;
+			release_resource_enqueue_waiting_process(*r_iter);
+		}
 	}
 	for (; iter != item->creation_tree.end(); iter++)
-		kill_tree(*iter);
+		if (*iter != nullptr) kill_tree(*iter);
 	item->creation_tree.erase(item->creation_tree.begin(), item->creation_tree.end());
 	delete item;
 }
@@ -468,7 +498,7 @@ void ShellManager::release_resource_enqueue_waiting_process(RCB *r) {
  * run it.
  */
 bool ShellManager::release_resource(string name, int amount) {
-	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
+	RCB *r = (RCB *)event_dispatcher->fire_on_request(name);
 	if (r == nullptr || amount > current_process->resource_to_amount_map[name]) { 
 		return false; 
 	}
@@ -484,7 +514,8 @@ bool ShellManager::release_resource(string name, int amount) {
  * Method to allocate a resource for a process
  */
 bool ShellManager::allocate_resource(PCB *process, string name, int amount) {
-	RCB *r = (RCB *)event_dispatcher.fire_on_request(name);
+	if (process->id == root_process->id) return false;
+	RCB *r = (RCB *)event_dispatcher->fire_on_request(name);
 	if (r == nullptr || r->total < amount) { 
 		return false;
 	}
@@ -535,7 +566,7 @@ void ShellManager::list_resources() {
 void ShellManager::preempt_put_on_ready(PCB *px) {
 	list_manager->get_ready_list()->push_back(*current_process);
 	string t = (*px).name;
-	current_process = (PCB *)event_dispatcher.fire_on_delete(t); 
+	current_process = (PCB *)event_dispatcher->fire_on_delete(t); 
 	current_process->state.status = RUNNING;
 	list_manager->get_running_list()->erase(list_manager->get_running_list()->begin());
 	list_manager->get_running_list()->push_back(*current_process);
@@ -547,7 +578,7 @@ void ShellManager::preempt_put_on_ready(PCB *px) {
 
 void ShellManager::preempt_put_on_wait(PCB *px) {
 	list_manager->get_blocked_list()->push_back(*current_process);
-	current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+	current_process = (PCB *)event_dispatcher->fire_on_delete(px->name); 
 	current_process->state.status = RUNNING;
 	list_manager->get_running_list()->erase(list_manager->get_running_list()->begin());
 	list_manager->get_running_list()->push_back(*current_process);
@@ -592,7 +623,7 @@ void ShellManager::schedule() {
 		return;
 	}
 	if (get_current_process() == nullptr) { // dead process
-		current_process = (PCB *)event_dispatcher.fire_on_delete(px->name); 
+		current_process = (PCB *)event_dispatcher->fire_on_delete(px->name); 
 		list_manager->delete_pcb_from_list(current_process);
 		current_process->state.status = RUNNING;
 		list_manager->get_running_list()->push_back(*current_process);		
@@ -626,12 +657,22 @@ bool ShellManager::init() {
 	resources[1]->allocated = 0;
 	resources[2]->allocated = 0;
 	resources[3]->allocated = 0;
-	if (root_process != nullptr) kill_tree(root_process);
-	root_process = new PCB(1, "Init", 0);
+	resources[0]->waiting_list.clear();
+	resources[1]->waiting_list.clear();
+	resources[2]->waiting_list.clear();
+	resources[3]->waiting_list.clear();
+	root_process = new PCB(1, "init", 0);
 	current_process = root_process;
 	processId = 1;
+	ListManager::get_instance()->clear_lists();
 	ListManager::get_instance()->get_running_list()->push_back(*current_process);
-	event_dispatcher.register_listener(root_process);
+	delete event_dispatcher;
+	event_dispatcher = new EventDispatcher();
+	event_dispatcher->register_listener(root_process);
+	event_dispatcher->register_listener(resources[0]);
+	event_dispatcher->register_listener(resources[1]);
+	event_dispatcher->register_listener(resources[2]);
+	event_dispatcher->register_listener(resources[3]);
 	return true;
 }
 
@@ -669,13 +710,15 @@ vector<string> prompt(PCB *current_process, bool init, bool error) {
 int main() {
 	// initialize the first process.
 	ShellManager manager(ListManager::get_instance());	
-	bool initialized = false, error = false;
+	bool initialized = true, error = false;
+	manager.init();
 	while (!ListManager::get_instance()->get_running_list()->empty() || !initialized) {
 		vector<string> args = prompt(manager.get_current_process(), initialized, error);
 		if (args.size() == 0) {
 			if (!initialized) break;
 			cout << endl;
 			initialized = false;
+			error = false;
 			continue;
 		}
 		string input = args.at(0);
@@ -709,6 +752,10 @@ int main() {
 			manager.list_resources();
 		}
 		else if (!QUIT_CMD.compare(input)) {
+			return 0;
+		}
+		else {
+			cout << input << endl;
 			return 0;
 		}
 	}

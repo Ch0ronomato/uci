@@ -1,0 +1,72 @@
+cr x 2
+cr y 1
+to
+cr z 2
+to
+req R1 1
+to
+req R1 1
+de z
+rel R1 1
+de x
+
+init
+cr x 1
+cr p 1
+cr q 1
+cr r 1
+to
+req R2 2
+to
+req R3 2
+to
+req R4 1
+to
+to
+req R3 2
+req R4 4
+req R2 1
+to
+de q
+to
+to
+req R1 2
+
+init
+cr x 1
+cr y 2
+
+init
+cr x 1
+req R1 1
+cr y 2
+req R1 2
+req R1 1
+de y
+de x
+
+init
+cr x 1
+req R1 1
+req R2 2
+req R3 3
+req R4 4
+cr y 1
+cr z 1
+cr a 1
+to
+req R2 1
+req R2 1
+req R4 1
+rel R4 4
+to
+de a
+rel R2 1
+rel R1 1
+rel R3 3
+to
+de y
+to
+de z
+de x
+

@@ -27,8 +27,8 @@ public class Scanner implements Iterable<Token> {
 	Scanner(Reader reader)
 	{
 		this.input = reader;
-		this.charPos = 0;
-		this.lineNum = 0;
+		this.charPos = 1;
+		this.lineNum = 1;
 		this.nextChar = -1;
 		this.lastChar = -1;
 	}	
@@ -39,17 +39,26 @@ public class Scanner implements Iterable<Token> {
 				this.on_comment = false;
 				// read until comment is over.
 				int temp = this.input.read();
-				while (temp != 10 && temp != -1) {temp = this.input.read(); }
-				this.input.read();
-				this.lineNum = 0;
-				this.charPos = 0;
+				while (temp != 10 && temp != -1) {
+					temp = this.input.read();
+				}
+
+				temp = this.input.read();
+				while (temp == 10) {
+					this.lineNum++;
+					temp = this.input.read();
+					if (temp != 10)
+						this.lastChar = temp;
+				}
+				this.lineNum++;
+				this.charPos = 1;
 			}
 			if (this.lastChar == -1) {
 				this.nextChar = this.input.read();
 				this.charPos++;
 				if (this.nextChar == 10) {
 					this.lineNum++;
-					this.charPos = 0;
+					this.charPos = 1;
 				}
 				if ((this.nextChar == 10) || ((char) this.nextChar == ' ')) return -1;
 				else return this.nextChar == -1 ? -2 : this.nextChar;
@@ -89,6 +98,7 @@ public class Scanner implements Iterable<Token> {
 		this.lastChar = this.nextChar;
 		while (can_continue && readChar() > -1) {
 			char next = (char)this.nextChar;
+			int pos = (charPos - (buffer.length() + 1));
 			switch (munchSize) {
 				case EMPTY_STATE:
 					// Search for all tokens of one token. If we match
@@ -96,7 +106,7 @@ public class Scanner implements Iterable<Token> {
 					if (Token.isValidLexeme(Token.getSingleCharacterMap(), String.valueOf(next), 0)) {
 						// We can transition.
 						buffer.append(next);
-						to_return = Token.generateToken(lineNum, charPos, buffer.toString(),
+						to_return = Token.generateToken(lineNum, pos, buffer.toString(),
 								Token.getSingleCharacterMap());
 						munchSize++;
 						was_good = true;
@@ -113,7 +123,7 @@ public class Scanner implements Iterable<Token> {
 					if (Token.isValidLexeme(Token.getDoubleCharTokens(), buffer.toString() + next, 1)) {
 						// we can transition
 						buffer.append(next);
-						to_return = Token.generateToken(lineNum, charPos, buffer.toString(),
+						to_return = Token.generateToken(lineNum, pos, buffer.toString(),
 								Token.getDoubleCharTokens());
 						munchSize++;
 						was_good = true;
@@ -126,7 +136,7 @@ public class Scanner implements Iterable<Token> {
 							buffer.delete(0, buffer.length());
 							was_good = false;
 							can_continue = true;
-							to_return = Token.generateToken(lineNum, charPos, "EOF", Token.Kind.EOF);
+							to_return = Token.generateToken(lineNum, pos, "EOF", Token.Kind.EOF);
 						}
 					} else {
 						// if we had a previous good state, return, else error.
@@ -135,7 +145,7 @@ public class Scanner implements Iterable<Token> {
 						if (!was_good) {
 							// error.
 							was_good = false;
-							to_return = Token.generateToken(lineNum, charPos, "Unexpected token: " + buffer.toString(),
+							to_return = Token.generateToken(lineNum, pos, "Unexpected token: " + buffer.toString(),
 									Token.Kind.ERROR);
 						}
 					}
@@ -145,7 +155,7 @@ public class Scanner implements Iterable<Token> {
 					if (Token.isValidLexeme(Token.getMultiCharTokens(), buffer.toString() + next, 2)) {
 						// we can transition
 						buffer.append(next);
-						to_return = Token.generateToken(lineNum, charPos, buffer.toString(),
+						to_return = Token.generateToken(lineNum, pos, buffer.toString(),
 								Token.getMultiCharTokens());
 						munchSize++;
 					} else {
@@ -155,7 +165,7 @@ public class Scanner implements Iterable<Token> {
 							this.lastChar = this.nextChar;
 						} else {
 							was_good = false;
-							to_return = Token.generateToken(lineNum, charPos, "Unexpected token: " + buffer.toString(),
+							to_return = Token.generateToken(lineNum, pos, "Unexpected token: " + buffer.toString(),
 									Token.Kind.ERROR);
 						}
 					}
@@ -163,7 +173,7 @@ public class Scanner implements Iterable<Token> {
 				default: // MANY_STATE
 					if (Token.isValidLexeme(Token.getKeywords(), buffer.toString() + next, munchSize)) {
 						buffer.append(next);
-						to_return = Token.generateToken(lineNum, charPos, buffer.toString(), Token.getKeywords());
+						to_return = Token.generateToken(lineNum, pos, buffer.toString(), Token.getKeywords());
 						munchSize++;
 					} else {
 						can_continue = false;
@@ -171,7 +181,7 @@ public class Scanner implements Iterable<Token> {
 							this.lastChar = this.nextChar;
 						} else {
 							was_good = false;
-							to_return = Token.generateToken(lineNum, charPos, "Unexpected token: " + buffer.toString(),
+							to_return = Token.generateToken(lineNum, pos, "Unexpected token: " + buffer.toString(),
 									Token.Kind.ERROR);
 						}
 					}

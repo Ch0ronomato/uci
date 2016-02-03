@@ -20,10 +20,10 @@ public class Token {
 		RETURN("return", true),
 		OPEN_PAREN("("),
 		CLOSE_PAREN(")"),
-		OPEN_BRACKET("{"),
-		CLOSE_BRACKET("}"),
-		OPEN_BRACE("["),
-		CLOSE_BRACE("]"),
+		OPEN_BRACE("{"),
+		CLOSE_BRACE("}"),
+		OPEN_BRACKET("["),
+		CLOSE_BRACKET("]"),
 		ADD("+"),
 		SUB("-"),
 		MUL("*"),
@@ -142,7 +142,7 @@ public class Token {
 	// Return the lexeme representing or held by this token
 	public String lexeme()
 	{
-		return this.kind.name();
+		return this.lexeme;
 	}
 	
 	public String toString()
