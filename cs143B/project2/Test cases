@@ -1,0 +1,4 @@
+Test cases:
+	Create:
+		Create only one file with zero bytes
+		Create num_descriptors + 1 files

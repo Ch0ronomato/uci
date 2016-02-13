@@ -1,0 +1,238 @@
+Transactions
+	Mainly used on databases
+	Begin_transactions
+		Evenything until the end is part of a transaction
+	End_Transaction
+		Commits the transaction if all went well
+	Abort Transaction
+		Rolls back everything if the transaction failed
+
+Transaction props
+	Atomic
+		All or nothing
+	Consisten
+		Maintains system invariants
+	Isolated or seriablizable
+		Concurrent transaction don't affect each other
+		Results run as in some sequential way
+	Durable
+		After commits results are permanent
+
+Hardware Types
+	Multiprocessor
+		A single system with multiple cpu's
+		Shared memory
+		Scalable up to a point
+	Multicomputer
+		A set of independent nodes (machines)
+		No shared memory, other communicaiton types
+			message passing (MPI)
+		Very scalable, just add more nodes
+
+
+Architectures
+Software
+	Describes how the software works (components)
+System
+	Defines the real architecture once implemented
+
+Styles
+	Layered
+		Organized in layers, each layer knows the layer above and below
+	Object
+		Each component is an object, they communicate using RPC
+	Data
+		Processes communicate through a common data repository
+	Event
+		Processes communicate through events (SOAP)
+
+System architectures
+	Centralized
+		Client server (web)
+		Layered: User, processing, data
+		Vertical
+	Decentralized
+		Peer to Peer, no one is special
+		Horizontal
+
+Threads and migration
+	Processes
+	Threads
+	Code Migration
+
+Processess
+	instance of a program execution
+	Managed by the OS
+		Memory
+		Protection
+		Context Switches and interrupts
+	Expensive to create
+
+Threads
+	Lightweight processess
+	Are created and ran inside of a proces
+		No memory protections, threads see the same memory
+		Fast context switches
+	Exploit Parallelism without IPC (interprocess communication)
+
+Code Migration
+	Instead of passing the data pass the code
+	Hard and costly
+	Advantages:
+		Reduce communication
+		Improve load balancing
+		Flexibility
+	Very hard on heterogeneous systems
+
+Models for migration
+	Models assume a code consists of
+		A code segment
+		A data segment
+		A execution segment (state)
+			Weak/Strong mobility
+				Weak: Start over
+				Strong: Continue
+
+Mobility Characteristics
+	Sender/client initiated
+	Run as new process
+	or run as same process
+	or clone the process (needs strong mobility)
+
+Migrating resources
+	Very difficult
+	3 kinds of binding
+		Identifier, Value, Type
+	3 types of resource-to-machine building
+		Unattached, fastened, fixed
+
+Communication
+	Types
+	RPC
+	Messages
+	Streams
+
+Types:
+	Persistent (Delievery)
+		Stored until delivered (email)
+	Transient (Delievery)
+		Message is discarded if it can't be delievered
+	Synchronous (Behavior)
+		Sender blocks until it receives answer (Phone call)
+	Async (Behavior)
+		Sender continues after submitting message (Text message)
+
+RPC:
+	Implements a function call on a different machine
+	Process on machine A (Client) calls process in Machine B(server)
+		Proces A is suspended
+		Process B executes
+		Process A resumes with returned values
+	Client/Server stubs for transparency
+
+	Difficulties
+		Seems like a funciton call but it's difficult to pass resources
+		How do you pass parameters?
+			Ints ok...what about arrays? References? Pointers?
+		How do you return results? 
+		Dealing with heterogeneity
+		Only synchronous communication
+
+Messages
+	Alternative to RPC, allows concurrency no need to suspend process in machine A
+	MPI is a standard that allows message passing
+		Platform independent
+	Allows synchronous and asynchronous communication.
+
+MPI
+	Message passing interface
+		A standard
+		Available in Fortran, C and C++
+	Single-Program Multiple-Data model
+		One program, each node executes on different data
+	Communication mode primitives
+	Data distribution primitives
+
+MPI Functions
+	MPI Defines functions that can be used to communicate between instances of the program
+	MPI_Init: start MPI program
+		Sets up infrastruture
+	MPI_Finalize: Finalize MPI Program
+		Cleans up infrastructure
+
+MPI Provides
+	Point to point communication
+	Collective communication
+	Synchronization
+	Synchronous and async communications
+
+Point to point
+	MPI_Send and MPI_recieve
+		Blocking -> synchronous
+			MPI_Send(...) only returns when the receiving funtion gets the message
+			MPI_Recieve(...) only returns when it gets the data
+			Watch out for deadlock!
+	There are also "Non-blocking" send and receives
+		MPI_ISend(...) and MPI_Irecieve(...)
+
+Collecive
+	MPI_Broadcast(...)
+		From a root node communication data to all the other nodes
+		also blocking.
+
+MPI needs only six functions
+	The others are nice to have (optimization and abstractions)
+
+	Init
+	Finalize
+	MPI_Comm_Size
+	MPI_Comm_Rank
+	MPI_Send
+	MPI_Recieve
+
+MPICH (May not be important)
+	Portablility
+	ADI (smaller set of primatives)
+	Specifies functions for:
+		Specifying a message to be sent/recieve
+		Moving the data
+		Handling pending messages
+		Environment info
+	Seperates control from data
+	How to handle buffering
+
+Persistent Message Passing
+	Using message queue
+	No guarantee when message will be delivered, but it will delivered
+	Think email...(Outlook not Gmail)
+
+Streams
+	A continous flow of data
+		Not independent packets
+		A sequence of data units, continuous or discrete
+		May have to worry about timing
+	Have QoS requirements, can't wait forever
+
+Stream transmission modes
+	Async (order)
+	Sync (MAX delay)
+	Isochronous
+		Min and max delay (video)
+	Multicast
+		One to many broadcast
+
+QoS
+	Required bit rate at which data should be transported
+	Maximum delay until application is set up
+	Maximum end to end delay
+	Maximum delay variance (jitter)
+		Token bucket algorithm
+	Maximum round-trip delay
+
+Synchronization 
+	Streams may have dependencies
+		Audio and video
+	Need to synchronize between discrete and continious streams
+		Do at the data level
+		Or at a high-level interface
+

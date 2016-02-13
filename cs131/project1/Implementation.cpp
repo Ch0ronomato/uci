@@ -35,7 +35,7 @@ struct Result
     {
         // Line number can't be equal
         return length < o.length ||
-        (length == o.length && lineNumber <  o.lineNumber) ||
+        (length == o.length && lineNumber >  o.lineNumber) ||
         (length == o.length && lineNumber == o.lineNumber  && firstChar < o.firstChar);
     }
     

@@ -6,6 +6,7 @@ from .utils import toIndex, fromIndex, to1ofK, from1ofK
 from numpy import asarray as arr
 from numpy import atleast_2d as twod
 from numpy import asmatrix as mat
+import matplotlib.pyplot as plt
 
 
 ################################################################################
@@ -54,11 +55,17 @@ class logisticClassify2(classifier):
 
 ## CORE METHODS ################################################################
 
-    def plotBoundary(self,X,Y):
+    def plotBoundary(self,X,Y,axis=None):
         """ Plot the (linear) decision boundary of the classifier, along with data """
-        raise NotImplementedError
-        ## TODO: plot data (X[:,0] vs X[:,1], colored by class Y[:]
-        ## TODO: plot decision boundary defined by theta0 + theta1 X1 + theta2 X2 == 0
+        if axis==None: axis=plt
+        colors = ['b', 'g', 'r']
+        for i in range(1, X.shape[1]):
+            for c in np.unique(Y):
+                axis.plot( X[Y==c, 0], X[Y==c, i], 'o', color=colors[int(c)])
+        xs = np.linspace(min(X[:,0]), max(X[:,0]), 200)
+        ys = ((self.theta[0][1] * -1) * xs) - self.theta[0][0]
+        ys = ys / self.theta[0][2]
+        axis.plot(xs, ys, 'r-')
 
     def predictSoft(self, X):
         """ Return the probability of each class under logistic regression """
@@ -71,16 +78,19 @@ class logisticClassify2(classifier):
 
     def predict(self, X):
         """ Return the predictied class of each data point in X"""
-        raise NotImplementedError
-        ## TODO: compute linear response z[i] = theta0 + theta1 X[i,1] + theta2 X[i,2] for each i
-        ## TODO: if z[i] > 0, predict class 1:  Yhat[i] = self.classes[1]
-        ##       else predict class 0:  Yhat[i] = self.classes[0]
+        z=np.zeros(X.shape[0])
+        Yhat = np.zeros(X.shape[0])
+        X1  = np.hstack((np.ones((X.shape[0],1)),X))
+        for i in range(X.shape[0]):
+            Yhat[i] = (self.classes[1] if np.dot(self.theta[0],X1[i]) > 0 else self.classes[0])
+
         return Yhat
 
 
-    def train(self, X, Y, initStep=1.0, stopTol=1e-4, stopIter=5000, plot=None):
+    def train(self, X, Y, initStep=1.0, stopTol=1e-4, stopIter=5000, plot=None, alpha=0.0):
         """ Train the logistic regression using stochastic gradient descent """
         ## First do some bookkeeping and setup:
+        initStep = float(initStep)
         self.theta,X,Y = twod(self.theta), arr(X), arr(Y)   # convert to numpy arrays
         M,N = X.shape
         if Y.shape[0] != M:
@@ -93,7 +103,7 @@ class logisticClassify2(classifier):
         # Some useful modifications of the data matrices:
         X1  = np.hstack((np.ones((M,1)),X))    # make data array with constant feature
         Y01 = toIndex(Y, self.classes)         # convert Y to canonical "0 vs 1" classes
-
+        SIs = np.zeros(M)
         it   = 0
         done = False
         Jsur = []
@@ -102,28 +112,32 @@ class logisticClassify2(classifier):
             step = (2.0 * initStep) / (2.0 + it)   # common 1/iter step size change
 
             for i in range(M):  # for each data point i:
-                ## TODO: compute zi = linear response of X[i,:]
-                ## TODO: compute prediction yi 
-                ## TODO: compute soft response si = logistic( zi )
-                ## TODO: compute gradient of logistic loss wrt data point i:
-                
-                # Take a step down the gradient
+                zi = np.dot(self.theta[0], X1[i])
+                yi = self.classes[0] if zi > 0 else self.classes[1]
+                Y01[i] = yi
+                si = 1 / (1 + np.exp(-zi))
+                SIs[i] = si
+                gradi = -(Y01[i] * (1 - si) * X1[i]) + ((1 - Y01[i]) * si * X1[i]) + (alpha * np.sum(self.theta))
                 self.theta = self.theta - step * gradi
 
             # each pass, compute surrogate loss & error rates:
             J01.append( self.err(X,Y) )
-            ## TODO: compute surrogate loss (logistic negative log-likelihood)
-            ##  Jsur = sum_i [ (si log si) if yi==1 else ((1-si)log(1-si)) ]
-            Jsur.append( NotImplemented ) ## TODO ...
+            accum=[]
+            for i in range(M):
+                si = (1 + np.exp(-np.dot(self.theta[0], X1[i]))) ** -1
+                accum.append((-np.log(si)) if Y01[i] == self.classes[1] else (-np.log(1 - si)))
+            Jsur.append( np.mean(accum) + (alpha * (np.sum(self.theta)**2))) 
            
             ## For debugging: print current parameters & losses
-            # print self.theta, ' => ', Jsur[-1], ' / ', J01[-1]  
             # raw_input()   # pause for keystroke
 
             # check stopping criteria:
             it += 1
             done = (it > stopIter) or ( (it>1) and (abs(Jsur[-1]-Jsur[-2])<stopTol) )
 
+        # plot jsur vs j01
+        if (plot != None):
+            plot.semilogx(Jsur, 'r-', J01, 'g-')
 
 ################################################################################
 ################################################################################

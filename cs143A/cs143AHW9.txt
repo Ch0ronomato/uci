@@ -1,0 +1,52 @@
+Ian Schweer
+22514022
+1. True
+2. Extended file system
+3. Superblock
+4. true
+5. Virtual file system.
+6. Linear linked list or hash table.
+7. Contiguous allocation or linked allocation.
+8. false
+9. Memory mapped IO and read/write IO
+10. fsck
+11. True
+12. NFS protocol and mount protocol
+13. Write-Anywhere file layout.
+14. Base and limit.
+15. Address binding time.
+16. MMU
+17. Backing store.
+18. Buddy
+19. Slab
+20. Internal and external
+21. text, code, data
+22. Page and offset
+23. Valid bit, dirty bit, location of page
+24. Internal fragmentation.
+25. External fragmentation.
+26. TLB miss
+27. 8K
+28. both
+29. Processes can share memory.
+30. shared memory address
+31. Virtual memory
+32. Yes
+33. A page fault.
+34. Demand paging
+35. fork()
+36. FIFO
+37. Optimal page replacement algorithm.
+38. LRU
+39. LRU
+40. Local page replacement.
+41. Global page replacement.
+42. Thrashing.
+43. Working set
+44. High
+45. Memory mapping.
+46. 256
+47. Slab allocation.
+48. 128k
+49. 4KB
+50. 2

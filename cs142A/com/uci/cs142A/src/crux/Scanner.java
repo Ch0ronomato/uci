@@ -58,7 +58,7 @@ public class Scanner implements Iterable<Token> {
 				this.charPos++;
 				if (this.nextChar == 10) {
 					this.lineNum++;
-					this.charPos = 1;
+					this.charPos = 0;
 				}
 				if ((this.nextChar == 10) || ((char) this.nextChar == ' ')) return -1;
 				else return this.nextChar == -1 ? -2 : this.nextChar;
@@ -188,6 +188,7 @@ public class Scanner implements Iterable<Token> {
 					break;
 			}
 		}
+
 		return to_return;
 	}
 

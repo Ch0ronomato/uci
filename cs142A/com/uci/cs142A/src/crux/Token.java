@@ -3,6 +3,9 @@ package crux;
 import java.util.HashMap;
 
 public class Token {
+	public static String studentName = "Ian Schweer";
+    public static String studentID = "22514022";
+    public static String uciNetID = "ischweer";
 	public static final String VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
 	public static enum Kind {
 		AND("and", true),
@@ -100,7 +103,7 @@ public class Token {
 	public Token(int lineNum, int charPos)
 	{
 		this.lineNum = lineNum;
-		this.charPos = charPos;
+		this.charPos = charPos + 1;
 		
 		// if we don't match anything, signal error
 		this.kind = Kind.ERROR;

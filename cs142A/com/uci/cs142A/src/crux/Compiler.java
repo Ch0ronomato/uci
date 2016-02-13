@@ -8,7 +8,6 @@ public class Compiler {
     public static String studentName = "Ian Schweer";
     public static String studentID = "22514022";
     public static String uciNetID = "ischweer";
-    
     public static void main(String[] args)
     {
         String sourceFilename = args[0];

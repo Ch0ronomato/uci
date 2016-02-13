@@ -1,21 +1,24 @@
 package crux;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 public class SymbolTable {
+    public static String studentName = "Ian Schweer";
+    public static String studentID = "22514022";
+    public static String uciNetID = "ischweer";
     private Map<String, Symbol> symbols;
     private SymbolTable parent;
     private int depth;
     public SymbolTable()
     {
-        this.symbols = new HashMap<>();
+        this.symbols = new LinkedHashMap<>();
         this.depth = 0;
         this.parent = null;
     }
 
     public SymbolTable(SymbolTable parent) {
         this.parent = parent;
-        this.symbols = new HashMap<>();
+        this.symbols = new LinkedHashMap<>();
         this.depth = parent.getDepth() + 1;
     }
 
