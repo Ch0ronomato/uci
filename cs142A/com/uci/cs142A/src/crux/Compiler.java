@@ -8,6 +8,7 @@ public class Compiler {
     public static String studentName = "Ian Schweer";
     public static String studentID = "22514022";
     public static String uciNetID = "ischweer";
+
     public static void main(String[] args)
     {
         String sourceFilename = args[0];
@@ -22,13 +23,16 @@ public class Compiler {
         }
 
         Parser p = new Parser(s);
-        p.parse();
+        ast.Command syntaxTree = p.parse();
         if (p.hasError()) {
-            System.out.println("Error parsing file.");
+            System.out.println("Error parsing file " + sourceFilename);
             System.out.println(p.errorReport());
             System.exit(-3);
         }
-        System.out.println("Crux program successfully parsed.");
+        
+        ast.PrettyPrinter pp = new ast.PrettyPrinter();
+        syntaxTree.accept(pp);
+        System.out.println(pp.toString());
     }
 }
     
