@@ -20,6 +20,8 @@ public:
 	void destroyFile(std::string name);
 	void openFile(std::string name);
 	void closeFile(int oft_index);
+	void writeFile(int index, char c, int count);
+	void readFile(int index, int count);
 	IO_system *getIO();
 private:
 	// typedefs
@@ -60,5 +62,6 @@ private:
 	fd_t getFd(std::string pname, int &i);
 	fd_t getFd(dirent_t);
 	void writeToDisk(int num, int length, unsigned char* data);
+	int getCurrentContentBlock(oftent_t f);
 };
 #endif

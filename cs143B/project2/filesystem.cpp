@@ -35,13 +35,17 @@ void FileSystem::createFile(std::string pname) {
 	entries[fd - 1] = directory_entry;
 
 	// set the file descriptor
+	// @todo: Clean this up.
 	int b = getFreeSlot(bitmask_file_blocks);
 	file_descriptor.length = 0;
 	file_descriptor.block1 = getFileBlock(b);
-	file_descriptor.block2 = -1;
-	file_descriptor.block3 = -1;
-	file_entries[fd - 1] = file_descriptor;
 	bitmask_file_blocks |= 1 << b;
+	b = getFreeSlot(bitmask_file_blocks);
+	file_descriptor.block2 = getFileBlock(b);
+	bitmask_file_blocks |= 1 << b;
+	b = getFreeSlot(bitmask_file_blocks);
+	file_descriptor.block3 = getFileBlock(b);
+	file_entries[fd - 1] = file_descriptor;
 }
 
 void FileSystem::openFile(std::string fname) {
@@ -56,7 +60,7 @@ void FileSystem::openFile(std::string fname) {
 	entry.pos = 0;
 	entry.length = f.length;
 	io->read_block(f.block1, buffer);
-	memcpy(entry.block, buffer, 64);
+	memcpy(entry.block, buffer, BLOCK_SIZE);
 	open_file_table[count_open_files++] = entry;
 }
 
@@ -65,20 +69,6 @@ void FileSystem::closeFile(int oft_index) {
 	assert(oft_index < count_open_files);
 	oftent_t f = open_file_table[oft_index];
 	int block_num;
-
-	char *temp = "I am writing this to a block";
-	f.length = strlen(temp);
-	strcpy(f.block, temp);
-
-	// write contents to ldisk
-	if (floor(f.length / 64) == 0) {
-		block_num = file_entries[f.fd].block1;
-	} else if (floor(f.length / 64) == 1) {
-		block_num = file_entries[f.fd].block2;
-	} else {
-		block_num = file_entries[f.fd].block3;
-	}
-	writeToDisk(block_num, f.length % 64, (unsigned char *)f.block);
 
 	// coalesce oft entries.
 	for (int i = oft_index, j = oft_index + 1; j < num_descriptors; i++,j++) {
@@ -102,6 +92,49 @@ void FileSystem::destroyFile(std::string pname) {
 	entries[pos - 1].fd = -1;
 
 	// delete data from the disk.
+}
+
+void FileSystem::writeFile(int index, char c, int count) {
+	assert(index < count_open_files);
+	oftent_t *file = &(open_file_table[index]);
+	int written = 0;
+	unsigned char to_write[BLOCK_SIZE];
+	while (written < count) {
+		bool advance_block = !((written + (file->length % BLOCK_SIZE)) % BLOCK_SIZE);
+		if (written > 0 && advance_block) {
+			// write the current block to disk
+			int block_num = getCurrentContentBlock(*file);
+			writeToDisk(block_num, BLOCK_SIZE, (unsigned char *)file->block);
+
+			// get the next block number
+			if (block_num == file_entries[file->fd].block1) {
+				block_num = file_entries[file->fd].block2;
+			} else if (block_num == file_entries[file->fd].block2) {
+				block_num = file_entries[file->fd].block3;
+			} else {
+				// refuse continued writting. 
+				break;
+			}
+			block_num = getCurrentContentBlock(*file);
+			
+			// get the next block.
+			unsigned char buffer[BLOCK_SIZE];
+			io->read_block(block_num + 1, buffer);
+			memcpy(file->block, buffer, BLOCK_SIZE);
+
+			// continue writting.
+			file->pos = 0;
+		}
+		file->block[file->pos] = c;
+		file->pos++;
+		written++;
+	}
+
+	// write the block to disk.
+	file->length += written;
+	int block_num = getCurrentContentBlock(*file);
+	memcpy(to_write, file->block, file->pos);
+	writeToDisk(block_num, file->pos, to_write);
 }
 
 FileSystem::dirent_t FileSystem::getFileDirent(std::string pname, int &i) {
@@ -149,6 +182,19 @@ IO_system* FileSystem::getIO() {
 
 void FileSystem::writeToDisk(int num, int length, unsigned char data[]) {
 	char nil='\0';
-	memcpy(&(data[length]), &nil, 64 - (length % 64));
+	length = length > BLOCK_SIZE ? length % BLOCK_SIZE : length;
+	memcpy(&(data[length]), &nil, BLOCK_SIZE - length);
 	io->write_block(num, data);
+}
+
+int FileSystem::getCurrentContentBlock(oftent_t f) {
+	int block_num;
+	if (floor(f.length / BLOCK_SIZE) == 0) {
+		block_num = file_entries[f.fd].block1;
+	} else if (floor(f.length / BLOCK_SIZE) == 1) {
+		block_num = file_entries[f.fd].block2;
+	} else {
+		block_num = file_entries[f.fd].block3;
+	}
+	return block_num;
 }
