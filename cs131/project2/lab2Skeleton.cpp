@@ -1,12 +1,14 @@
 #include "mpi.h"
 
 #include <algorithm>
+#include <functional>
 #include <cstdlib>
 #include <cctype>
 #include <fstream>
 #include <array>
 #include <iostream>
-using Lines = std::array<std::string, 100000>;
+const static int ARRAY_SIZE = 8;
+using Lines = char[ARRAY_SIZE][16];
 // Don't CHANGE This Code (you can add more functions)-----------------------------------------------------------------------------
 
 struct Result
@@ -38,9 +40,8 @@ void DoOutput(Result r)
 }
 
 // CHANGE This Code (you can add more functions)-----------------------------------------------------------------------------
-Lines strip(std::ifstream& file)
+void strip(std::ifstream& file, Lines &result)
 {
-    Lines result;
     std::string workString;
     int i = 0;
     while(std::getline(file,workString))
@@ -49,10 +50,10 @@ Lines strip(std::ifstream& file)
         workString.erase(std::remove_if(workString.begin(), workString.end(),
                                         [] (char c) { return !std::isalpha(c); }
                                         ), workString.end());
-        result[i++] = workString;
+	memset(result[i], '\0', 16);
+	memcpy(result[i++], workString.c_str(), workString.length());
         workString.clear();
     }
-    return result;
 }
 
 int main(int argc, char* argv[])
@@ -77,8 +78,26 @@ int main(int argc, char* argv[])
     }
 
     // ....... Your SPMD program goes here ............
-    Lines lines = split(argv[2]);
-
+    Lines lines;
+    if (processId == 0) {
+        std::ifstream i(argv[1]);
+        strip(i, std::ref(lines));
+    }
+    char buf[(ARRAY_SIZE / numberOfProcesses) * 16];
+    // send contiguious memory out to the processes.
+    if (MPI_Scatter(lines, (ARRAY_SIZE / numberOfProcesses) * 16, MPI_CHAR,
+	&buf, (ARRAY_SIZE / numberOfProcesses) * 16, MPI_CHAR, 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
+	perror("Shit got fucked");
+	exit(1);
+    }
+    printf("Process %d received elements: ", processId);
+    vector<std::string> data(ARRAY_SIZE / numberOfProcesses);
+    for (int i = 0; i < (ARRAY_SIZE / numberOfProcesses) * 16; i += 16) {
+        char s[16];
+        memcpy(s, &buf[i], 16);
+        std::cout << s << std::endl;
+      	data[i] = std::string(s); 
+    }
     // ... Eventually.. 
     if(processId == 0)
     {
