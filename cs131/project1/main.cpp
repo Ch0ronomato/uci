@@ -48,7 +48,7 @@ Lines
 strip(std::ifstream& file)
 {
     Lines result;
-    result.reserve(50000); // If reading is too slow try increasing this value
+    result.reserve(100000); // If reading is too slow try increasing this value
     
     std::string workString;
     

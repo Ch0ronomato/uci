@@ -8,22 +8,29 @@
  * ldisk [2...k] -> 4 descriptors / block, each
  *	* Each descriptor has 4 integers. 4 ints * 4 bytes = 16 / 64 bytes * block = 1/4 block 
  */
- #include "io/iosystem.h"
+ #include "../io/iosystem.h"
+ #include "filesystem.h"
  #include <string>
- #ifndef FILESYSTEM_H
- #define FILESYSTEM_H
-class FileSystem
+ #ifndef FILESYSTEM_IMPL_H
+ #define FILESYSTEM_IMPL_H
+class File_system_impl : public File_system
 {
 public:
-	FileSystem();
-	void createFile(std::string name);
-	void destroyFile(std::string name);
-	void openFile(std::string name);
-	void closeFile(int oft_index);
-	void writeFile(int index, char c, int count);
-	void readFile(int index, int count);
-	IO_system *getIO();
+	File_system_impl();
+	void create_file(std::string name) override;
+	void destroy_file(std::string name) override;
+	void open_file(std::string name) override;
+	void close_file(int oft_index) override;
+	void write_file(int index, char c, int count) override;
+	void read_file(int index, int count) override;
+	void seek_file(int index, int start) override;
+	void dir() override;
+	void save(std::string name) override;
+	void init(std::string name) override;
+	IO_system *getIO() override;
+	void setIO(IO_system *io) override;
 private:
+
 	// typedefs
 	typedef struct dirent_s {
 		char name[4];
@@ -45,7 +52,6 @@ private:
 	} oftent_t;
 
 	// members
-	IO_system *io;
 	int bitmask_descriptors;
 	int bitmask_file_blocks;
 	int count_open_files;

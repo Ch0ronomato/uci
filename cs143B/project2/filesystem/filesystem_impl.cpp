@@ -1,5 +1,6 @@
 #include "filesystem.h"
-#include "io/iosystem.h"
+#include "filesystem_impl.h"
+#include "../io/iosystem.h"
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -8,16 +9,14 @@
 
 const int BLOCK_SIZE=64;
 const int FILE_NAME_MAX_SIZE=4;
-FileSystem::FileSystem() {
-	io = IO_system::CreateIOSystem();
-
+File_system_impl::File_system_impl() {
 	// load the bitmask pieces
 	bitmask_descriptors = 1;
 	bitmask_file_blocks = 0;
 	count_open_files = 0;
 }
 
-void FileSystem::createFile(std::string pname) {
+void File_system_impl::create_file(std::string pname) {
 	assert(pname.length() <= FILE_NAME_MAX_SIZE);
 	dirent_t directory_entry;
 	fd_t file_descriptor;
@@ -48,7 +47,7 @@ void FileSystem::createFile(std::string pname) {
 	file_entries[fd - 1] = file_descriptor;
 }
 
-void FileSystem::openFile(std::string fname) {
+void File_system_impl::open_file(std::string fname) {
 	// get file descriptor
 	int dir;
 	unsigned char buffer[64];
@@ -64,7 +63,7 @@ void FileSystem::openFile(std::string fname) {
 	open_file_table[count_open_files++] = entry;
 }
 
-void FileSystem::closeFile(int oft_index) {
+void File_system_impl::close_file(int oft_index) {
 	// get oft entry
 	assert(oft_index < count_open_files);
 	oftent_t f = open_file_table[oft_index];
@@ -78,7 +77,7 @@ void FileSystem::closeFile(int oft_index) {
 	count_open_files--;
 }
 
-void FileSystem::destroyFile(std::string pname) {
+void File_system_impl::destroy_file(std::string pname) {
 	assert(pname.length() <= FILE_NAME_MAX_SIZE);
 
 	// find the directory entry
@@ -92,9 +91,13 @@ void FileSystem::destroyFile(std::string pname) {
 	entries[pos - 1].fd = -1;
 
 	// delete data from the disk.
+	unsigned char buffer[64];
+	writeToDisk(file.block1, 64, buffer);
+	writeToDisk(file.block2, 64, buffer);
+	writeToDisk(file.block3, 64, buffer);
 }
 
-void FileSystem::writeFile(int index, char c, int count) {
+void File_system_impl::write_file(int index, char c, int count) {
 	assert(index < count_open_files);
 	oftent_t *file = &(open_file_table[index]);
 	int written = 0;
@@ -126,8 +129,8 @@ void FileSystem::writeFile(int index, char c, int count) {
 			file->pos = 0;
 		}
 		file->block[file->pos] = c;
-		file->pos++;
 		written++;
+		file->pos++;
 	}
 
 	// write the block to disk.
@@ -137,7 +140,79 @@ void FileSystem::writeFile(int index, char c, int count) {
 	writeToDisk(block_num, file->pos, to_write);
 }
 
-FileSystem::dirent_t FileSystem::getFileDirent(std::string pname, int &i) {
+void File_system_impl::read_file(int index, int count) {
+	assert( index < count_open_files );
+	oftent_t *file = &(open_file_table[index]);
+	int read = 0, offset = 0;
+	int current_block = file->pos < BLOCK_SIZE ? 1 : (file->pos < BLOCK_SIZE * 3 ? 2 : 3);
+	char to_read[count + 1];
+	while (read < count) {
+		if (read > 0 && !((file->pos + read) % BLOCK_SIZE)) {
+			// write the current block to disk
+			int block_num;
+			if ((read % BLOCK_SIZE) == 0) {
+				// I read in one whole block.
+				block_num = current_block == 1 ? file_entries[file->fd].block1 : (current_block == 2 ? file_entries[file->fd].block2 : file_entries[file->fd].block3);
+			} else {
+				block_num = getCurrentContentBlock(*file);
+			}
+			writeToDisk(block_num, BLOCK_SIZE, (unsigned char *)file->block);
+			block_num = getCurrentContentBlock(*file);
+			
+			// get the next block.
+			unsigned char buffer[BLOCK_SIZE];
+			io->read_block(block_num, buffer);
+			memcpy(file->block, buffer, BLOCK_SIZE);
+
+			offset += BLOCK_SIZE;
+		}
+		to_read[read] = file->block[file->pos + read - offset];
+		read++;
+	}
+	to_read[count] = '\0';
+	std::cout << (char*)to_read << std::endl;
+}
+
+void File_system_impl::seek_file(int index, int start) {
+	assert (index < count_open_files);
+	open_file_table[index].pos = start;
+	int block_num;
+	if (start <= BLOCK_SIZE) {
+		// load block 1
+		block_num = file_entries[open_file_table[index].fd].block1;
+	} else if (start <= BLOCK_SIZE * 2) {
+		// load block 2
+		block_num = file_entries[open_file_table[index].fd].block2;
+	} else {
+		// load block 3
+		block_num = file_entries[open_file_table[index].fd].block3;
+	}
+
+	// load the correct buffer into the open file table.
+	io->read_block(block_num, (unsigned char *)open_file_table[index].block);
+}
+
+void File_system_impl::dir() {
+
+}
+
+void File_system_impl::save(std::string name) {
+
+}
+
+void File_system_impl::init(std::string name) {
+
+}
+
+void File_system_impl::setIO(IO_system *pio) {
+	io = pio;
+}
+
+IO_system* File_system_impl::getIO() {
+	return io;
+}
+
+File_system_impl::dirent_t File_system_impl::getFileDirent(std::string pname, int &i) {
 	// find the directory entry
 	for (int j = 0; j < num_descriptors - 1; j++) {
 		if (!std::strcmp(entries[j].name, pname.c_str())) {
@@ -150,16 +225,16 @@ FileSystem::dirent_t FileSystem::getFileDirent(std::string pname, int &i) {
 	return nil;
 }
 
-FileSystem::fd_t FileSystem::getFd(dirent_t dir) {
+File_system_impl::fd_t File_system_impl::getFd(dirent_t dir) {
 	assert(dir.fd != -1);
 	return file_entries[dir.fd];
 }
 
-FileSystem::fd_t FileSystem::getFd(std::string pname, int &i) {
+File_system_impl::fd_t File_system_impl::getFd(std::string pname, int &i) {
 	return getFd(getFileDirent(pname, i));
 }
 
-int FileSystem::getFreeSlot(int bitmask, int max) {
+int File_system_impl::getFreeSlot(int bitmask, int max) {
 	int to_return = -1;
 	for (int i = 0; i < max; i++) {
 		bool is_free = !((bitmask & (1 << i)) >> i);
@@ -172,22 +247,18 @@ int FileSystem::getFreeSlot(int bitmask, int max) {
 	return to_return;
 }
 
-int FileSystem::getFileBlock(int b) {
+int File_system_impl::getFileBlock(int b) {
 	return b + K + 1;
 }
 
-IO_system* FileSystem::getIO() {
-	return io;
-}
-
-void FileSystem::writeToDisk(int num, int length, unsigned char data[]) {
+void File_system_impl::writeToDisk(int num, int length, unsigned char data[]) {
 	char nil='\0';
 	length = length > BLOCK_SIZE ? length % BLOCK_SIZE : length;
 	memcpy(&(data[length]), &nil, BLOCK_SIZE - length);
 	io->write_block(num, data);
 }
 
-int FileSystem::getCurrentContentBlock(oftent_t f) {
+int File_system_impl::getCurrentContentBlock(oftent_t f) {
 	int block_num;
 	if (floor(f.length / BLOCK_SIZE) == 0) {
 		block_num = file_entries[f.fd].block1;
@@ -197,4 +268,10 @@ int FileSystem::getCurrentContentBlock(oftent_t f) {
 		block_num = file_entries[f.fd].block3;
 	}
 	return block_num;
+}
+
+File_system* File_system::CreateFileSystem(IO_system *io) {
+	File_system *f = new File_system_impl();
+	f->setIO(io);
+	return f;
 }
