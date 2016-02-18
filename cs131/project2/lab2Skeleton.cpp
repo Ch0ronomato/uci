@@ -5,9 +5,10 @@
 #include <cstdlib>
 #include <cctype>
 #include <fstream>
-#include <array>
+#include <vector>
+#include <string>
 #include <iostream>
-const static int ARRAY_SIZE = 8;
+const static int ARRAY_SIZE = 100000;
 using Lines = char[ARRAY_SIZE][16];
 // Don't CHANGE This Code (you can add more functions)-----------------------------------------------------------------------------
 
@@ -102,6 +103,19 @@ int findLongest(std::string text, int &s) {
     return end - start + 1;
 }
 
+Result getLP(std::vector<std::string>& s) {
+    Result r{0,0,0};
+    int i = 0;
+    for (const std::string& str : s) {
+       ++i;
+       if (str.find_first_not_of(" ") == std::string::npos) continue;
+       int start = 0;
+       int result = findLongest(str, start);
+       Result q{i, result, start};
+       r = r < q ? q : r;
+    }
+    return r;
+}
 void strip(std::ifstream& file, Lines &result)
 {
     std::string workString;
@@ -153,13 +167,16 @@ int main(int argc, char* argv[])
 	exit(1);
     }
     printf("Process %d received elements: ", processId);
-    vector<std::string> data(ARRAY_SIZE / numberOfProcesses);
+    std::vector<std::string> data;
     for (int i = 0; i < (ARRAY_SIZE / numberOfProcesses) * 16; i += 16) {
         char s[16];
         memcpy(s, &buf[i], 16);
-        std::cout << s << std::endl;
-      	data[i] = std::string(s); 
+        std::string s2(s);
+        data.push_back(s2);
     }
+    std::cout << "Process " << processId << " has " << data.size() << " elems" << std::endl;
+    Result r = getLP(data);
+    std::cout << "Process " << processId << " {" << r.lineNumber << "," << r.firstChar << "," << r.length << "}\n";
     // ... Eventually.. 
     if(processId == 0)
     {
