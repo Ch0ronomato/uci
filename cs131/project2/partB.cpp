@@ -116,7 +116,6 @@ Result getLP(std::vector<std::string>& s) {
     }
     return r;
 }
-
 void strip(std::ifstream& file, Lines &result)
 {
     std::string workString;
@@ -131,18 +130,6 @@ void strip(std::ifstream& file, Lines &result)
 	memcpy(result[i++], workString.c_str(), workString.length());
         workString.clear();
     }
-}
-
-Result getAndPostNeighbor(Result r, int last, int i, int next) {
-    int last_data[3], mine[] = {r.lineNumber, r.firstChar, r.length};
-    MPI_Status stat;
-    MPI_Send(mine, 3, MPI_INT, next, 0, MPI_COMM_WORLD); 
-     
-    MPI_Recv(last_data, 3, MPI_INT, last, 0, MPI_COMM_WORLD, &stat);
-    std::cout << "I recieved: " << i << " got ";
-    std::cout << last_data[0] << "," << last_data[1] << "," << last_data[2];
-    std::cout << std::endl;
-    return {0,0,0};
 }
 
 int main(int argc, char* argv[])
@@ -187,14 +174,18 @@ int main(int argc, char* argv[])
         data.push_back(s2);
     }
     Result r = getLP(data);
-    std::cout << "process " << processId;
-    std::cout << "{" << r.lineNumber << "," << r.firstChar << "," << r.length;
-    std::cout << "}" << std::endl;
-    int next = processId == (numberOfProcesses - 1) ? 0 : processId + 1;
-    int last = processId == 0 ? numberOfProcesses - 1 : processId - 1;
-    getAndPostNeighbor(r, last, processId, next);
+    int to_send[3];
+    to_send[0] = r.lineNumber;
+    to_send[1] = r.firstChar;
+    to_send[2] = r.length;
+    int *integers = NULL;
+    Result *rs = NULL;
+    if (processId == 0) {
+        integers = new int[ARRAY_SIZE / numberOfProcesses];
+        rs = new Result[numberOfProcesses];
+    }
+    MPI_Gather(&r, 3, MPI_INT, integers, 3, MPI_INT, 0, MPI_COMM_WORLD);
     // ... Eventually.. 
-    /*
     if(processId == 0)
     {
         int result_pos = 0;
@@ -206,7 +197,7 @@ int main(int argc, char* argv[])
             r = r < temp ? temp : r;
         } 
         DoOutput(r);
-    }*/
+    }
 
     MPI_Finalize();
 
