@@ -174,6 +174,7 @@ int main(int argc, char* argv[])
         data.push_back(s2);
     }
     Result r = getLP(data);
+    r.lineNumber = ((ARRAY_SIZE / numberOfProcesses) * processId) + r.lineNumber;
     int to_send[3];
     to_send[0] = r.lineNumber;
     to_send[1] = r.firstChar;
