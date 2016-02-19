@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <cstdlib>
+#include <ctime>
 #include <cctype>
 #include <fstream>
 #include <vector>
@@ -153,6 +154,7 @@ int main(int argc, char* argv[])
     int processId;
     int numberOfProcesses;
     int *to_return = NULL;
+    clock_t t;
 
     // Setup MPI
     MPI_Init( &argc, &argv );
@@ -178,6 +180,7 @@ int main(int argc, char* argv[])
     }
     char buf[(ARRAY_SIZE / numberOfProcesses) * 16];
     // send contiguious memory out to the processes.
+    t = clock();
     if (MPI_Scatter(lines, (ARRAY_SIZE / numberOfProcesses) * 16, MPI_CHAR,
 	&buf, (ARRAY_SIZE / numberOfProcesses) * 16, MPI_CHAR, 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
 	perror("Shit got fucked");
@@ -212,6 +215,8 @@ int main(int argc, char* argv[])
             r = r < r2 ? r2 : r;
         }
         DoOutput(r);
+        t = clock() - t;
+        std::cout << "time: " << ((float)t) / CLOCKS_PER_SEC << std::endl;
     }
 
     MPI_Finalize();

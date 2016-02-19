@@ -1,0 +1,8 @@
+Result: 96713 2 11
+time: 0.02
+Result: 96713 2 11
+time: 0.01
+Result: 96713 2 11
+time: 0.02
+Result: 96713 2 11
+time: 0.01

@@ -1,0 +1,8 @@
+Result: 49919 2 11
+time: 0.06
+Result: 49919 2 11
+time: 0.03
+Result: 49919 2 11
+time: 0.02
+Result: 49919 2 11
+time: 0.01

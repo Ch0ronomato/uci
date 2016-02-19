@@ -1,0 +1,8 @@
+Result: 88105 3 9
+time: 0.04
+Result: 88105 3 9
+time: 0.02
+Result: 88105 3 9
+time: 0.01
+Result: 88105 3 9
+time: 0.01

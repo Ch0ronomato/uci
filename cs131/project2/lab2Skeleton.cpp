@@ -207,7 +207,7 @@ int main(int argc, char* argv[])
     if(processId == 0)
     {
         Result r {to_return[0], to_return[1], to_return[2]};
-        for (int i = 3; i < 3 * numberOfProcesses; i += 3) {
+        for (int i = 0; i < 3 * numberOfProcesses; i += 3) {
             Result r2 {to_return[i], to_return[i + 1], to_return[i + 2]};
             r = r < r2 ? r2 : r;
         }

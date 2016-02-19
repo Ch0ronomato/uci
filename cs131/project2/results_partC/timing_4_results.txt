@@ -1,0 +1,8 @@
+Result: 79319 4 8
+time: 0.02
+Result: 79319 4 8
+time: 0.01
+Result: 79319 4 8
+time: 0.02
+Result: 79319 4 8
+time: 0.01
