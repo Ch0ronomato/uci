@@ -5,3 +5,5 @@ all:
 	g++ $(OPTIONS) $(EXNAME) $(DEPS)
 debug:
 	g++ -ggdb $(OPTIONS) $(EXNAME) $(DEPS)
+clean:
+	rm $(EXNAME)

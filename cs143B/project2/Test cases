@@ -1,4 +1,10 @@
-Test cases:
-	Create:
-		Create only one file with zero bytes
-		Create num_descriptors + 1 files
+in
+cr aax
+op aax
+wr 1 a 15
+sk 1 0
+rd 1 10
+wr 1 b 3
+sk 1 10
+rd 1 5
+sv disk0.txt

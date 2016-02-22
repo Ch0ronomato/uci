@@ -1,3 +1,5 @@
+// Ian schweer
+// 22514022
 #include <string>
 #include "../io/iosystem.h"
 #ifndef FILESYSTEM_BASE_H
@@ -14,7 +16,7 @@ public:
 	virtual void seek_file(int index, int start) = 0;
 	virtual void dir() = 0;
 	virtual void save(std::string init_file) = 0;
-	virtual void init(std::string init_file) = 0;
+	virtual void init(std::string init_file, IO_system*) = 0;
 	virtual IO_system* getIO() = 0;
 	virtual void setIO(IO_system*) = 0;
 	static File_system *CreateFileSystem(IO_system *io);

@@ -1,3 +1,5 @@
+// Ian schweer
+// 22514022
 #include <iostream>
 #include <array>
 #include <cstdint>
