@@ -134,17 +134,35 @@ void strip(std::ifstream& file, Lines &result)
     }
 }
 
-void getAndPostNeighbor(Result r, int size, int last, int i, int next, int *to_return) {
+void getAndPostNeighbor(int* r, int size, int last, int i, int next, int *to_return) {
     int last_data[size];
     MPI_Status stat;
      
     MPI_Recv(last_data, size, MPI_INT, last, 0, MPI_COMM_WORLD, &stat);
-    last_data[i * 3] = r.lineNumber;
-    last_data[(i * 3) + 1] = r.firstChar;
-    last_data[(i * 3) + 2] = r.length;
+    last_data[i * 3] = r[0];
+    last_data[(i * 3) + 1] = r[1];
+    last_data[(i * 3) + 2] = r[2];
     if (i > 0)
          MPI_Send(last_data, size, MPI_INT, next, 0, MPI_COMM_WORLD); 
-    else {
+}
+
+void MyCustomGather(int* sendbuf, int sendcount, int* recvbuf, int recvcount, int root, MPI_Comm comm) {
+    int processId;
+    int numberOfProcesses;
+    MPI_Comm_rank( MPI_COMM_WORLD, &processId);
+    MPI_Comm_size( MPI_COMM_WORLD, &numberOfProcesses);
+    int next = processId == (numberOfProcesses - 1) ? 0 : processId + 1;
+    int last = processId == 0 ? numberOfProcesses - 1 : processId - 1;
+    if (processId == 0) {
+       int data[3 * numberOfProcesses];
+       data[0] = sendbuf[0];
+       data[1] = sendbuf[1];
+       data[2] = sendbuf[2];
+       MPI_Send(data, 3 * numberOfProcesses, MPI_INT, next, 0, MPI_COMM_WORLD);
+       to_return = new int[3 * numberOfProcesses];
+    }
+    getAndPostNeighbor(data, 3 * numberOfProcesses, last, processId, next, to_return);
+    if (processId == root) {
         memcpy(to_return, last_data, sizeof(int) * size);
     }
 }
@@ -183,7 +201,7 @@ int main(int argc, char* argv[])
     t = clock();
     if (MPI_Scatter(lines, (ARRAY_SIZE / numberOfProcesses) * 16, MPI_CHAR,
 	&buf, (ARRAY_SIZE / numberOfProcesses) * 16, MPI_CHAR, 0, MPI_COMM_WORLD) != MPI_SUCCESS) {
-	perror("Shit got fucked");
+	perror("MPI_Scatter failed");
 	exit(1);
     }
     std::vector<std::string> data;

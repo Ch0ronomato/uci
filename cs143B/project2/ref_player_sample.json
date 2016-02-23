@@ -1,0 +1,328 @@
+{
+    "entries": [
+	{
+            "id": "vod1",
+            "title": "Tears of Steel - No Ads",
+            "description": "This is a CGI short film with no ads.",
+            "categories": "action, sci-fi, demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": false,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/e2e-vod/cloudfront_vod_hls_tos_30fps.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ]
+        },
+       {
+            "id": "vod2",
+            "title": "Tears of Steel - Primetime Ads",
+            "description": "This is a CGI short film with Primetime ads.",
+            "categories": "action, sci-fi, demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": false,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/e2e-vod/cloudfront_vod_hls_tos_30fps.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ],
+            "metadata": {
+                "ad": {
+                    "type": "Primetime Ads",
+                    "details": {
+                        "domain": "auditude.com",
+                        "mediaid": "adbe_tearsofsteel2",
+                        "zoneid": "123869"
+                    }
+                }
+            }
+        },
+	{
+            "id": "vod3",
+            "title": "Tears of Steel - Direct Ad Breaks",
+            "description": "This is a CGI short film with direct ad breaks.",
+            "categories": "action, sci-fi, demo",
+            "keywords": "List,of,comma,separated,keywords",
+            "isLive": false,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/e2e-vod/cloudfront_vod_hls_tos_30fps.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ],
+            "metadata": {
+                "ad": {
+                    "type": "Direct Ad Breaks",
+                    "details": {
+                        "ad-breaks": [
+                            {
+                                "tag": "break-001",
+                                "time": 0,
+                                "replace": 0,
+                                "ad-list": [
+                                    {
+                                        "url": "http://d3t5gnhs8yjuda.cloudfront.net/videos/hlsads/ad2/video.m3u8",
+                                        "duration": 30000,
+                                        "tag": "1st break - 1st ad"
+                                    }
+                                ]
+                            },
+			    {
+				"tag": "break-002",
+				"time": 120000,
+				"replace": 0,
+				"ad-list": [
+                                    {
+                                        "url": "http://d3t5gnhs8yjuda.cloudfront.net/videos/hlsads/ad6/video.m3u8",
+                                        "duration": 30000,
+                                        "tag": "2nd break - 1st ad"
+                                    },
+				        {
+                                        "url": "http://d3t5gnhs8yjuda.cloudfront.net/videos/hlsads/ad7/video.m3u8",
+                                        "duration": 30000,
+                                        "tag": "2nd break - 2nd ad"
+                                   }
+				]
+			    },
+			    {
+				"tag": "break-003",
+				"time": 600000,
+				"replace": 0,
+				"ad-list": [
+				    {
+                                        "url": "http://d3t5gnhs8yjuda.cloudfront.net/videos/hlsads/ad1/video.m3u8",
+                                        "duration": 60000,
+                                        "tag": "3rd break - 1st ad"
+                                    }
+				]
+			    }
+                        ]
+                    }
+                }
+            }
+        },
+	{
+            "id": "vod4",
+            "title": "Tears of Steel - Custom Ad Markers",
+            "description": "This is a CGI short film with custom ad markers.",
+            "categories": "action, sci-fi, demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": false,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/e2e-vod/cloudfront_vod_hls_tos_30fps.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ],
+            "metadata": {
+                "ad": {
+                    "type": "Custom Ad Markers",
+                    "details": {
+                        "adjust-seek-position": true,
+                        "time-ranges": [
+			    {
+                                "begin": 0,
+                                "end": 5000
+                            },
+			    {
+                                "begin": 20000,
+                                "end": 25000
+                            },
+			    {
+                                "begin": 30000,
+                                "end": 36000
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+       {
+            "id": "vod5",
+            "title": "Sintel - PHLS",
+            "description": "This is a CGI short film with Adobe PHLS protection.",
+            "categories": "action. demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": false,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/e2e-vod/cloudfront_vod_phls_sintel_30fps.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ]
+        },
+        {
+            "id": "vod6",
+            "title": "Sintel - AES",
+            "description": "This is a CGI short film with AES encryption.",
+            "categories": "action. demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": false,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/e2e-vod/cloudfront_vod_hls_aes_sintel_30fps.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ]
+        },
+	{
+            "id": "live1",
+            "title": "Live - No Ads",
+            "description": "This is a looping live stream of 2 short films with no ads.",
+            "categories": "action. demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": true,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/cloudfront_hls.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ]    
+	},
+	{
+            "id": "live2",
+            "title": "Live - Primetime Ads",
+            "description": "This is a looping live stream of 2 short films with Primetime ads.",
+            "categories": "action. demo",
+            "keywords": "List, of, comma, separated, keywords",
+            "isLive": true,
+            "content": [
+                {
+                    "format": "M3U8",
+                    "url": "http://d398890tia84ty.cloudfront.net/cloudfront_hls.m3u8",
+                    "language": "en"
+                }
+            ],
+            "thumbnails": [
+                {
+                    "format": "JPEG",
+                    "height": "90",
+                    "width": "160",
+                    "url": "http://example.com/small.jpg"
+                },
+                {
+                    "format": "JPEG",
+                    "height": "180",
+                    "width": "320",
+                    "url": "http://example.com/medium.jpg"
+                }
+            ],
+            "metadata": {
+                "ad": {
+                    "type": "Primetime Ads",
+                    "details": {
+                        "domain": "auditude.com",
+                        "mediaid": "adbe_tearsofsteel2",
+                        "zoneid": "123869"
+                    }
+                }
+            }
+        }
+    ]
+}

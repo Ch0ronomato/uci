@@ -71,7 +71,7 @@ public class Token {
 
 		public boolean hasStaticLexeme()
 		{
-			return default_lexeme != null;
+			return default_lexeme != "";
 		}
 
 		public boolean is_keyword() {
@@ -150,7 +150,11 @@ public class Token {
 	
 	public String toString()
 	{
-		return String.format("%s(%s)(lineNum: %d, charPos: %d)", this.lexeme(), this.lexeme,
+		if (this.kind.hasStaticLexeme())
+			return String.format("%s(lineNum: %d, charPos: %d)", this.kind.name(),
+				this.lineNumber(), this.charPosition());
+		else
+			return String.format("%s(%s)(lineNum: %d, charPos: %d)", this.kind.name(), this.lexeme,
 				this.lineNumber(), this.charPosition());
 	}
 	

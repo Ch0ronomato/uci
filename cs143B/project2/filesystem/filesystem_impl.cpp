@@ -22,7 +22,6 @@ File_system_impl::File_system_impl() {
 }
 
 void File_system_impl::create_file(std::string pname) {
-	assert(pname.length() <= FILE_NAME_MAX_SIZE);
 	fd_t file_descriptor;
 	char *name = (char*)pname.c_str();
 	// does this file exist?
@@ -69,6 +68,16 @@ void File_system_impl::open_file(std::string fname) {
 		std::cout << "error";
 		return;
 	}
+
+	// ensure the file isn't open
+	for (int i = 1; i < count_open_files; i++) {
+		fd_t *f_o = &(file_entries[open_file_table[i].fd]);
+		if (f_o->block1 == f.block1) {
+			std::cout << "error";
+			return;
+		}
+	}
+
 	// create entry
 	oftent_t entry;
 	entry.fd = fd + 1;
@@ -93,6 +102,9 @@ void File_system_impl::open_file(std::string fname) {
 bool File_system_impl::close_file_at_pos(int oft_index) {
 		// get oft entry
 	if (oft_index >= count_open_files) {
+		return false;
+	}
+	if (oft_index == 0) { // don't let anyone close the directory
 		return false;
 	}
 	oftent_t *f = &(open_file_table[oft_index]);
@@ -132,7 +144,6 @@ void File_system_impl::close_file(int oft_index) {
 }
 
 void File_system_impl::destroy_file(std::string pname) {
-	assert(pname.length() <= FILE_NAME_MAX_SIZE);
 
 	// find the directory entry
 	int pos = 0;
@@ -178,7 +189,10 @@ void File_system_impl::destroy_file(std::string pname) {
 }
 
 void File_system_impl::write_file(int index, char c, int count) {
-	assert(index < count_open_files);
+	if (index >= count_open_files) {
+		std::cout << "error";
+		return;
+	}
 	oftent_t *file = &(open_file_table[index]);
 	int written = 0, prev_pos = file->pos % BLOCK_SIZE, total_count = count;
 	int current_block = file->pos < BLOCK_SIZE ? 1 : (file->pos < (BLOCK_SIZE * 2) ? 2 : 3);
@@ -223,11 +237,15 @@ void File_system_impl::write_file(int index, char c, int count) {
 	int block_num = current_block == 1 ? file_entries[file->fd].block1 : (current_block == 2 ? file_entries[file->fd].block2 : file_entries[file->fd].block3);
 	memcpy(to_write, file->block, BLOCK_SIZE);
 	writeToDisk(block_num, BLOCK_SIZE, to_write);
+	if (total_count > 192) total_count = 192;
 	std::cout << total_count << " bytes written";
 }
 
 void File_system_impl::read_file(int index, int count) {
-	assert( index < count_open_files );
+	if (index >= count_open_files) {
+		std::cout << "error";
+		return;
+	}
 	oftent_t *file = &(open_file_table[index]);
 	int read = 0, offset = 0;
 	int current_block = file->pos < BLOCK_SIZE ? 1 : (file->pos < (BLOCK_SIZE * 2) ? 2 : 3);
@@ -371,12 +389,12 @@ void File_system_impl::init(std::string name, IO_system *pio) {
 		ifs.close();
 
 		// get our bitmaps.
-		char buf[BLOCK_SIZE], mask_one[sizeof(int)], mask_two[sizeof(int)];
+		char buf[BLOCK_SIZE], mask_one[sizeof(int)], mask_two[sizeof(long)];
 		io->read_block(0, (unsigned char*)buf);
 		memcpy(mask_one, &(buf[0]), sizeof(int));
 		memcpy(mask_two, &(buf[sizeof(int)]), sizeof(long));
 		bitmask_descriptors = *(static_cast<int*>(static_cast<void*>(mask_one)));
-		bitmask_file_blocks = *(static_cast<int*>(static_cast<void*>(mask_two)));
+		bitmask_file_blocks = *(static_cast<unsigned long*>(static_cast<void*>(mask_two)));
 
 		// // test code: remove.
 		// // fill the to return obj

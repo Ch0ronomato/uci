@@ -1,0 +1,116 @@
+disk initialized
+abc created
+abc opened 1
+1 closed
+abc deleted
+
+disk initialized
+abc created
+abc opened 1
+xx created
+p created
+xx opened 2
+abc deleted
+p deleted
+xx 
+
+disk initialized
+abc created
+abc opened 1
+xx created
+p created
+xx opened 2
+2 bytes written
+64 bytes written
+192 bytes written
+position is 0
+xxyyy
+yyyyy
+p opened 3
+1 closed
+abc opened 1
+xxyyy
+position is 64
+xxyyy
+position is 191
+zzzzz
+position is 64
+3 bytes written
+position is 62
+zzwwwzz
+abc xx p 
+disk saved
+disk restored
+abc opened 1
+xx opened 2
+position is 0
+xxyyy
+yyyyy
+p opened 3
+position is 64
+xxyyy
+error
+zzwwwzz
+
+
+disk initialized
+abc created
+xx created
+abc created
+
+disk initialized
+abc created
+xx created
+error
+error
+abc opened 1
+error
+3 closed
+
+disk initialized
+abc created
+error
+192 bytes written
+zzzzzzzzzz
+
+disk initialized
+abc created
+error
+0 bytes written
+position is 0
+error
+
+disk initialized
+a created
+error
+b created
+error
+c created
+c opened 1
+d created
+d opened 2
+
+disk initialized
+abc created
+error
+xx created
+p created
+
+2 bytes written
+64 bytes written
+192 bytes written
+position is 0
+zzzzz
+zzzzz
+error
+1 closed
+error
+
+position is 64
+zz
+position is 64
+3 bytes written
+position is 62
+^@wwwèN
+
+

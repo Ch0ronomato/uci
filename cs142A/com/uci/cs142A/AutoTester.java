@@ -15,7 +15,7 @@ public class AutoTester {
     public static String studentID = "12345678"; // !Strictly! You should put these value in the rest of other classes
     public static String uciNetID = "autotester6";	// !Strictly! You should put these value in the rest of other classes
     
-    public static final int PUBTESTS_NUM = 11;
+    public static final int PUBTESTS_NUM = 10;
     public static final int PRITESTS_NUM = 10;
     public static double PUB_WEIGHT = 5.0;
     public static double PRI_WEIGHT = 3.5;
@@ -112,7 +112,7 @@ public class AutoTester {
     public static void fileCompile(String sourceFilename)
     {
     	System.out.println("outputing for " + sourceFilename);
-        
+
         Scanner s = null;
         try {
             s = new Scanner(new FileReader(sourceFilename));
@@ -123,19 +123,21 @@ public class AutoTester {
         }
 
         Parser p = new Parser(s);
-        p.parse();
+        ast.Command syntaxTree = p.parse();
+        if (p.hasError()) {
+            System.out.println("Error parsing file " + sourceFilename);
+            System.out.println(p.errorReport());
+            System.exit(-3);
+        }
 
         String outFilename = sourceFilename.replace(".crx", ".out_actual");
         try {
             File outFile = new File(outFilename);
             PrintStream outStream = new PrintStream(outFile);
-            if (p.hasError()) {
-                outStream.println("Error parsing file.");
-                outStream.println(p.errorReport());
-                outStream.close();
-                //System.exit(-3);
-            }
-            outStream.println("Crux program successfully parsed.");
+
+            ast.PrettyPrinter pp = new ast.PrettyPrinter();
+            syntaxTree.accept(pp);
+            outStream.println(pp.toString());
             outStream.close();
         } catch (IOException e) {
             e.printStackTrace();
