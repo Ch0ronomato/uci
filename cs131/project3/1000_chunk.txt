@@ -1,0 +1,48 @@
+Time for A using jjbesavi_timing_1.txt: 3.07631
+Result: 308 0 13
+Time for B using jjbesavi_timing_1.txt: 2.96181
+Result: 308 0 13
+Time for A using jjbesavi_timing_1.txt: 1.56485
+Result: 308 0 13
+Time for B using jjbesavi_timing_1.txt: 1.56391
+Result: 308 0 13
+Time for A using jjbesavi_timing_1.txt: 0.790062
+Result: 308 0 13
+Time for B using jjbesavi_timing_1.txt: 0.814615
+Result: 308 0 13
+Time for A using jjbesavi_timing_1.txt: 0.417258
+Result: 308 0 13
+Time for B using jjbesavi_timing_1.txt: 0.474969
+Result: 308 0 13
+Time for A using jjbesavi_timing_2.txt: 2.95624
+Result: 88005 0 12
+Time for B using jjbesavi_timing_2.txt: 2.95658
+Result: 88005 0 12
+Time for A using jjbesavi_timing_2.txt: 1.48258
+Result: 88005 0 12
+Time for B using jjbesavi_timing_2.txt: 1.47922
+Result: 88005 0 12
+Time for A using jjbesavi_timing_2.txt: 0.784184
+Result: 88005 0 12
+Time for B using jjbesavi_timing_2.txt: 0.789731
+Result: 88005 0 12
+Time for A using jjbesavi_timing_2.txt: 0.404618
+Result: 88005 0 12
+Time for B using jjbesavi_timing_2.txt: 0.443703
+Result: 88005 0 12
+Time for A using jjbesavi_timing_3.txt: 2.9575
+Result: 967 1 13
+Time for B using jjbesavi_timing_3.txt: 2.95649
+Result: 967 1 13
+Time for A using jjbesavi_timing_3.txt: 1.47885
+Result: 967 1 13
+Time for B using jjbesavi_timing_3.txt: 1.47771
+Result: 967 1 13
+Time for A using jjbesavi_timing_3.txt: 0.785723
+Result: 967 1 13
+Time for B using jjbesavi_timing_3.txt: 0.788297
+Result: 967 1 13
+Time for A using jjbesavi_timing_3.txt: 0.41885
+Result: 967 1 13
+Time for B using jjbesavi_timing_3.txt: 0.438022
+Result: 967 1 13
