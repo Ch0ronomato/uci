@@ -2,8 +2,8 @@
 #define PM_H
 const static int FRAME_SIZE = 512;
 const static int FRAME_COUNT = 1024;
-typedef frame_t int[FRAME_SIZE];
-typedef disk_t int[FRAME_SIZE * FRAME_COUNT];
+typedef int frame_t[FRAME_SIZE] ;
+typedef int disk_t[FRAME_SIZE * FRAME_COUNT];
 class pm 
 {
 public:
@@ -14,13 +14,15 @@ public:
         int addr; // disk[disk[s] + p] + w
     } va_t;
 
-    va_t get_virtual_address(int physical_address);
+    pm();
+    bool get_physical_address(int physical_address, pm::va_t *pa);
     disk_t disk;
-    int bitmask[32];
-private:
-    int get_segment_table(int segment); // return s
-    int get_page_table(int s); // returns p
-    int get_offset(int p); // returns w
-    int 
+    unsigned int bitmask[32];
+// private:
+    int get_segment_table(int physical_address); // return s
+    int get_page_table(int physical_address); // returns p
+    int get_offset(int physical_address); // returns w
+    int get_free_frame(int size = 1);
+    void set_frame(int frame);
 };
 #endif
