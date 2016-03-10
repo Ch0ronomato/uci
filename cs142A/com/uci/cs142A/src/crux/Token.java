@@ -264,7 +264,7 @@ public class Token {
 			else return 0;
 		}
 		else {
-			if (hasSpecialChars(lexeme) && !hasAnyNumbers(lexeme)) return 3;
+			if (hasSpecialChars(lexeme)) return 3;
 			else return 0;
 		}
 	}

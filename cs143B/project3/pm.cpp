@@ -1,6 +1,10 @@
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <string>
 #include "pm.h"
+#include "logger.h"
+#include "tlb_adapter.h"
 /**
  * Example of core logic: 
  * 1. Initialize PM
@@ -28,7 +32,7 @@
  *		is set to -1 (1 2 -1 above). This results in a page fault. print pf.
  */
 
-pm::pm() {
+pm::pm(std::string outs, bool tlb_enabled) : out(outs) {
 	for (int i = 0; i < (FRAME_SIZE * FRAME_COUNT); i++) {
 		disk[i] = 0;
 	}
@@ -36,21 +40,146 @@ pm::pm() {
 	for (int i = 0; i < 32; i++) {
 		bitmask[i] = 0;
 	}
+
+	tlb = TlbFactory::MakeAdapter(tlb_enabled);
+	LoggerFactory::GetLogger()->log(CLASS_TAG + "PM()", "Constructed");
 }
 
 bool pm::get_physical_address(int virtual_address, pm::va_t *address) {
 	va_t pa;
+	pa.w = get_offset(virtual_address);
 	pa.s = get_segment_table(virtual_address);
 	pa.p = get_page_table(virtual_address);
-	pa.w = get_offset(virtual_address);
+	pa.sp = (pa.s << 10) + pa.p;
 	pa.addr = disk[disk[pa.s] + pa.p] + pa.w;
+	*address = pa; 
+	std::string out = "{ s=" + std::to_string(pa.s) + ", p=" + std::to_string(pa.p);
+	out += + ", w=" + std::to_string(pa.w) + ", addr = " + std::to_string(pa.addr) + ", sp = " + std::to_string(pa.sp) + "}";
+	LoggerFactory::GetLogger()->log(CLASS_TAG + "get_physical_address()", "Getting virtual address components for " + std::to_string(virtual_address));
+	LoggerFactory::GetLogger()->log(CLASS_TAG + "get_physical_address()", out);
+	return true;
+}
 
-	if (disk[pa.s] == -1) return false;
-	if (disk[disk[pa.s] + pa.p] == -1) return false;
-	else {
-		*address = pa; 
-		return true;
+void pm::initialize(std::vector < std::vector < std::string > > data ) {
+	std::string tag = CLASS_TAG + "initialize()";
+	if (data.size() < 2) {
+		LoggerFactory::GetLogger()->log(tag, "bad input file");
+		return;
 	}
+	std::vector < std::string > segments = data[0];
+	std::vector < std::string > pages = data[1];
+
+	set_frame(0);
+	LoggerFactory::GetLogger()->log(tag, "Set frame 0");
+	for (int i = 0; i < segments.size(); i += 2) {
+		int s = std::stoi(segments[i]), f = std::stoi(segments[i+1]);
+		if (f > 0) {
+			// make f a frame, not address
+			int frame = floor(f / FRAME_SIZE);
+			disk[s] = f;
+			set_frame(frame);
+			LoggerFactory::GetLogger()->log(tag, "Segment " + std::to_string(s) + " set frame " + std::to_string(frame) + " to address " + std::to_string(f));
+			set_frame(frame + 1); // page tables take 2 entries.
+			LoggerFactory::GetLogger()->log(tag, "Segment " + std::to_string(s) + " set frame " + std::to_string(frame + 1) + " to address " + std::to_string(f));
+		} else {
+			disk[s] = f;
+			LoggerFactory::GetLogger()->log(tag, "Segment " + std::to_string(s) + " has no frame (" + std::to_string(-1) + ")");
+		}
+	}
+
+	for (int i = 0; i < pages.size(); i += 3) {
+		int p = std::stoi(pages[i]), s = std::stoi(pages[i+1]);
+		int f = std::stoi(pages[i + 2]);
+		if (f > 0) {
+			disk[disk[s] + p] = f;
+			LoggerFactory::GetLogger()->log(tag, "Set disk " + std::to_string(disk[s] + p) + " to " + std::to_string(f));
+			set_frame(f / FRAME_SIZE);
+		} else {
+			disk[disk[s] + p] = f;
+			LoggerFactory::GetLogger()->log(tag, "Set disk " + std::to_string(disk[s] + p) + " to " + std::to_string(f));
+		}
+	}
+
+}
+
+void pm::read(int virtual_address) {
+	va_t addr;
+	std::string tag = CLASS_TAG + "read()", msg = "Virtual address " + std::to_string(virtual_address) + " ";
+	LoggerFactory::GetLogger()->log(tag, "Starting read for virtual address " + std::to_string(virtual_address));
+	get_physical_address(virtual_address, &addr);
+	if (tlb->has_frame_cache(addr.sp)) {
+		output(tlb->get_hit_string());
+		output(std::to_string(tlb->get_frame_cache(addr.sp) + addr.w));
+		output(" ");
+		LoggerFactory::GetLogger()->log(tag, msg + " recieved from tlb at addr " + std::to_string(tlb->get_frame_cache(addr.sp) + addr.w));
+	}
+	else {
+		output(tlb->get_miss_string());
+		if (addr.s == 0) {
+			output("err ");
+			LoggerFactory::GetLogger()->log(tag, msg + "error");
+		}
+		else if (disk[addr.s] == -1 || (disk[disk[addr.s] + addr.p]) == -1) {
+			output("pf ");
+			LoggerFactory::GetLogger()->log(tag, msg + "page fault");
+		} else if (!addr.s || !disk[addr.s]|| (!disk[disk[addr.s] + addr.p])) {
+			output("err ");
+			LoggerFactory::GetLogger()->log(tag, msg + "error");
+		} else {
+			output(std::to_string(addr.addr) + " ");
+			tlb->set_frame_cache(addr.sp, disk[disk[addr.s] + addr.p]);
+			LoggerFactory::GetLogger()->log(tag, msg + "at address " + std::to_string(addr.addr));
+		}
+	}
+	LoggerFactory::GetLogger()->log(tag, "Ending read for virtual address " + std::to_string(virtual_address));
+}
+
+void pm::write(int virtual_address) {
+	va_t addr;
+	std::string tag = CLASS_TAG + "write()", msg = "Virtual address " + std::to_string(virtual_address) + " ";
+	LoggerFactory::GetLogger()->log(tag, "Starting write for virtual address " + std::to_string(virtual_address));
+	get_physical_address(virtual_address, &addr);
+	if (tlb->has_frame_cache(addr.sp)) {
+		output(tlb->get_hit_string());
+		output(std::to_string(tlb->get_frame_cache(addr.sp) + addr.w));
+		output(" ");
+		LoggerFactory::GetLogger()->log(tag, msg + " recieved from tlb at addr " + std::to_string(tlb->get_frame_cache(addr.sp) + addr.w));
+	}
+	else {
+		output(tlb->get_miss_string());
+		if (addr.s == 0) {
+			output("err ");
+			LoggerFactory::GetLogger()->log(tag, msg + "error");
+		}
+		else if (disk[addr.s] == -1 || (disk[disk[addr.s] + addr.p]) == -1) {
+			output("pf ");
+			LoggerFactory::GetLogger()->log(tag, msg + "page fault");
+		}
+		else {
+			if (!disk[addr.s]) {
+				int frame_number = get_free_frame(2);
+				disk[addr.s] = frame_number * FRAME_SIZE;	
+				set_frame(frame_number);
+				set_frame(frame_number + 1)	;
+				LoggerFactory::GetLogger()->log(tag, msg + "allocated frames (2) " + std::to_string(disk[addr.s]));
+			}
+			if (!disk[disk[addr.s] + addr.p]) {
+				int frame_number = get_free_frame(1);
+				disk[disk[addr.s] + addr.p] = frame_number * FRAME_SIZE;
+				set_frame(frame_number);
+				LoggerFactory::GetLogger()->log(tag, msg + "allocated frame " + std::to_string(disk[disk[addr.s] + addr.p]));
+			}
+			output(std::to_string(disk[disk[addr.s] + addr.p] + addr.w));
+			output(" ");
+			tlb->set_frame_cache(addr.sp, disk[disk[addr.s] + addr.p]);
+			LoggerFactory::GetLogger()->log(tag, msg + "at address " + std::to_string(disk[disk[addr.s] + addr.p] + addr.w));
+		}
+	}
+	LoggerFactory::GetLogger()->log(tag, "Ending write for virtual address " + std::to_string(virtual_address));
+}
+
+void pm::output(std::string s) {
+	out << s;
 }
 
 int pm::get_segment_table(int virtual_address) { // returns s
@@ -88,15 +217,20 @@ int pm::get_free_frame(int size) {
 			}
 		}
 	}
+	print_bitmap();
 	return -1;
 }
 
 void pm::set_frame(int frame) {
-	// just starting from 0 to 31, find the current integer.
-	for (int i = 0; i < 32; i++) {
-		if (bitmask[i] < ((1l << 32) - 1)) {
-			bitmask[i] |= (1 << frame);
-			break;
-		}
+	int mask = floor(frame / 32);
+	frame = frame % 32;
+	bitmask[mask] |= (1 << frame);
+	print_bitmap();
+}
+
+void pm::print_bitmap() {
+	std::string tag = CLASS_TAG + "print_bitmap()";
+	for (int i = 0; i < 32 && bitmask[i]; i++) {
+		LoggerFactory::GetLogger()->log(tag, "Bitmap " + std::to_string(i) + " = " + std::to_string(bitmask[i]));
 	}
 }

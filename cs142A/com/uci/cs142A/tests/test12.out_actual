@@ -1,0 +1,18 @@
+Error type-checking file.
+TypeError(3,1)[Not all paths in function validReturnOne have a return.]
+TypeError(4,3)[Function validReturnOne returns null not int.]
+TypeError(7,1)[Not all paths in function validReturnTwo have a return.]
+TypeError(11,5)[Function validReturnTwo returns null not int.]
+TypeError(13,3)[Function validReturnTwo returns null not int.]
+TypeError(16,1)[Not all paths in function missingReturnOne have a return.]
+TypeError(18,5)[Function missingReturnOne returns null not int.]
+TypeError(22,1)[Not all paths in function missingReturnTwo have a return.]
+TypeError(24,5)[Function missingReturnTwo returns null not int.]
+TypeError(30,1)[Not all paths in function missingReturnThree have a return.]
+TypeError(34,5)[Function missingReturnThree returns null not int.]
+TypeError(38,1)[Not all paths in function validReturnThree have a return.]
+TypeError(40,5)[Function validReturnThree returns null not int.]
+TypeError(42,3)[Function validReturnThree returns null not int.]
+TypeError(45,1)[Not all paths in function missingReturnFour have a return.]
+TypeError(47,5)[Function missingReturnFour returns null not int.]
+

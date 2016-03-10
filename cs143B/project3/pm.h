@@ -1,3 +1,7 @@
+#include <vector>
+#include <string>
+#include <fstream>
+#include "tlb_adapter.h"
 #ifndef PM_H
 #define PM_H
 const static int FRAME_SIZE = 512;
@@ -12,17 +16,26 @@ public:
         int p; // The page table position
         int w; // The offset in the page table.
         int addr; // disk[disk[s] + p] + w
+        int sp; // s & p together
     } va_t;
 
-    pm();
+    pm(std::string outs, bool tlb_enabled = false);
     bool get_physical_address(int physical_address, pm::va_t *pa);
-    disk_t disk;
-    unsigned int bitmask[32];
-// private:
-    int get_segment_table(int physical_address); // return s
-    int get_page_table(int physical_address); // returns p
-    int get_offset(int physical_address); // returns w
+    void initialize(std::vector < std::vector < std::string > > data );
+    void read(int virtual_address);
+    void write(int virtual_address);
+    void output(std::string s);
+    const std::string CLASS_TAG = "pm::";
+private:
+    int get_segment_table(int virtual_address); // return s
+    int get_page_table(int virtual_address); // returns p
+    int get_offset(int virtual_address); // returns w
     int get_free_frame(int size = 1);
     void set_frame(int frame);
+    void print_bitmap();
+    disk_t disk;
+    unsigned int bitmask[32];
+    Itlb *tlb;
+    std::ofstream out;
 };
 #endif

@@ -47,4 +47,8 @@ public class FunctionDefinition extends Command implements Declaration {
 	public void accept(CommandVisitor visitor) {
 		visitor.visit(this);
 	}
+
+	public boolean ismain() {
+		return func.name().equalsIgnoreCase("main");
+	}
 }

@@ -1,0 +1,547 @@
+[pm::PM()                    ]:Constructed
+[pm::print_bitmap()          ]:Bitmap 0 = 1
+[pm::initialize()            ]:Set frame 0
+[pm::print_bitmap()          ]:Bitmap 0 = 513
+[pm::initialize()            ]:Segment 0 set frame 9 to address 4608
+[pm::print_bitmap()          ]:Bitmap 0 = 1537
+[pm::initialize()            ]:Segment 0 set frame 10 to address 4608
+[pm::initialize()            ]:Segment 1 has no frame (-1)
+[pm::print_bitmap()          ]:Bitmap 0 = 263681
+[pm::initialize()            ]:Segment 2 set frame 18 to address 9216
+[pm::print_bitmap()          ]:Bitmap 0 = 787969
+[pm::initialize()            ]:Segment 2 set frame 19 to address 9216
+[pm::print_bitmap()          ]:Bitmap 0 = 787977
+[pm::initialize()            ]:Segment 5 set frame 3 to address 1536
+[pm::print_bitmap()          ]:Bitmap 0 = 787993
+[pm::initialize()            ]:Segment 5 set frame 4 to address 1536
+[pm::initialize()            ]:Set disk 4608 to 4096
+[pm::print_bitmap()          ]:Bitmap 0 = 788249
+[pm::initialize()            ]:Set disk 1536 to 7168
+[pm::print_bitmap()          ]:Bitmap 0 = 804633
+[pm::initialize()            ]:Set disk 1537 to 8704
+[pm::print_bitmap()          ]:Bitmap 0 = 935705
+[pm::initialize()            ]:Set disk 1538 to -1
+[pm::initialize()            ]:Set disk 1540 to 32768
+[pm::print_bitmap()          ]:Bitmap 0 = 935705
+[pm::initialize()            ]:Set disk 1541 to 65536
+[pm::print_bitmap()          ]:Bitmap 0 = 935705
+[pm::read()                  ]:Starting read for virtual address 0
+[pm::get_physical_address()  ]:Getting virtual address components for 0
+[pm::get_physical_address()  ]:{ s=0, p=0, w=0, addr = 4096, sp = 0}
+[pm::read()                  ]:Virtual address 0 error
+[pm::read()                  ]:Ending read for virtual address 0
+[pm::read()                  ]:Starting read for virtual address 1
+[pm::get_physical_address()  ]:Getting virtual address components for 1
+[pm::get_physical_address()  ]:{ s=0, p=0, w=1, addr = 4097, sp = 0}
+[pm::read()                  ]:Virtual address 1 error
+[pm::read()                  ]:Ending read for virtual address 1
+[pm::read()                  ]:Starting read for virtual address 2621952
+[pm::get_physical_address()  ]:Getting virtual address components for 2621952
+[pm::get_physical_address()  ]:{ s=5, p=1, w=0, addr = 8704, sp = 5121}
+[pm::read()                  ]:Virtual address 2621952 at address 8704
+[pm::read()                  ]:Ending read for virtual address 2621952
+[pm::write()                 ]:Starting write for virtual address 2621962
+[pm::get_physical_address()  ]:Getting virtual address components for 2621962
+[pm::get_physical_address()  ]:{ s=5, p=1, w=10, addr = 8714, sp = 5121}
+[pm::write()                 ]:Virtual address 2621962 at address 8714
+[pm::write()                 ]:Ending write for virtual address 2621962
+[pm::read()                  ]:Starting read for virtual address 2621440
+[pm::get_physical_address()  ]:Getting virtual address components for 2621440
+[pm::get_physical_address()  ]:{ s=5, p=0, w=0, addr = 7168, sp = 5120}
+[pm::read()                  ]:Virtual address 2621440 at address 7168
+[pm::read()                  ]:Ending read for virtual address 2621440
+[pm::read()                  ]:Starting read for virtual address 2623488
+[pm::get_physical_address()  ]:Getting virtual address components for 2623488
+[pm::get_physical_address()  ]:{ s=5, p=4, w=0, addr = 32768, sp = 5124}
+[pm::read()                  ]:Virtual address 2623488 at address 32768
+[pm::read()                  ]:Ending read for virtual address 2623488
+[pm::read()                  ]:Starting read for virtual address 511
+[pm::get_physical_address()  ]:Getting virtual address components for 511
+[pm::get_physical_address()  ]:{ s=0, p=0, w=511, addr = 4607, sp = 0}
+[pm::read()                  ]:Virtual address 511 error
+[pm::read()                  ]:Ending read for virtual address 511
+[pm::read()                  ]:Starting read for virtual address 2623488
+[pm::get_physical_address()  ]:Getting virtual address components for 2623488
+[pm::get_physical_address()  ]:{ s=5, p=4, w=0, addr = 32768, sp = 5124}
+[pm::read()                  ]:Virtual address 2623488 at address 32768
+[pm::read()                  ]:Ending read for virtual address 2623488
+[pm::read()                  ]:Starting read for virtual address 2624000
+[pm::get_physical_address()  ]:Getting virtual address components for 2624000
+[pm::get_physical_address()  ]:{ s=5, p=5, w=0, addr = 65536, sp = 5125}
+[pm::read()                  ]:Virtual address 2624000 at address 65536
+[pm::read()                  ]:Ending read for virtual address 2624000
+[pm::read()                  ]:Starting read for virtual address 2624511
+[pm::get_physical_address()  ]:Getting virtual address components for 2624511
+[pm::get_physical_address()  ]:{ s=5, p=5, w=511, addr = 66047, sp = 5125}
+[pm::read()                  ]:Virtual address 2624511 at address 66047
+[pm::read()                  ]:Ending read for virtual address 2624511
+[pm::read()                  ]:Starting read for virtual address 2621440
+[pm::get_physical_address()  ]:Getting virtual address components for 2621440
+[pm::get_physical_address()  ]:{ s=5, p=0, w=0, addr = 7168, sp = 5120}
+[pm::read()                  ]:Virtual address 2621440 at address 7168
+[pm::read()                  ]:Ending read for virtual address 2621440
+[pm::read()                  ]:Starting read for virtual address 2621952
+[pm::get_physical_address()  ]:Getting virtual address components for 2621952
+[pm::get_physical_address()  ]:{ s=5, p=1, w=0, addr = 8704, sp = 5121}
+[pm::read()                  ]:Virtual address 2621952 at address 8704
+[pm::read()                  ]:Ending read for virtual address 2621952
+[pm::read()                  ]:Starting read for virtual address 2621440
+[pm::get_physical_address()  ]:Getting virtual address components for 2621440
+[pm::get_physical_address()  ]:{ s=5, p=0, w=0, addr = 7168, sp = 5120}
+[pm::read()                  ]:Virtual address 2621440 at address 7168
+[pm::read()                  ]:Ending read for virtual address 2621440
+[pm::read()                  ]:Starting read for virtual address 2624511
+[pm::get_physical_address()  ]:Getting virtual address components for 2624511
+[pm::get_physical_address()  ]:{ s=5, p=5, w=511, addr = 66047, sp = 5125}
+[pm::read()                  ]:Virtual address 2624511 at address 66047
+[pm::read()                  ]:Ending read for virtual address 2624511
+[pm::read()                  ]:Starting read for virtual address 2623488
+[pm::get_physical_address()  ]:Getting virtual address components for 2623488
+[pm::get_physical_address()  ]:{ s=5, p=4, w=0, addr = 32768, sp = 5124}
+[pm::read()                  ]:Virtual address 2623488 at address 32768
+[pm::read()                  ]:Ending read for virtual address 2623488
+[pm::read()                  ]:Starting read for virtual address 2622464
+[pm::get_physical_address()  ]:Getting virtual address components for 2622464
+[pm::get_physical_address()  ]:{ s=5, p=2, w=0, addr = -1, sp = 5122}
+[pm::read()                  ]:Virtual address 2622464 page fault
+[pm::read()                  ]:Ending read for virtual address 2622464
+[pm::write()                 ]:Starting write for virtual address 2622564
+[pm::get_physical_address()  ]:Getting virtual address components for 2622564
+[pm::get_physical_address()  ]:{ s=5, p=2, w=100, addr = 99, sp = 5122}
+[pm::write()                 ]:Virtual address 2622564 page fault
+[pm::write()                 ]:Ending write for virtual address 2622564
+[pm::read()                  ]:Starting read for virtual address 524288
+[pm::get_physical_address()  ]:Getting virtual address components for 524288
+[pm::get_physical_address()  ]:{ s=1, p=0, w=0, addr = 0, sp = 1024}
+[pm::read()                  ]:Virtual address 524288 page fault
+[pm::read()                  ]:Ending read for virtual address 524288
+[pm::write()                 ]:Starting write for virtual address 1048575
+[pm::get_physical_address()  ]:Getting virtual address components for 1048575
+[pm::get_physical_address()  ]:{ s=1, p=1023, w=511, addr = 511, sp = 2047}
+[pm::write()                 ]:Virtual address 1048575 page fault
+[pm::write()                 ]:Ending write for virtual address 1048575
+[pm::read()                  ]:Starting read for virtual address 2622976
+[pm::get_physical_address()  ]:Getting virtual address components for 2622976
+[pm::get_physical_address()  ]:{ s=5, p=3, w=0, addr = 0, sp = 5123}
+[pm::read()                  ]:Virtual address 2622976 error
+[pm::read()                  ]:Ending read for virtual address 2622976
+[pm::write()                 ]:Starting write for virtual address 2622976
+[pm::get_physical_address()  ]:Getting virtual address components for 2622976
+[pm::get_physical_address()  ]:{ s=5, p=3, w=0, addr = 0, sp = 5123}
+[pm::print_bitmap()          ]:Bitmap 0 = 935707
+[pm::write()                 ]:Virtual address 2622976 allocated frame 512
+[pm::write()                 ]:Virtual address 2622976 at address 512
+[pm::write()                 ]:Ending write for virtual address 2622976
+[pm::read()                  ]:Starting read for virtual address 2623487
+[pm::get_physical_address()  ]:Getting virtual address components for 2623487
+[pm::get_physical_address()  ]:{ s=5, p=3, w=511, addr = 1023, sp = 5123}
+[pm::read()                  ]:Virtual address 2623487 at address 1023
+[pm::read()                  ]:Ending read for virtual address 2623487
+[pm::write()                 ]:Starting write for virtual address 2623487
+[pm::get_physical_address()  ]:Getting virtual address components for 2623487
+[pm::get_physical_address()  ]:{ s=5, p=3, w=511, addr = 1023, sp = 5123}
+[pm::write()                 ]:Virtual address 2623487 at address 1023
+[pm::write()                 ]:Ending write for virtual address 2623487
+[pm::read()                  ]:Starting read for virtual address 2097152
+[pm::get_physical_address()  ]:Getting virtual address components for 2097152
+[pm::get_physical_address()  ]:{ s=4, p=0, w=0, addr = 4608, sp = 4096}
+[pm::read()                  ]:Virtual address 2097152 error
+[pm::read()                  ]:Ending read for virtual address 2097152
+[pm::read()                  ]:Starting read for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 511, sp = 5119}
+[pm::read()                  ]:Virtual address 2621439 error
+[pm::read()                  ]:Ending read for virtual address 2621439
+[pm::write()                 ]:Starting write for virtual address 2097152
+[pm::get_physical_address()  ]:Getting virtual address components for 2097152
+[pm::get_physical_address()  ]:{ s=4, p=0, w=0, addr = 4608, sp = 4096}
+[pm::print_bitmap()          ]:Bitmap 0 = 935739
+[pm::print_bitmap()          ]:Bitmap 0 = 935803
+[pm::write()                 ]:Virtual address 2097152 allocated frames (2) 2560
+[pm::print_bitmap()          ]:Bitmap 0 = 935807
+[pm::write()                 ]:Virtual address 2097152 allocated frame 1024
+[pm::write()                 ]:Virtual address 2097152 at address 1024
+[pm::write()                 ]:Ending write for virtual address 2097152
+[pm::read()                  ]:Starting read for virtual address 2097663
+[pm::get_physical_address()  ]:Getting virtual address components for 2097663
+[pm::get_physical_address()  ]:{ s=4, p=0, w=511, addr = 1535, sp = 4096}
+[pm::read()                  ]:Virtual address 2097663 at address 1535
+[pm::read()                  ]:Ending read for virtual address 2097663
+[pm::read()                  ]:Starting read for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 511, sp = 5119}
+[pm::read()                  ]:Virtual address 2621439 error
+[pm::read()                  ]:Ending read for virtual address 2621439
+[pm::write()                 ]:Starting write for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 511, sp = 5119}
+[pm::print_bitmap()          ]:Bitmap 0 = 935935
+[pm::write()                 ]:Virtual address 2621439 allocated frame 3584
+[pm::write()                 ]:Virtual address 2621439 at address 4095
+[pm::write()                 ]:Ending write for virtual address 2621439
+[pm::read()                  ]:Starting read for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 4095, sp = 5119}
+[pm::read()                  ]:Virtual address 2621439 at address 4095
+[pm::read()                  ]:Ending read for virtual address 2621439
+[pm::read()                  ]:Starting read for virtual address 2620928
+[pm::get_physical_address()  ]:Getting virtual address components for 2620928
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=0, addr = 3584, sp = 5119}
+[pm::read()                  ]:Virtual address 2620928 at address 3584
+[pm::read()                  ]:Ending read for virtual address 2620928
+[pm::PM()                    ]:Constructed
+[pm::print_bitmap()          ]:Bitmap 0 = 1
+[pm::initialize()            ]:Set frame 0
+[pm::print_bitmap()          ]:Bitmap 0 = 513
+[pm::initialize()            ]:Segment 0 set frame 9 to address 4608
+[pm::print_bitmap()          ]:Bitmap 0 = 1537
+[pm::initialize()            ]:Segment 0 set frame 10 to address 4608
+[pm::initialize()            ]:Segment 1 has no frame (-1)
+[pm::print_bitmap()          ]:Bitmap 0 = 263681
+[pm::initialize()            ]:Segment 2 set frame 18 to address 9216
+[pm::print_bitmap()          ]:Bitmap 0 = 787969
+[pm::initialize()            ]:Segment 2 set frame 19 to address 9216
+[pm::print_bitmap()          ]:Bitmap 0 = 787977
+[pm::initialize()            ]:Segment 5 set frame 3 to address 1536
+[pm::print_bitmap()          ]:Bitmap 0 = 787993
+[pm::initialize()            ]:Segment 5 set frame 4 to address 1536
+[pm::initialize()            ]:Set disk 4608 to 4096
+[pm::print_bitmap()          ]:Bitmap 0 = 788249
+[pm::initialize()            ]:Set disk 1536 to 7168
+[pm::print_bitmap()          ]:Bitmap 0 = 804633
+[pm::initialize()            ]:Set disk 1537 to 8704
+[pm::print_bitmap()          ]:Bitmap 0 = 935705
+[pm::initialize()            ]:Set disk 1538 to -1
+[pm::initialize()            ]:Set disk 1540 to 32768
+[pm::print_bitmap()          ]:Bitmap 0 = 935705
+[pm::initialize()            ]:Set disk 1541 to 65536
+[pm::print_bitmap()          ]:Bitmap 0 = 935705
+[pm::read()                  ]:Starting read for virtual address 0
+[pm::get_physical_address()  ]:Getting virtual address components for 0
+[pm::get_physical_address()  ]:{ s=0, p=0, w=0, addr = 4096, sp = 0}
+[pm::read()                  ]:Virtual address 0 error
+[pm::read()                  ]:Ending read for virtual address 0
+[pm::read()                  ]:Starting read for virtual address 1
+[pm::get_physical_address()  ]:Getting virtual address components for 1
+[pm::get_physical_address()  ]:{ s=0, p=0, w=1, addr = 4097, sp = 0}
+[pm::read()                  ]:Virtual address 1 error
+[pm::read()                  ]:Ending read for virtual address 1
+[pm::read()                  ]:Starting read for virtual address 2621952
+[pm::get_physical_address()  ]:Getting virtual address components for 2621952
+[pm::get_physical_address()  ]:{ s=5, p=1, w=0, addr = 8704, sp = 5121}
+[tlb::set_frame_cache        ]:Evicting cache item 0
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(1) to priority 0
+[tlb::lower_priorities()     ]:Making address -1(2) to priority 1
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 2
+[pm::read()                  ]:Virtual address 2621952 at address 8704
+[pm::read()                  ]:Ending read for virtual address 2621952
+[pm::write()                 ]:Starting write for virtual address 2621962
+[pm::get_physical_address()  ]:Getting virtual address components for 2621962
+[pm::get_physical_address()  ]:{ s=5, p=1, w=10, addr = 8714, sp = 5121}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(1) to priority 0
+[tlb::lower_priorities()     ]:Making address -1(2) to priority 1
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 2
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(1) to priority 0
+[tlb::lower_priorities()     ]:Making address -1(2) to priority 1
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 2
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[pm::write()                 ]:Virtual address 2621962  recieved from tlb at addr 8714
+[pm::write()                 ]:Ending write for virtual address 2621962
+[pm::read()                  ]:Starting read for virtual address 2621440
+[pm::get_physical_address()  ]:Getting virtual address components for 2621440
+[pm::get_physical_address()  ]:{ s=5, p=0, w=0, addr = 7168, sp = 5120}
+[tlb::set_frame_cache        ]:Evicting cache item 1
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 2
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(2) to priority 0
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 1
+[pm::read()                  ]:Virtual address 2621440 at address 7168
+[pm::read()                  ]:Ending read for virtual address 2621440
+[pm::read()                  ]:Starting read for virtual address 2623488
+[pm::get_physical_address()  ]:Getting virtual address components for 2623488
+[pm::get_physical_address()  ]:{ s=5, p=4, w=0, addr = 32768, sp = 5124}
+[tlb::set_frame_cache        ]:Evicting cache item 2
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 0
+[pm::read()                  ]:Virtual address 2623488 at address 32768
+[pm::read()                  ]:Ending read for virtual address 2623488
+[pm::read()                  ]:Starting read for virtual address 511
+[pm::get_physical_address()  ]:Getting virtual address components for 511
+[pm::get_physical_address()  ]:{ s=0, p=0, w=511, addr = 4607, sp = 0}
+[pm::read()                  ]:Virtual address 511 error
+[pm::read()                  ]:Ending read for virtual address 511
+[pm::read()                  ]:Starting read for virtual address 2623488
+[pm::get_physical_address()  ]:Getting virtual address components for 2623488
+[pm::get_physical_address()  ]:{ s=5, p=4, w=0, addr = 32768, sp = 5124}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 0
+[tlb::get_frame_cache()      ]:Making buffer 2 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 3
+[tlb::lower_priorities()     ]:Making address -1(3) to priority 0
+[tlb::get_frame_cache()      ]:Making buffer 2 highest priority
+[pm::read()                  ]:Virtual address 2623488  recieved from tlb at addr 32768
+[pm::read()                  ]:Ending read for virtual address 2623488
+[pm::read()                  ]:Starting read for virtual address 2624000
+[pm::get_physical_address()  ]:Getting virtual address components for 2624000
+[pm::get_physical_address()  ]:{ s=5, p=5, w=0, addr = 65536, sp = 5125}
+[tlb::set_frame_cache        ]:Evicting cache item 3
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 1
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 3
+[pm::read()                  ]:Virtual address 2624000 at address 65536
+[pm::read()                  ]:Ending read for virtual address 2624000
+[pm::read()                  ]:Starting read for virtual address 2624511
+[pm::get_physical_address()  ]:Getting virtual address components for 2624511
+[pm::get_physical_address()  ]:{ s=5, p=5, w=511, addr = 66047, sp = 5125}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 1
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 1
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[pm::read()                  ]:Virtual address 2624511  recieved from tlb at addr 66047
+[pm::read()                  ]:Ending read for virtual address 2624511
+[pm::read()                  ]:Starting read for virtual address 2621440
+[pm::get_physical_address()  ]:Getting virtual address components for 2621440
+[pm::get_physical_address()  ]:{ s=5, p=0, w=0, addr = 7168, sp = 5120}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 1
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 2
+[tlb::get_frame_cache()      ]:Making buffer 1 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 1
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 2
+[tlb::get_frame_cache()      ]:Making buffer 1 highest priority
+[pm::read()                  ]:Virtual address 2621440  recieved from tlb at addr 7168
+[pm::read()                  ]:Ending read for virtual address 2621440
+[pm::read()                  ]:Starting read for virtual address 2621952
+[pm::get_physical_address()  ]:Getting virtual address components for 2621952
+[pm::get_physical_address()  ]:{ s=5, p=1, w=0, addr = 8704, sp = 5121}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[pm::read()                  ]:Virtual address 2621952  recieved from tlb at addr 8704
+[pm::read()                  ]:Ending read for virtual address 2621952
+[pm::read()                  ]:Starting read for virtual address 2621440
+[pm::get_physical_address()  ]:Getting virtual address components for 2621440
+[pm::get_physical_address()  ]:{ s=5, p=0, w=0, addr = 7168, sp = 5120}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 2
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 1 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 2
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 1 highest priority
+[pm::read()                  ]:Virtual address 2621440  recieved from tlb at addr 7168
+[pm::read()                  ]:Ending read for virtual address 2621440
+[pm::read()                  ]:Starting read for virtual address 2624511
+[pm::get_physical_address()  ]:Getting virtual address components for 2624511
+[pm::get_physical_address()  ]:{ s=5, p=5, w=511, addr = 66047, sp = 5125}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[pm::read()                  ]:Virtual address 2624511  recieved from tlb at addr 66047
+[pm::read()                  ]:Ending read for virtual address 2624511
+[pm::read()                  ]:Starting read for virtual address 2623488
+[pm::get_physical_address()  ]:Getting virtual address components for 2623488
+[pm::get_physical_address()  ]:{ s=5, p=4, w=0, addr = 32768, sp = 5124}
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 1
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 3
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 2
+[tlb::get_frame_cache()      ]:Making buffer 2 highest priority
+[tlb::lower_priorities()     ]:Making address 5121(0) to priority 0
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 1
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 3
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 2
+[tlb::get_frame_cache()      ]:Making buffer 2 highest priority
+[pm::read()                  ]:Virtual address 2623488  recieved from tlb at addr 32768
+[pm::read()                  ]:Ending read for virtual address 2623488
+[pm::read()                  ]:Starting read for virtual address 2622464
+[pm::get_physical_address()  ]:Getting virtual address components for 2622464
+[pm::get_physical_address()  ]:{ s=5, p=2, w=0, addr = -1, sp = 5122}
+[pm::read()                  ]:Virtual address 2622464 page fault
+[pm::read()                  ]:Ending read for virtual address 2622464
+[pm::write()                 ]:Starting write for virtual address 2622564
+[pm::get_physical_address()  ]:Getting virtual address components for 2622564
+[pm::get_physical_address()  ]:{ s=5, p=2, w=100, addr = 99, sp = 5122}
+[pm::write()                 ]:Virtual address 2622564 page fault
+[pm::write()                 ]:Ending write for virtual address 2622564
+[pm::read()                  ]:Starting read for virtual address 524288
+[pm::get_physical_address()  ]:Getting virtual address components for 524288
+[pm::get_physical_address()  ]:{ s=1, p=0, w=0, addr = 0, sp = 1024}
+[pm::read()                  ]:Virtual address 524288 page fault
+[pm::read()                  ]:Ending read for virtual address 524288
+[pm::write()                 ]:Starting write for virtual address 1048575
+[pm::get_physical_address()  ]:Getting virtual address components for 1048575
+[pm::get_physical_address()  ]:{ s=1, p=1023, w=511, addr = 511, sp = 2047}
+[pm::write()                 ]:Virtual address 1048575 page fault
+[pm::write()                 ]:Ending write for virtual address 1048575
+[pm::read()                  ]:Starting read for virtual address 2622976
+[pm::get_physical_address()  ]:Getting virtual address components for 2622976
+[pm::get_physical_address()  ]:{ s=5, p=3, w=0, addr = 0, sp = 5123}
+[pm::read()                  ]:Virtual address 2622976 error
+[pm::read()                  ]:Ending read for virtual address 2622976
+[pm::write()                 ]:Starting write for virtual address 2622976
+[pm::get_physical_address()  ]:Getting virtual address components for 2622976
+[pm::get_physical_address()  ]:{ s=5, p=3, w=0, addr = 0, sp = 5123}
+[pm::print_bitmap()          ]:Bitmap 0 = 935707
+[pm::write()                 ]:Virtual address 2622976 allocated frame 512
+[tlb::set_frame_cache        ]:Evicting cache item 0
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 0
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[pm::write()                 ]:Virtual address 2622976 at address 512
+[pm::write()                 ]:Ending write for virtual address 2622976
+[pm::read()                  ]:Starting read for virtual address 2623487
+[pm::get_physical_address()  ]:Getting virtual address components for 2623487
+[pm::get_physical_address()  ]:{ s=5, p=3, w=511, addr = 1023, sp = 5123}
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 0
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 0
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[pm::read()                  ]:Virtual address 2623487  recieved from tlb at addr 1023
+[pm::read()                  ]:Ending read for virtual address 2623487
+[pm::write()                 ]:Starting write for virtual address 2623487
+[pm::get_physical_address()  ]:Getting virtual address components for 2623487
+[pm::get_physical_address()  ]:{ s=5, p=3, w=511, addr = 1023, sp = 5123}
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 0
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 3
+[tlb::lower_priorities()     ]:Making address 5120(1) to priority 0
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 2
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 1
+[tlb::get_frame_cache()      ]:Making buffer 0 highest priority
+[pm::write()                 ]:Virtual address 2623487  recieved from tlb at addr 1023
+[pm::write()                 ]:Ending write for virtual address 2623487
+[pm::read()                  ]:Starting read for virtual address 2097152
+[pm::get_physical_address()  ]:Getting virtual address components for 2097152
+[pm::get_physical_address()  ]:{ s=4, p=0, w=0, addr = 4608, sp = 4096}
+[pm::read()                  ]:Virtual address 2097152 error
+[pm::read()                  ]:Ending read for virtual address 2097152
+[pm::read()                  ]:Starting read for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 511, sp = 5119}
+[pm::read()                  ]:Virtual address 2621439 error
+[pm::read()                  ]:Ending read for virtual address 2621439
+[pm::write()                 ]:Starting write for virtual address 2097152
+[pm::get_physical_address()  ]:Getting virtual address components for 2097152
+[pm::get_physical_address()  ]:{ s=4, p=0, w=0, addr = 4608, sp = 4096}
+[pm::print_bitmap()          ]:Bitmap 0 = 935739
+[pm::print_bitmap()          ]:Bitmap 0 = 935803
+[pm::write()                 ]:Virtual address 2097152 allocated frames (2) 2560
+[pm::print_bitmap()          ]:Bitmap 0 = 935807
+[pm::write()                 ]:Virtual address 2097152 allocated frame 1024
+[tlb::set_frame_cache        ]:Evicting cache item 1
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 2
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 1
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 0
+[pm::write()                 ]:Virtual address 2097152 at address 1024
+[pm::write()                 ]:Ending write for virtual address 2097152
+[pm::read()                  ]:Starting read for virtual address 2097663
+[pm::get_physical_address()  ]:Getting virtual address components for 2097663
+[pm::get_physical_address()  ]:{ s=4, p=0, w=511, addr = 1535, sp = 4096}
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 2
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 1
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 0
+[tlb::get_frame_cache()      ]:Making buffer 1 highest priority
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 2
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 3
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 1
+[tlb::lower_priorities()     ]:Making address 5125(3) to priority 0
+[tlb::get_frame_cache()      ]:Making buffer 1 highest priority
+[pm::read()                  ]:Virtual address 2097663  recieved from tlb at addr 1535
+[pm::read()                  ]:Ending read for virtual address 2097663
+[pm::read()                  ]:Starting read for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 511, sp = 5119}
+[pm::read()                  ]:Virtual address 2621439 error
+[pm::read()                  ]:Ending read for virtual address 2621439
+[pm::write()                 ]:Starting write for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 511, sp = 5119}
+[pm::print_bitmap()          ]:Bitmap 0 = 935935
+[pm::write()                 ]:Virtual address 2621439 allocated frame 3584
+[tlb::set_frame_cache        ]:Evicting cache item 3
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5119(3) to priority 3
+[pm::write()                 ]:Virtual address 2621439 at address 4095
+[pm::write()                 ]:Ending write for virtual address 2621439
+[pm::read()                  ]:Starting read for virtual address 2621439
+[pm::get_physical_address()  ]:Getting virtual address components for 2621439
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=511, addr = 4095, sp = 5119}
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5119(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5119(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[pm::read()                  ]:Virtual address 2621439  recieved from tlb at addr 4095
+[pm::read()                  ]:Ending read for virtual address 2621439
+[pm::read()                  ]:Starting read for virtual address 2620928
+[pm::get_physical_address()  ]:Getting virtual address components for 2620928
+[pm::get_physical_address()  ]:{ s=4, p=1023, w=0, addr = 3584, sp = 5119}
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5119(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[tlb::lower_priorities()     ]:Making address 5123(0) to priority 1
+[tlb::lower_priorities()     ]:Making address 4096(1) to priority 2
+[tlb::lower_priorities()     ]:Making address 5124(2) to priority 0
+[tlb::lower_priorities()     ]:Making address 5119(3) to priority 3
+[tlb::get_frame_cache()      ]:Making buffer 3 highest priority
+[pm::read()                  ]:Virtual address 2620928  recieved from tlb at addr 3584
+[pm::read()                  ]:Ending read for virtual address 2620928

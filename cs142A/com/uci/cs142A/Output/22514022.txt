@@ -1,0 +1,107 @@
+1c1
+< truefalse
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< 42
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< 0.50000000
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< int?7
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< 02223334440
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1,4c1
+< 0
+< 1
+< 12
+< 123
+---
+> Crux Program has no type errors.
+
+1c1
+< int?7
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< 789
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1,2c1
+< 3
+< 0.37500000
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< 1-1
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< -1
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1c1
+< 0-1
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1,3c1
+< true
+< false
+< false
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1,3c1
+< true
+< false
+< true
+\ No newline at end of file
+---
+> Crux Program has no type errors.
+
+1,12c1
+< 1
+< 1
+< true
+< 0
+< 1
+< false
+< 1
+< 0
+< false
+< 0
+< 0
+< false
+---
+> Crux Program has no type errors.
+

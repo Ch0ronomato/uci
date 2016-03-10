@@ -48,7 +48,9 @@ public class SymbolTable {
     public Symbol insert(String name) throws RedeclarationError
     {
         if (!symbols.containsKey(name)) {
-            return symbols.put(name, new Symbol(name));
+            Symbol symbol = new Symbol(name);
+            symbols.put(name, symbol);
+            return symbol;
         } else {
             throw new RedeclarationError(symbols.get(name));
         }

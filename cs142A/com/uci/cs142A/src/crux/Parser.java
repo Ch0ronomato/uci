@@ -2,6 +2,8 @@ package crux;
 
 import ast.*;
 import ast.Error;
+import sun.jvm.hotspot.debugger.cdbg.Sym;
+import types.*;
 
 import java.util.*;
 
@@ -16,11 +18,23 @@ public class Parser {
     {
         symbolTable = new SymbolTable();
         symbolTable.insert("readInt");
+        symbolTable.lookup("readInt").setType(new FuncType(new TypeList(), Type.getBaseType("int")));
         symbolTable.insert("readFloat");
+        symbolTable.lookup("readFloat").setType(new FuncType(new TypeList(), Type.getBaseType("float")));
         symbolTable.insert("printBool");
+        TypeList printBool = new TypeList();
+        printBool.append(new BoolType());
+        symbolTable.lookup("printBool").setType(new FuncType(printBool, Type.getBaseType("void")));
         symbolTable.insert("printInt");
+        TypeList printInt = new TypeList();
+        printInt.append(new types.IntType());
+        symbolTable.lookup("printInt").setType(new FuncType(printInt, Type.getBaseType("void")));
         symbolTable.insert("printFloat");
+        TypeList printFloat = new TypeList();
+        printFloat.append(new types.FloatType());
+        symbolTable.lookup("printFloat").setType(new FuncType(printFloat, Type.getBaseType("void")));
         symbolTable.insert("println");
+        symbolTable.lookup("println").setType(new FuncType(new TypeList(), Type.getBaseType("void")));
     }
 
     private void enterScope()
@@ -232,6 +246,22 @@ public class Parser {
         throw new QuitParseException(errorMessage);
         //return ErrorToken(errorMessage);
     }
+
+    private int expectInteger (Token.Kind kind) {
+        Token tok = currentToken;
+        if (accept(kind))
+            return Integer.parseInt(tok.lexeme());
+        String errorMessage = reportSyntaxError(kind);
+        throw new QuitParseException(errorMessage);
+    }
+
+    private int expectInteger (NonTerminal nt) {
+        Token tok = currentToken;
+        if (accept(nt))
+            return Integer.parseInt(tok.lexeme());
+        String errorMessage = reportSyntaxError(nt);
+        throw new QuitParseException(errorMessage);
+    }
    
 // Grammar Rules =====================================================
     
@@ -251,7 +281,10 @@ public class Parser {
         enterRule(NonTerminal.DESIGNATOR);
         Expression to_return;
         Token tok = expectRetrieve(Token.Kind.IDENTIFIER);
-        Expression addr = new AddressOf(tok.lineNumber(), tok.charPosition(), new Symbol(tok.lexeme()));
+
+        // we already know the designator is declared in scope.
+        Symbol s = symbolTable.lookup(tok.lexeme());
+        Expression addr = new AddressOf(tok.lineNumber(), tok.charPosition(), s);
         to_return = addr;
         while (accept(Token.Kind.OPEN_BRACKET)) {
             to_return = new Index(currentToken.lineNumber(), currentToken.charPosition(), to_return, expression0());
@@ -262,11 +295,13 @@ public class Parser {
     }
 
     // type := IDENTIFIER
-    public void type()
+    // @todo: return type.
+    public types.Type type()
     {
         enterRule(NonTerminal.TYPE);
-        expect(Token.Kind.IDENTIFIER);
+        Token k = expectRetrieve(Token.Kind.IDENTIFIER);
         exitRule(NonTerminal.TYPE);
+        return types.Type.getBaseType(k.lexeme());
     }
 
     // op0 := >= | <= | != | == | < | >
@@ -343,11 +378,11 @@ public class Parser {
         Token k = currentToken;
         expect(NonTerminal.CALL_EXPRESSION);
         Token tok = expectRetrieve(Token.Kind.IDENTIFIER);
-        tryResolveSymbol(tok);
+        Symbol s = tryResolveSymbol(tok);
         expect(Token.Kind.OPEN_PAREN);
         ExpressionList list = expression_list();
         expect(Token.Kind.CLOSE_PAREN);
-        return new Call(k.lineNumber(), k.charPosition(), new Symbol(tok.lexeme()), list);
+        return new Call(k.lineNumber(), k.charPosition(), s, list);
     }
 
     public ExpressionList expression_list()
@@ -366,10 +401,14 @@ public class Parser {
         this.tryDeclareSymbol(this.currentToken);
         Token tok = expectRetrieve(Token.Kind.IDENTIFIER);
         expect(Token.Kind.COLON);
-        type();
-        return new Symbol(tok.lexeme());
+        types.Type t = type();
+        Symbol symbol = new Symbol(tok.lexeme());
+        symbol.setType(t);
+        symbolTable.lookup(tok.lexeme()).setType(t);
+        return symbol;
     }
 
+    // @todo: return TypeList
     public List<Symbol> parameter_list() {
         List<Symbol> params = new ArrayList<Symbol>();
         if (have(NonTerminal.PARAMETER)) {
@@ -381,38 +420,59 @@ public class Parser {
         return params;
     }
 
+    // @todo: for all declerations, run TypeChecker on it
+    // @todo: and add it to the hashmap
     public ast.VariableDeclaration variable_declaration() {
         Token k = expectRetrieve(Token.Kind.VAR);
-        tryDeclareSymbol(this.currentToken);
+        Symbol s = tryDeclareSymbol(this.currentToken);
         Token tok = expectRetrieve(Token.Kind.IDENTIFIER);
-        ast.VariableDeclaration decl = new VariableDeclaration(k.lineNumber(), k.charPosition(), new Symbol(tok.lexeme()));
+        ast.VariableDeclaration decl = new VariableDeclaration(k.lineNumber(), k.charPosition(), s);
         expect(Token.Kind.COLON);
-        type();
+        types.Type t = type();
+        decl.symbol().setType(t);
+        symbolTable.lookup(tok.lexeme()).setType(t);
         expect(Token.Kind.SEMICOLON);
         return decl;
     }
 
+    // @todo: For all declerations, run TypeChecker on this
+    // @todo: It's an array type, so ensure the inner type
     public ast.ArrayDeclaration array_declaration() {
+        List<Integer> numbers = new ArrayList<>();
         Token tok = expectRetrieve(Token.Kind.ARRAY);
-        tryDeclareSymbol(this.currentToken);
+        Symbol symbol = tryDeclareSymbol(this.currentToken);
         Token name = expectRetrieve(Token.Kind.IDENTIFIER);
         expect(Token.Kind.COLON);
-        type();
+        types.Type t = type();
         expect(Token.Kind.OPEN_BRACKET);
-        expect(Token.Kind.INTEGER);
+        int extent = expectInteger(Token.Kind.INTEGER);
         expect(Token.Kind.CLOSE_BRACKET);
+        types.ArrayType final_type;
+        numbers.add(extent);
         while (accept(Token.Kind.OPEN_BRACKET)) {
-            expect(Token.Kind.INTEGER);
+            // nest the array type.
+            int inner_extent = expectInteger(Token.Kind.INTEGER);
             expect(Token.Kind.CLOSE_BRACKET);
+            numbers.add(inner_extent);
         }
         expect(Token.Kind.SEMICOLON);
-        return new ArrayDeclaration(tok.lineNumber(), tok.charPosition(), new Symbol(name.lexeme()));
+
+        // build backwards
+        final_type = new types.ArrayType(numbers.get(numbers.size() - 1), t);
+        for (int i = numbers.size() - 2; i > -1; i--) {
+            final_type = new types.ArrayType(numbers.get(i), final_type);
+        }
+        symbol.setType(final_type);
+        symbolTable.lookup(name.lexeme()).setType(final_type);
+        return new ArrayDeclaration(tok.lineNumber(), tok.charPosition(), symbol);
     }
 
+    // @todo: Add function to the type checker reference
+    // @todo: For all invocations, ensure the return matches the expected.
     public ast.FunctionDefinition function_definition() {
         Token k = this.currentToken;
         expect(Token.Kind.FUNC);
-        tryDeclareSymbol(this.currentToken);
+        Symbol symbol = tryDeclareSymbol(this.currentToken);
         Token name = expectRetrieve(Token.Kind.IDENTIFIER);
         // insert function into both scopes
         enterScope();
@@ -420,10 +480,17 @@ public class Parser {
         List<Symbol> args = parameter_list();
         expect(Token.Kind.CLOSE_PAREN);
         expect(Token.Kind.COLON);
-        type();
+        types.Type return_type = type();
         ast.StatementList sl = statement_block();
         exitScope();
-        return new FunctionDefinition(k.lineNumber(), k.charPosition(), new Symbol(name.lexeme()), args, sl);
+        TypeList arg_types = new TypeList();
+        for (Symbol s : args) {
+            arg_types.append(s.type());
+        }
+        Type func = new FuncType(arg_types, return_type);
+        symbol.setType(func);
+        symbolTable.lookup(name.lexeme()).setType(func);
+        return new FunctionDefinition(k.lineNumber(), k.charPosition(), symbol, args, sl);
     }
 
     public ast.Declaration declaration() {
