@@ -1,0 +1,60 @@
+Round 0
+ELECTION WINNER IS 3(3)  !!!!!
+Active nodes where: 0(2), 1(0), 2(1), 3(3), 
+2   0   1   3   
+1   1   1   1   
+______________
+Round 1
+ELECTION WINNER IS 2(3)  !!!!!
+Active nodes where: 0(1), 1(0), 2(3), 3(2), 
+1   0   3   2   
+1   1   1   1   
+______________
+Round 2
+ELECTION WINNER IS 3(1)  !!!!!
+Active nodes where: 3(1), 
+0   2   3   1   
+0   0   0   1   
+______________
+Round 3
+ELECTION WINNER IS 3(3)  !!!!!
+Active nodes where: 1(2), 3(3), 
+0   2   1   3   
+0   1   0   1   
+______________
+Round 4
+ELECTION WINNER IS 2(3)  !!!!!
+Active nodes where: 0(0), 2(3), 3(2), 
+0   1   3   2   
+1   0   1   1   
+______________
+Round 5
+ELECTION WINNER IS 0(2)  !!!!!
+Active nodes where: 0(2), 1(1), 3(0), 
+2   1   3   0   
+1   1   0   1   
+______________
+Round 6
+ELECTION WINNER IS 3(3)  !!!!!
+Active nodes where: 0(0), 1(1), 2(2), 3(3), 
+0   1   2   3   
+1   1   1   1   
+______________
+Round 7
+ELECTION WINNER IS 1(2)  !!!!!
+Active nodes where: 1(2), 
+3   2   1   0   
+0   1   0   0   
+______________
+Round 8
+ELECTION WINNER IS 3(3)  !!!!!
+Active nodes where: 0(1), 1(2), 2(0), 3(3), 
+1   2   0   3   
+1   1   1   1   
+______________
+Round 9
+ELECTION WINNER IS 1(3)  !!!!!
+Active nodes where: 1(3), 2(0), 3(1), 
+2   3   0   1   
+0   1   1   1   
+______________
