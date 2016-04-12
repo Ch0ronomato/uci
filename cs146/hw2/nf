@@ -1,3 +1,4 @@
 #!/bin/bash
 
+# prints the number of files in a directory. Invoked via ./nf
 ls -l | grep ^- | wc -l | xargs
