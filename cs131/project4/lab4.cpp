@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <vector>
 #include <fstream>
+#include <chrono>
 
 // Don't CHANGE This Code (you can add more functions)-----------------------------------------------------------------------------
 
@@ -118,11 +119,13 @@ main(int argc, char* argv[])
         return 0;
     }
 
+    std::chrono::time_point<std::chrono::system_clock> start;
     const int numberOfRounds = std::atoi(argv[1]);
     const int seed           = std::atoi(argv[2]);
     std::srand(seed); // Set the seed
 
     auto electionArray = new int[numberOfProcesses][2]; // Bcast with &electionArray[0][0]...
+    start = std::chrono::system_clock::now();
     for(int round = 0; round < numberOfRounds; ++round)
     {
         if(processId == 0)
@@ -201,6 +204,10 @@ main(int argc, char* argv[])
         }
     }
 
+    if (processId == 0) {
+        std::chrono::duration<double> elasped_second = std::chrono::system_clock::now() - start;
+        std::cout << elasped_second.count() << std::endl;
+    }
     delete[] electionArray;
 
     MPI_Finalize();
