@@ -1,0 +1,8 @@
+#!/bin/bash
+
+for var in "$@"
+do
+	if [ -f $var ]; then
+		chmod +x $var
+	fi
+done

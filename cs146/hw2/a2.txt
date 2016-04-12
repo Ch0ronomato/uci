@@ -1,0 +1,60 @@
+                            CS146
+                            =====
+                        Assignment #2
+                Due Tue. Apr 12 at beginning of class
+
+(2) 1. Explain what would happen if the following did not give error messages:
+	  $ cat x y > y
+       and with
+	  $ cat x >> x
+    Think before you rush off to try them.  Assume both input files are very large.
+
+(2) 2. Write a short shell script called "cx" that will execute the command
+       "chmod +x" on every file given on its command  line.  What does it do?
+
+(2) 3. Write a short shell script called "nf" to display the number of
+       files in the current directory.
+
+(4) 4. Write a shell script called "lss" that will list all the files in
+       the current directory in decreasing order of the number of bytes in
+       the file.  It does not need to take any arguments.  Eg.,
+
+         $ lss
+         -rwxrwxr--    1 wayne   faculty      385 Nov 29  1996 lss
+	 -rwxrwxr--    1 wayne   faculty       42 Mar  9  1990 nf
+
+(4) 5. Write a shell script called "whoson" to display a sorted list of
+       undergrad students logged in on the current machine.  You should
+       take a look at the command called "groups" to acquire some of
+       the requisite information. eg.,
+         $ whoson
+         frank jane jim john laura
+
+(2) 6. Write a shell script called "howmany" to display the number of undergrad
+       students logged in on the current machine.  Use whoson if you can.  eg.,
+         $ howmany
+         5
+
+(4) 7. Write a shell script called "valid" that determines if it's
+       argument is a valid shell variable name, eg
+         $ valid foobar
+         yes
+         $ valid 12foobar
+         no
+
+        (HINT: define a regular expression, and enlist the aid of "grep".)
+
+(4) 8. Write a shell script called "prargs" that prints out a numbered
+       list of its arguments in the following format:
+         $ prargs a 'b c'
+         0: "prargs"
+         1: "a"
+         2: "b c"
+
+(4) marks for overall presentation, ie neatness counts!
+
+Make the shell scripts as "bulletproof" as possible; they should never blow
+up, and if used incorrectly should print an error or usage message.  Submit
+each electronically (details to be given on Thursday). Additionally, submit
+a printout of each, plus external documentation on how they work.  ASCII is
+acceptable, or any other form of word processor.
