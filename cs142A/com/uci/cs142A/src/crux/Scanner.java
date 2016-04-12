@@ -50,8 +50,10 @@ public class Scanner implements Iterable<Token> {
 					if (temp != 10)
 						this.lastChar = temp;
 				}
+				if (temp != 10)
+					this.lastChar = temp;
 				this.lineNum++;
-				this.charPos = 1;
+				this.charPos = 0;
 			}
 			if (this.lastChar == -1) {
 				this.nextChar = this.input.read();

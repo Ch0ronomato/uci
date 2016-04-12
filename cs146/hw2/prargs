@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# invoked via ./prargs arg arg...
+# iterates over all items in $@
+echo "0: $0"
+i=1
+for arg in "$@"
+do
+	echo "$i: \"$arg\""
+	i=`expr $i + 1`
+done

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# invoded via whoson. Iterates through all results of users and
+# prints the name iff they are an undergrad
+output=""
+for u in `users`
+do
+	if groups $u | grep -q "ugrad"; then
+        output = "$output $u"
+	fi
+done
+
+echo $output

@@ -1,0 +1,4 @@
+1.) cat x y > y would spit out x and y until the EOF character, as well 
+as try to write it to y. In the end y would be truncated to zero, leaving only the contents of x in the file.
+
+2.) Performing cat x >> x will just double the content in the file. The file will be opened in append mode, and all of x will be put into x again. 

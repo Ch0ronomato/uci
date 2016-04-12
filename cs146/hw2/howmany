@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# very simple. Invoked via ./howmany. Implemented using whoson
+echo `./whoson | wc -w`

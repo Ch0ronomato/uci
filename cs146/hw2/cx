@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# invoked simply as ./cx $name
+for var in "$@"
+do
+	if [ -f $var ]; then
+		chmod +x $var
+	fi
+done

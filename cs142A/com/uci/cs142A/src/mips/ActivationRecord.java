@@ -88,12 +88,23 @@ public class ActivationRecord
     
     public void getAddress(Program prog, String reg, Symbol sym)
     {
-          if (parent != null) {
-               getAddress(prog, reg, sym);
-          } else {
-               int offset = arguments.containsKey(sym) ? arguments.get(sym) : locals.get(sym) - fixedFrameSize;
-               prog.appendInstruction("addi " + reg + ", $fp, " + offset);
-          }
+        // @todo: Fix contains key not working.
+        boolean inArgs = false, inLocals = false;
+        Symbol argEntry = null, localsEntry = null;
+        for (Symbol s : arguments.keySet()) {
+            inArgs |= s.name().equals(sym.name());
+            if (s.name().equals(sym.name())) argEntry = s;
+        }
+        for (Symbol s : locals.keySet()) {
+            inLocals |= s.name().equals(sym.name());
+            if (s.name().equals(sym.name())) localsEntry = s;
+        }
+        if (inArgs || inLocals) {
+            int offset = inArgs ? arguments.get(argEntry) : locals.get(localsEntry) - fixedFrameSize;
+            prog.appendInstruction("addi " + reg + ", $fp, " + offset);
+        } else if (parent != null) {
+               parent.getAddress(prog, reg, sym);
+        }
     }
 }
 

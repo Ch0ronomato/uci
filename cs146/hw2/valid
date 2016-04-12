@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# uses a regular expression to determine validity of a variable name.
+# invoked via ./valid
+for arg in "$@"
+do
+	if echo $arg | grep -q ^[a-zA-z][a-zA-z0-9]; then
+		echo "yes"
+	else
+		echo "no"
+	fi	
+done

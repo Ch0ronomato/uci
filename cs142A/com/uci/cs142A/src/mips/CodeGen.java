@@ -127,7 +127,7 @@ public class CodeGen implements ast.CommandVisitor {
         program.insertPrologue(startPos, currentFunction.stackSize());
 
         program.appendInstruction(returnlabel + ":");
-        handleNonVoidReturns(tc.getType(node));
+        handleNonVoidReturns(((FuncType)tc.getType(node)).returnType());
 
         program.appendEpilogue(currentFunction.stackSize());
         currentFunction = currentFunction.parent();
@@ -389,13 +389,13 @@ public class CodeGen implements ast.CommandVisitor {
         if (isInt(t)) {
             program.popInt("$t" + leftReg);
             program.popInt("$t" + rightReg);
-            program.appendInstruction(String.format("%s $%s, $%s, $%s", op, "t" + resultReg, "t" + leftReg, "t" + rightReg));
+            program.appendInstruction(String.format("%s $%s, $%s, $%s", op, "t" + resultReg, "t" + rightReg, "t" + leftReg));
             program.pushInt("$t" + resultReg);
         } else {
-            program.popFloat("$t" + leftReg);
-            program.popFloat("$t" + rightReg);
-            program.appendInstruction(String.format("%s.s $%s, $%s, $%s", op, "f"+(resultReg*2), "f"+(leftReg*2), "f"+(rightReg*2)));
-            program.pushFloat("$t" + resultReg);
+            program.popFloat("$f" + 2 * leftReg);
+            program.popFloat("$f" + 2 * rightReg);
+            program.appendInstruction(String.format("%s.s $%s, $%s, $%s", op, "f"+(resultReg*2), "f"+(rightReg*2), "f"+(leftReg*2)));
+            program.pushFloat("$f" + 2 * resultReg);
         }
     }
     /*
