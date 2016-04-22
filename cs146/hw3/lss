@@ -52,6 +52,8 @@ while getopts ":ABCFGHLOPRSTUWabcdefghiklmnopqrstuwx1" var; do
 			;;
 	esac
 done
+shift `expr $OPTIND - 1`
+echo "all args are $@"
 # Very simple script, using the -lS commands to sort the output
 if [[ $flags -eq 1 ]]; then
 	if [[ $useS -eq 1 ]]; then
