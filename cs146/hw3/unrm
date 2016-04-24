@@ -5,6 +5,7 @@ if [ $# -lt 1 ]; then
 	exit -1
 fi
 
+# does .Trash exist?
 trash=$TRASH
 if [[ ! -d "$TRASH" ]]; then
 	echo "The trash variable is not currently set. Consider setting an enviornment variable. Assuming ~/.Trash"
@@ -17,16 +18,15 @@ fi
 
 for file in "$@"
 do
-	# very carefully get the file name only, will maintaing spaces
 	thefilename=$(basename "$file")
 	trashpath="$trash/$thefilename"
-	echo $trashpath
-	if [ -f "$file" ]; then
-		# the file exists and can be safe rm'd
-		mv "$file" "$trashpath"
-	elif [ -d "$file" ]; then
-		mv "$file" "$trashpath"
+	if [ -f "$trashpath" ]; then
+		# the file exists, and can be moved to here.
+		mv "$trashpath" "."
+	elif [ -d "$trashpath" ]; then
+		mv "$trashpath" "."
 	else
-		echo "$file cannot be srm'd"
+		echo "File has not been srm'd"
+		exit -2
 	fi
 done
