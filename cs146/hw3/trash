@@ -1,0 +1,13 @@
+#!/bin/bash
+
+trash=$TRASH
+if [[ ! -d "$TRASH" ]]; then
+	echo "The trash variable is not currently set. Consider setting an enviornment variable. Assuming ~/.Trash"
+	trash="$HOME/.Trash"
+fi
+
+if [ ! -e $trash ]; then
+	mkdir $trash
+fi
+
+eval mv "$trash/*" "."
