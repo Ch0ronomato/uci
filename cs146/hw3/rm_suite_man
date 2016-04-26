@@ -1,0 +1,30 @@
+SRM(1)                  MAN
+NAME:
+    srm [OPTIONS] [FILES]...
+    unrm [FILES]
+    lsrm
+    durm
+    trash
+NOTES:
+    These five commands represent a suite of safe rm commands. 
+
+    srm:
+        Safe removal of all files. Any file srm'd will be moved to a $TRASH directory.
+        The $TRASH variable can either be defined as an enviorment variable, or a default
+        path of ~/.Trash will be used. If any flags are provided to srm, then normal rm
+        will be executed.
+
+    unrm:
+        Undelete a file that has been srm'd. unrm will move the file in the $TRASH into
+        the CURRENT directory, not the directory that srm was originally called in. Any 
+        duplicate file will simply be deleted from the trash directory.
+
+    lsrm:
+        Performs an ls -lS on the $TRASH directory.
+
+    durm:
+        Performs a du -hc on the $TRASH 
+
+    trash:
+        Moves all files in the $TRASH directory to the current directory. It is basically the
+        same as unrm *
