@@ -1,0 +1,70 @@
+1.) cat x y > y would spit out x and y until the EOF character, as well 
+as try to write it to y. In the end y would be truncated to zero, leaving only the contents of x in the file.
+
+2.) Performing cat x >> x will just double the content in the file. The file will be opened in append mode, and all of x will be put into x again. 
+
+========================================================================================
+#!/bin/bash
+
+# invoked simply as ./cx $name
+for var in "$@"
+do
+	if [ -f $var ]; then
+		chmod +x $var
+	fi
+done
+========================================================================================
+#!/bin/bash
+
+# prints the number of files in a directory. Invoked via ./nf
+ls -l | grep ^- | wc -l | xargs
+
+========================================================================================
+#!/bin/bash
+
+# Very simple script, using the -lS commands to sort the output
+ls -lS | grep ^-
+========================================================================================
+#!/bin/bash
+
+# invoded via whoson. Iterates through all results of users and
+# prints the name iff they are an undergrad
+output=""
+for u in `users`
+do
+	if groups $u | grep -q "ugrad"; then
+        output = "$output $u"
+	fi
+done
+
+echo $output
+========================================================================================
+#!/bin/bash
+
+# very simple. Invoked via ./howmany. Implemented using whoson
+echo `./whoson | wc -w`
+========================================================================================
+#!/bin/bash
+
+# uses a regular expression to determine validity of a variable name.
+# invoked via ./valid
+for arg in "$@"
+do
+	if echo $arg | grep -q ^[a-zA-z][a-zA-z0-9]; then
+		echo "yes"
+	else
+		echo "no"
+	fi	
+done
+========================================================================================
+#!/bin/bash
+
+# invoked via ./prargs arg arg...
+# iterates over all items in $@
+echo "0: $0"
+i=1
+for arg in "$@"
+do
+	echo "$i: \"$arg\""
+	i=`expr $i + 1`
+done

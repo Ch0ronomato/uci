@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+	echo "Not enough args. Please enter a filename"
+	exit -1
+fi
+
+trash=$TRASH
+if [[ ! -d "$TRASH" ]]; then
+	echo "The trash variable is not currently set. Consider setting an enviornment variable. Assuming ~/.Trash"
+	trash="$HOME/.Trash"
+fi
+
+if [ ! -e $trash ]; then
+	mkdir $trash
+fi
+
+for file in "$@"
+do
+	# very carefully get the file name only, will maintaing spaces
+	thefilename=$(basename "$file")
+	trashpath="$trash/$thefilename"
+	echo $trashpath
+	if [ -f "$file" ]; then
+		# the file exists and can be safe rm'd
+		mv "$file" "$trashpath"
+	elif [ -d "$file" ]; then
+		mv "$file" "$trashpath"
+	else
+		echo "$file cannot be srm'd"
+	fi
+done
