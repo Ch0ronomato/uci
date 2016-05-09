@@ -1,0 +1,45 @@
+LSS(1)                  MAN
+NAME:
+    lss - long, byte sorted, file names only ls
+SYNOPSIS:
+    lss [OPTIONS] [FILES] ...
+OPTIONS:
+    lss is an extension of ls. It will always call ls underneath, 
+    and then grep the output to ensure only files are shown. Most
+    flags that are on ls are supported here. There are few that
+    are not due too conflicts with either the sort or grep's expected
+    output.
+
+    These are the unsupported flags
+		s)
+            Prints out filesize at the beginning. This
+            messes up our expected ls -l output
+		i) 
+            Same as above, expect the inode number
+            instead of the filesize
+		g)
+            g is ignored because it will mess up our
+            output.
+		f)
+            The t flag will tell ls to not sort, which
+            is not what we want, we need to sort by
+            file size.
+		C)
+            C is another method to sort, overriding S  
+		X)
+            X will do something similar to C, but 
+            sorting by time.
+		d)
+            The d flag shows only directories.
+		m)
+            m will cause all files to be comma
+            seperated, messing up our output.
+        t)
+            t will attempted to sort by timestamp  
+        u)
+            u will attempt to modify the sort by 
+            another flag.
+        v)
+            v will use natural sort. Not what we want  
+        U)
+            U tells ls to not sort at all 

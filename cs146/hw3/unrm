@@ -1,4 +1,6 @@
 #!/bin/bash
+# Ian Schweer
+# 22514022
 
 if [ $# -lt 1 ]; then
 	echo "Not enough args. Please enter a filename"
@@ -7,7 +9,7 @@ fi
 
 # does .Trash exist?
 trash=$TRASH
-if [[ ! -d "$TRASH" ]]; then
+if [[ "$trash" == "" ]]; then
 	echo "The trash variable is not currently set. Consider setting an enviornment variable. Assuming ~/.Trash"
 	trash="$HOME/.Trash"
 fi

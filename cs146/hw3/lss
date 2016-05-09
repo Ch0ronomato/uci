@@ -1,12 +1,15 @@
 #!/bin/bash
+# Ian Schweer
+# 22514022
 
 # do we have any options?
-flags=0
-usel=1
-useS=1
-flagdata=""
-while getopts ":ABCFGHLOPRSTUWabcdefghiklmnopqrstuwx1" var; do
+flags=0 #indicates if we have any flags throughout the program
+usel=1 #indicates if we need to use the -l option
+useS=1 #indicates if we need to use the -S option
+flagdata="" #A collection of all the user input flags we use
+while getopts ":aAbBcCdDfFgGhHiIklLmnNopqQrRsStTuUvwxX1Z" var; do
 	flags=1
+    echo "The arg is $var"
 	case $var in
 		l)
 			usel=0
@@ -17,53 +20,84 @@ while getopts ":ABCFGHLOPRSTUWabcdefghiklmnopqrstuwx1" var; do
 			flagdata="$flagdata$var"
 			;;
 		s)
-			echo "Ignoring s">&2
+            # -s should be ignored because it will print out the file size, which can mess up our sort since -l already prints it.
+			echo "-s is not a valid argument. Exiting">&2
+            exit -1
 			;;
 		i)
-			echo "Ignoring i">&2
+            # -i should be ignored because it will print out the inode number before anything else, messing up our filter
+			echo "-i is not a valid argument. Exiting">&2
+            exit -2
 			;;
 		g)
-			echo "Ignoring g">&2
+            # -g should be ignored? According to the assignment it will, I don't understand why. It simply hides the user.
+			echo "-g is supposed to be ignored. I do not agree with this, but I will exit anyway">&2
+            exit -3
 			;;
-		1)
-			echo "Ignoring 1">&2
-			;;
-		x)
-			echo "Ignoring x">&2
-			;;
-		s)
-			echo "Ignoring s">&2
+		f)
+            # -f will screw everything up, because it tells ls not to sort
+			echo "-f is not supported. Please use /bin/ls if you want -f">&2
+            exit -4
 			;;
 		C)
-			echo "Ignoring C">&2
+            # -C will screw up the sorting, it will override S
+			echo "-C will put everything into columns, causing issues with grep. Exiting">&2
+            exit -5
+			;;
+		X)
+            # -X will screw up the sorting, it will override S
+			echo "-X will override the sort used in lss. Please use /bin/ls if you want the -X flag">&2
+            exit -6
 			;;
 		d)
-			echo "Ignoring d">&2
+            # d will be useful if I need only directories, but I want the opposite
+			echo "-d will only print directories. Ignoring">&2
+            exit -7
 			;;
 		m)
-			echo "Ignoring m">&2
+            # m will cause all files to be comma separated.
+			echo "-m will cause all files to outputed with comma seperation. Ignoring this">&2
+            exit -8
 			;;
-		1)
-			echo "Ignoring 1">&2
-			;;
+        t)
+            # t will attempt to sort by time
+            echo "-t will overwrite the sort I am using">&2
+            exit -9
+            ;;
+        u)
+            # -u can change sort, i'm just going to ignore it
+            echo "-u could mess up sort depending on the other flags. I'm ignoring it. Please use /bin/ls if you need it">&2
+            exit -10
+            ;;
+        v)
+            # -v will mess up my sort.
+            echo "-v because of the 'natural sort'. Please use /bin/ls for it">&2
+            exit -11
+            ;;
+        U)
+            # -U will tell the shell NOT to sort
+            echo "-U will force all sort to go away">&2
+            exit -12
+            ;;
+        \?)
+            echo "Ignoring unknown parameter at position $OPTIND"
+            ;;
 		*)
-			echo "Option $var was found"
 			flagdata="$flagdata$var"
 			;;
 	esac
 done
-shift `expr $OPTIND - 1`
-echo "all args are $@"
-# Very simple script, using the -lS commands to sort the output
 if [[ $flags -eq 1 ]]; then
+    # shift arguments by getopts variable which indicates the last positional parameter looked at    
+    shift `expr $OPTIND - 1`
 	if [[ $useS -eq 1 ]]; then
-		#statements
+        # append the S flag
 		flagdata="S$flagdata"
 	fi
 	if [[ $usel -eq 1 ]]; then
+        # append the l flag
 		flagdata="l$flagdata"
 	fi
-	echo "All flags are $flagdata"
 	ls "-$flagdata" "$@" | grep ^-
 else
 	# default behavior
