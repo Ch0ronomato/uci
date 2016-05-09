@@ -1,0 +1,57 @@
+#!/bin/bash
+
+error()  {
+	echo $1 >&2
+	cleanup
+	exit $2
+}
+
+# prepare
+#	prepares our compelation process
+prepare() {
+	if [ ! -f $1 ]; then
+		error "File $1 does not exist" -1
+	fi
+
+	if [ -d "tmp" ]; then
+		# is our identifer file in there? 
+		if [ `find tmp -name .__c-interp__` ]; then
+			rm -rf tmp/*
+		else
+			error "tmp directory exists and was not created by this script. Please either delete or move this folder so $0 can continue" -2 
+		fi
+	else
+		/bin/mkdir tmp
+	fi
+	# create a temporary directory for all our executables, and cd into it
+	/usr/bin/touch tmp/.__c-interp__	
+}
+
+# interpret
+#	runs the compiler on the .c file and executes it.
+interpret() {
+	execname=$1
+	filename=$2
+	scriptloc=$3
+	shift 3
+	/usr/bin/gcc -o "tmp/$execname" "$scriptloc/$filename";
+	if [[ $? -eq 0 ]]; then
+		echo "./tmp/$execname $@"
+		./tmp/$execname "$@" > tmp/cout 2>&1
+		echo `/bin/cat tmp/cout`
+	else
+		error "Error in gcc compiler" -3
+	fi
+}
+
+# cleanup
+#	cleanup the resulting files in the tmp directory
+cleanup() {
+	echo "cleanup"
+	/bin/rm -rf tmp
+}
+
+cprog="$0.c"
+prepare $cprog
+interpret $0 $cprog $PWD "$@"
+cleanup
