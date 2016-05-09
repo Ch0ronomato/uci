@@ -24,7 +24,7 @@ prepare() {
 		/bin/mkdir tmp
 	fi
 	# create a temporary directory for all our executables, and cd into it
-	/usr/bin/touch tmp/.__c-interp__	
+	/bin/touch tmp/.__c-interp__	
 }
 
 # interpret
@@ -36,9 +36,7 @@ interpret() {
 	shift 3
 	/usr/bin/gcc -o "tmp/$execname" "$scriptloc/$filename";
 	if [[ $? -eq 0 ]]; then
-		echo "./tmp/$execname $@"
-		./tmp/$execname "$@" > tmp/cout 2>&1
-		echo `/bin/cat tmp/cout`
+		./tmp/$execname "$@" 
 	else
 		error "Error in gcc compiler" -3
 	fi

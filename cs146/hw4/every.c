@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdarg.h>
 
 // params
 //	container class for the parameters of the program.
@@ -13,13 +14,15 @@ typedef struct params_s {
 	int count;
 	string* files;
 } params_t;
+
 params_t params_ctor(int N, int M, string files) {
 	params_t t;
 	t.segment = N;
 	t.count = M;
-	t.files = files;
+	t.files = &files;
 	return t;
 }
+
 // use getopts to get M,N and the file name.
 // for the running programming. If there is no
 // m and n argument
@@ -60,7 +63,7 @@ void copy_string_array(const int copy_length, string* dest, const string* src) {
 void copy_string_arguments(const int copy_length, string* dest, ...) {
 	int i;
 	va_list vl;
-	va_start(vl, copy_length);
+	va_start(vl, dest);
 	for (i = 0; i < copy_length; i++) {
 		string elem = va_arg(vl, char*);
 		dest[i] = malloc(sizeof(char) * strlen(elem));
@@ -69,10 +72,22 @@ void copy_string_arguments(const int copy_length, string* dest, ...) {
 	va_end(vl);
 }
 
+int get_file_names(int argc, const string *argv, string *files) {
+    int i, count = 0;
+    for (i = 1; i < argc; i++) {
+        if (argv[i][0] != '-') {
+            files[count] = malloc(sizeof(char) * strlen(argv[i]));
+            strcpy(files[count++], argv[i]);
+        }     
+    }
+    return count;
+}
+
 int main(int argc, string* argv) {
 	// check too see what argument we need to use
+    int number_of_files = 0;
 	params_t args;
-	string envarg = "";
+	string envarg = "", files[argc];
 	if (argc >= 2 && argv[1][0] == '-') {
 		args = get_parameters(argc, argv);
 	} else if ((envarg = getenv("EVERY")) != NULL) {
@@ -83,6 +98,11 @@ int main(int argc, string* argv) {
 		args.segment = 1;
 		args.count = 1;
 	}
-	printf("N,M=%d,%d\n", args.segment, args.count);
+    number_of_files = get_file_names(argc, argv, files);
+    if (!number_of_files) {
+        // read from stdin
+    } else {
+        
+    }
 	return 0;
 }
