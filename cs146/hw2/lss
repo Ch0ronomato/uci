@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # Very simple script, using the -lS commands to sort the output
-ls -lS | grep ^-
+exec /bin/ls -lS | grep ^-

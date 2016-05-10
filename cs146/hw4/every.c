@@ -83,6 +83,27 @@ int get_file_names(int argc, const string *argv, string *files) {
     return count;
 }
 
+void read_file(FILE *f, const int N, const int M) {
+	string line = malloc(sizeof(char) * BUFSIZ);
+	int in_segment = 0, i = 0, j = 0;
+	while (NULL != fgets(line, BUFSIZ, f)) {
+		if (!(i % N) && !in_segment) {
+			in_segment = 1;
+		}
+
+		if (in_segment) {
+			if (j < M) {
+				printf("%s", line);
+				j++;
+			} else {
+				in_segment = 0;
+				j = 0;
+			}
+		}
+		i++;
+	}
+}
+
 int main(int argc, string* argv) {
 	// check too see what argument we need to use
     int number_of_files = 0;
@@ -101,8 +122,12 @@ int main(int argc, string* argv) {
     number_of_files = get_file_names(argc, argv, files);
     if (!number_of_files) {
         // read from stdin
+		read_file(stdin, args.segment, args.count);
     } else {
-        
+		int i;
+		for (i = 0; i < number_of_files; i++) {
+			read_file(fopen(files[i], "r"), args.segment, args.count);
+		}
     }
 	return 0;
 }

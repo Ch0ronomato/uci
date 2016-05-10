@@ -1,6 +1,10 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
-	printf("Hello world! %d\n", '9' - '0');
+	int c;
+	while (EOF != (c = fgetc(stdin))) {
+		printf("You entered %c\n", c);
+	}
 	return 0;
 }
