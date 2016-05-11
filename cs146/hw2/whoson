@@ -6,7 +6,7 @@ output=""
 for u in `users`
 do
 	if groups $u | grep -q "ugrad"; then
-        output = "$output $u"
+        output="$output $u"
 	fi
 done
 
