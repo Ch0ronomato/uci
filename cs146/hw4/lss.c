@@ -16,10 +16,23 @@
 #include <stdint.h>
 
 typedef char* string;
+typedef struct opts_s {
+    int show_all;
+    int show_almost_all;
+    int deref_links;
+    string *names;
+} opt_t;
+
+typedef struct statpod_s {
+    struct stat s; // stat structure returned from stat
+    struct stat l; // stat structure returned from lstat;
+} statpod_t;
+
 typedef struct node_s {
     string name;
     struct dirent* dp;
     struct stat statbuf;
+    statpod_t *pod;
 } node_t;
 
 string readlink_name(string name) {
@@ -39,7 +52,7 @@ int compnode(const void *a, const void *b) {
     else return 1;
 }
 
-void iterateDirectory(node_t *data, int length) {
+void iteratenodes(node_t *data, int length) {
 	struct passwd *pwd;
 	struct group *grp;
 	struct tm *tm, *curr;
@@ -89,7 +102,26 @@ void iterateDirectory(node_t *data, int length) {
 	}
 }
 
-node_t *getfiles(char *path, node_t *files, int *j) {
+statpod_t *statdir(struct dirent *dp, opt_t options) {
+    statpod_t *pod = malloc(sizeof(statpod_t));
+    int lstat_return = lstat(dp->d_name, &(pod->l));
+    int stat_return = options.deref_links ? stat(dp->d_name, &(pod->s)) : 0;
+
+    if (lstat_return == -1) {
+        char buf[100];
+        sprintf(buf, "Error while stating file %d", dp->d_name);
+        perror(buf);
+        return NULL;
+    }
+    if (lstat_return != -1 && stat_return == -1) {
+        // the symbolic link points to nothing.
+        perror(readlink_name(dp->d_name));
+        return NULL;
+    }
+    return pod; 
+}
+
+node_t *getfiles(char *path, node_t *files, int *j, opt_t options) {
     struct dirent *dp;
     struct stat statbuf;
     DIR *_dir = opendir(path);
@@ -104,15 +136,8 @@ node_t *getfiles(char *path, node_t *files, int *j) {
     i = 0;
     // Get all the files.
     while ((dp = readdir(_dir)) != NULL) {
-       char name[BUFSIZ];
-       strcpy(name, dp->d_name);
-       int lstat_return = lstat(name, &files[i].statbuf);
-       int stat_return = stat(name, &files[i].statbuf);
-       if (lstat_return != -1 && stat_return == -1) {
-            // the symbolic link points to nothing.
-            perror(readlink_name(name));
-            continue;
-       }
+       statpod_t *statpod_ptr = statdir(dp, options);
+       memcpy(&(files[i].statbuf), (options.deref_links ? &statpod_ptr->s : &statpod_ptr->l), sizeof(struct stat));
        files[i].name = dp->d_name;
        files[i++].dp = dp;
     }
@@ -123,9 +148,11 @@ node_t *getfiles(char *path, node_t *files, int *j) {
 int main(int argc, string* argv) {
     node_t nodes[BUFSIZ];
     int i = 0, size = 0;
-    getfiles(".", nodes, &i);
+    opt_t options;
+    options.deref_links = 0;
+    getfiles(".", nodes, &i, options);
     qsort(nodes, i, sizeof(node_t), compnode);
-    iterateDirectory(nodes, i);
+    iteratenodes(nodes, i);
     return 0;
 }
 
