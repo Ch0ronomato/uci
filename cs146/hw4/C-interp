@@ -12,19 +12,7 @@ prepare() {
 	if [ ! -f $1 ]; then
 		error "File $1 does not exist" -1
 	fi
-
-	if [ -d "tmp" ]; then
-		# is our identifer file in there? 
-		if [ `find tmp -name .__c-interp__` ]; then
-			rm -rf tmp/*
-		else
-			error "tmp directory exists and was not created by this script. Please either delete or move this folder so $0 can continue" -2 
-		fi
-	else
-		/bin/mkdir tmp
-	fi
-	# create a temporary directory for all our executables, and cd into it
-	/bin/touch tmp/.__c-interp__	
+	tmp=`mktemp -dt $1`
 }
 
 # interpret
@@ -33,10 +21,11 @@ interpret() {
 	execname=$1
 	filename=$2
 	scriptloc=$3
+	tmpdir=$4
 	shift 3
-	/usr/bin/gcc -o "tmp/$execname" "$scriptloc/$filename";
+	/usr/bin/gcc -o "$tmpdir/$execname" "$scriptloc/$filename";
 	if [[ $? -eq 0 ]]; then
-		./tmp/$execname "$@" 
+		$tmpdir/$execname "$@" 
 	else
 		error "Error in gcc compiler" -3
 	fi
@@ -46,10 +35,10 @@ interpret() {
 #	cleanup the resulting files in the tmp directory
 cleanup() {
 	echo "cleanup"
-	/bin/rm -rf tmp
+	#/bin/rm -rf $tmp
 }
 
 cprog="$0.c"
 prepare $cprog
-interpret $0 $cprog $PWD "$@"
+interpret $0 $cprog $PWD $tmp "$@"
 cleanup
