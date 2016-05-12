@@ -80,7 +80,7 @@ int main(int argc, string* argv) {
 opt_t *getoptions(int argc, string* argv) {
     char c;
     int numflags = 0;
-    opt_t *options = malloc(sizeof(opt_t));
+    opt_t *options = calloc(1, sizeof(opt_t));
     while ((c = getopt(argc, argv, "LaA")) != -1) {
         numflags++;
         switch (c) {
@@ -97,14 +97,14 @@ opt_t *getoptions(int argc, string* argv) {
     }
 
     // get all the file names.
-    options->names = malloc(sizeof(char*) * argc);
+    options->names = calloc(argc, sizeof(char*));
     // default options[0].
-    options->names[0] = (char*)malloc(sizeof(char) * 2);
+    options->names[0] = (char*)calloc(1, sizeof(char)*2);
     strcpy(options->names[0] , ".");
     int i, j = 0;
     for (i = optind; i < argc; i++) {
        if (argv[i][0] != '-') {
-            options->names[j] = malloc(sizeof(char) * strlen(argv[i]));
+            options->names[j] = calloc(1, sizeof(char) * strlen(argv[i]));
             strcpy(options->names[j++], argv[i]);
        }
     }
@@ -127,7 +127,7 @@ node_t *getfiles(const char *path, node_t *files, int *j, opt_t options) {
        statpod_t *statpod_ptr = statdir(fullname, options);
        if (statpod_ptr != NULL) {
            memcpy(&(files[i].statbuf), (options.deref_links ? &statpod_ptr->s : &statpod_ptr->l), sizeof(struct stat));
-           files[i].name = malloc(sizeof(char) * strlen(dp->d_name));
+           files[i].name = calloc(1,sizeof(char) * strlen(dp->d_name));
            memcpy(files[i].name, dp->d_name, strlen(dp->d_name));
            files[i].name[strlen(dp->d_name)] = '\0';
            files[i++].dp = dp;
@@ -163,7 +163,7 @@ void iteratenodes(node_t *data, int length) {
 	time_t rawtime;
 	time(&rawtime);
 	for (i = 0; i < length; i++) {
-        string temp_stuff = malloc(sizeof(char) * 30); 
+        string temp_stuff = calloc(1, sizeof(char) * strlen(data[i].name)); 
         strcpy(temp_stuff, data[i].name);
 		if (S_ISDIR(data[i].statbuf.st_mode))
 			putchar('d');
@@ -205,7 +205,7 @@ void iteratenodes(node_t *data, int length) {
 }
 
 statpod_t *statdir(string name, opt_t options) {
-    statpod_t *pod = malloc(sizeof(statpod_t));
+    statpod_t *pod = calloc(1,sizeof(statpod_t));
     int lstat_return = !options.deref_links ? lstat(name, &(pod->l)) : 0;
     int stat_return = options.deref_links ? stat(name, &(pod->s)) : 0;
 
@@ -224,7 +224,7 @@ statpod_t *statdir(string name, opt_t options) {
 }
 
 string readlink_name(string name) {
-    string buf = malloc(sizeof(char) * 256);
+    string buf = calloc(1, sizeof(char) * 256);
     if (readlink(name, buf, 256) == -1) {
         sprintf(buf, "reading link %s", buf);
         perror(buf);
@@ -234,7 +234,7 @@ string readlink_name(string name) {
 }
 
 string getfilepath(char *name, const char *path) {
-    string fullname = malloc(sizeof(char) * (strlen(name) + strlen(path) + 2));
+    string fullname = calloc(1, sizeof(char) * (strlen(name) + strlen(path) + 2));
     strcpy(fullname, path);
     strcat(fullname, "/");
     strcat(fullname, name);
