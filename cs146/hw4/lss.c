@@ -163,8 +163,15 @@ void iteratenodes(node_t *data, int length) {
 	time_t rawtime;
 	time(&rawtime);
 	for (i = 0; i < length; i++) {
-        string temp_stuff = calloc(1, sizeof(char) * strlen(data[i].name)); 
-        strcpy(temp_stuff, data[i].name);
+        string temp_stuff;
+        if (S_ISLNK(data[i].statbuf.st_mode)) {
+            string linkname = readlink_name(data[i].name);
+            temp_stuff = calloc(1, sizeof(char) * (strlen(data[i].name) + strlen(linkname) + strlen(" -> ")));
+            sprintf(temp_stuff, "%s -> %s", data[i].name, linkname);
+        } else {
+            temp_stuff = calloc(1, sizeof(char) * strlen(data[i].name)); 
+            strcpy(temp_stuff, data[i].name);
+        }
 		if (S_ISDIR(data[i].statbuf.st_mode))
 			putchar('d');
 		else
@@ -229,7 +236,6 @@ string readlink_name(string name) {
         sprintf(buf, "reading link %s", buf);
         perror(buf);
     }
-    sprintf(buf, "%s pointed too by %s", buf, name);
     return buf;
 }
 

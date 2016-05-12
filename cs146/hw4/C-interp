@@ -12,7 +12,8 @@ prepare() {
 	if [ ! -f $1 ]; then
 		error "File $1 does not exist" -1
 	fi
-	tmp=`mktemp -dt $1`
+    clean=`echo $1 | sed 's/\.\///'`
+	tmp=`mktemp -dt ${clean}XXXXX`
 }
 
 # interpret
@@ -34,7 +35,6 @@ interpret() {
 # cleanup
 #	cleanup the resulting files in the tmp directory
 cleanup() {
-	echo "cleanup"
 	/bin/rm -rf $tmp
 }
 
