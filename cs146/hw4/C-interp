@@ -22,7 +22,7 @@ interpret() {
 	filename=$2
 	scriptloc=$3
 	tmpdir=$4
-	shift 3
+	shift 4
 	/usr/bin/gcc -o "$tmpdir/$execname" "$scriptloc/$filename";
 	if [[ $? -eq 0 ]]; then
 		$tmpdir/$execname "$@" 
@@ -35,9 +35,10 @@ interpret() {
 #	cleanup the resulting files in the tmp directory
 cleanup() {
 	echo "cleanup"
-	#/bin/rm -rf $tmp
+	/bin/rm -rf $tmp
 }
 
+trap '{cleanup; exit 1}' SIGHUP SIGINT SIGQUIT SIGTERM
 cprog="$0.c"
 prepare $cprog
 interpret $0 $cprog $PWD $tmp "$@"
