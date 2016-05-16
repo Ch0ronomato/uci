@@ -120,7 +120,7 @@ node_t* getfiles(char *path, char *explore[], node_t *files, int *j, long *size)
 	}
 	*size = pathsize;
 	return files;
-} 
+}` 
 int main(int argc, char **argv) {
 	// get the "current" directory.
 	char *path = "./";
