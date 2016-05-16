@@ -30,6 +30,19 @@ class params:
 	def classprobs(self, c):
 		return self.getclass(c) / len(self._data)
 
+	def pofx(self, x):
+		# given a vector of x values
+		# compute the probability of the value
+		# then multiply them all together.
+		px = 1.0
+		for i, xj in enumerate(x):
+			X = self._data[:,i]
+			counter = 0
+			for y in X:
+				counter = counter + (y == xj)
+			px = (counter / self.lenfrac(X))
+		return px
+
 	def cprobs(self, j, k, i):
 		denom = self.getclass(i)
 		head = self.lenfrac(self.mprobs(j,k,i))
@@ -50,20 +63,34 @@ for c in classes:
 		print "P(X =",i,"| C =",c,") [1, 2] = ", ps
 
 # train using only a subset of data.
-Xte,Yte = X[1500:], Y[1500:]
+# Xte,Yte = X[1500:], Y[1500:]
+# predictions = np.array([])
+# for i in [1500, 50, 10]:
+# 	Xtr,Ytr = (X[0:i], Y[0:i])
+# 	p = params(Xtr, classes, Ytr)
+# 	for d in range(Xte.shape[0]):
+# 		pxji = np.empty(2) # P(Xj|C=i)
+# 		pxji.fill(1.0)
+# 		for ci,c in enumerate(classes):
+# 			temp = 1.0
+# 			for ji,j in enumerate(Xte[d]):
+# 				temp = temp * p.cprobs(ji, j, c)
+# 			pxji[ci] = temp * p.classprobs(c)
+# 		predictions=np.append(predictions, classes[pxji.argmax()])
+# 	print np.mean(predictions.reshape(Yte.shape) != Yte)
+# 	predictions = np.array([])		
+
+Xte,Yte = X[20:], Y[20:]
 predictions = np.array([])
-print "Working..."
-for i in [1500, 50, 10]:
+for i in [20]:
 	Xtr,Ytr = (X[0:i], Y[0:i])
 	p = params(Xtr, classes, Ytr)
-	for d in range(Xte.shape[0]):
+	for d in range(Xtr.shape[0]):
 		pxji = np.empty(2) # P(Xj|C=i)
 		pxji.fill(1.0)
 		for ci,c in enumerate(classes):
 			temp = 1.0
-			for ji,j in enumerate(Xte[d]):
+			for ji,j in enumerate(Xtr[d]):
 				temp = temp * p.cprobs(ji, j, c)
-			pxji[ci] = temp * p.classprobs(c)
-		predictions=np.append(predictions, classes[pxji.argmax()])
-	print np.mean(predictions.reshape(Yte.shape) != Yte)
-	predictions = np.array([])		
+			pxji[ci] = (temp * p.classprobs(c)) / p.pofx(Xtr[d])
+		print pxji

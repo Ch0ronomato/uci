@@ -1,0 +1,4 @@
+ 0.34653363 0.05940606 0.29702879 0.29703152
+ 0.34653359 0.059406 0.29703031 0.2970301 
+
+These two do not lead to a different steady state vector.
