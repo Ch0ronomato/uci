@@ -202,7 +202,7 @@ int main(int argc, char* argv[])
             r = r < temp ? temp : r;
         } 
         DoOutput(r);
-        std::cout << "time: " << ((float)t) / CLOCKS_PER_SEC << std::endl;
+        // std::cout << "time: " << ((float)t) / CLOCKS_PER_SEC << std::endl;
     }
 
     MPI_Finalize();
