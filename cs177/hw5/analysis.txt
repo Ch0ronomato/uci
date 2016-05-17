@@ -1,4 +1,21 @@
+ 2.)
+ steady state convergences
  0.34653363 0.05940606 0.29702879 0.29703152
  0.34653359 0.059406 0.29703031 0.2970301 
+[ 0.13793078  0.24630491  0.29556666  0.32019766]
 
-These two do not lead to a different steady state vector.
+These two do not lead to a different steady state vector. The reason is because the
+steady state vector is the same for both initial vectors. Although one vector
+may take longer to converge to a steady state, they will both eventually
+converge.
+
+4.)
+
+[0.34999999999999998, 0.0, 0.34999999999999998, 0.29999999999999999]
+[0.34000000000000002, 0.0, 0.34000000000000002, 0.32000000000000001]
+[0.33000000000000002, 0.0, 0.34000000000000002, 0.33000000000000002]
+[0.33300000000000002, 0.0, 0.33400000000000002, 0.33300000000000002]
+[0.33329999999999999, 0.0, 0.33339999999999997, 0.33329999999999999]
+
+These results make sense with the results from question two. Since state two had such a low probability, it was very unlikely we would land
+in that state. 

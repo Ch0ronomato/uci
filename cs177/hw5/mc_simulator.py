@@ -15,14 +15,10 @@ state_transition = np.array(state_transition)
 i=0
 lastp = p0
 freqs=np.zeros(M)
-print("[")
 while (i < T):
-	x = np.dot(lastp,state_transition)
-	diff=0.0
-	for j in range(0, M):
-		diff = diff + abs(x[j] - lastp[j])
+	x = state_transition[lastp.argmax()]
 	i = i + 1	
-	lastp = x
+	lastp = state_transition[x.argmax()] 
 	print(x.argmax())
 	freqs[x.argmax()] = freqs[x.argmax()] + 1
 

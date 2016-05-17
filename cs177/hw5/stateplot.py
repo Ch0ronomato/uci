@@ -29,5 +29,7 @@ while (i < max_iters):
 	state.append(x[1])
 
 print(len(state),len(range(1,51)))
-plt.plot(range(1,51), state)
+p=plt.plot(range(1,51), state)
+name=input("please enter the file name")
+plt.title(str(p0))
 plt.show()
