@@ -58,3 +58,9 @@ Active nodes where: 0(6), 2(7), 4(14), 5(28), 6(20), 8(25), 9(30), 10(23), 16(18
 6   1   7   13  14  28  20  29  25  30  23  19  15  31  9   27  18  0   24  21  12  17  11  5   3   26  4   16  2   22  8   10  
 1   0   1   0   1   1   1   0   1   1   1   0   0   0   0   0   1   1   1   1   1   0   1   1   0   1   1   1   0   1   1   1   
 ______________________________________________________________________________________________________________________________
+[andromeda-10:09918] [[4681,0],0] ORTE_ERROR_LOG: The system limit on number of pipes a process can open was reached in file base/odls_base_default_fns.c at line 1771
+--------------------------------------------------------------------------
+mpirun was unable to start the specified application as it encountered an error
+on node andromeda-10. More information may be available above.
+--------------------------------------------------------------------------
+256 total processes failed to start

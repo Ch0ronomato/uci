@@ -4,7 +4,7 @@
 #$ -j y
 #$ -S /bin/bash
 #$ -M schweer@uci.edu
-#$ -pe openmpi 32 
+#$ -pe openmpi 256 
 #$ -o ./OutSkelly.out
 #
 # Use modules to setup the runtime environment
