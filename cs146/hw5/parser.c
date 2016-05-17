@@ -38,12 +38,12 @@ void copy_cmd(task_t *current_task, int bufsize, char buf[]) {
 	memcpy(current_task->cmd, buf, bufsize); // @TODO: Use strcpy
 	memset(buf, 0, bufsize);
 }
-void copy_args(int state, int bufsize, int num_args, int num_flags, char buf[], task_t *current_task) {
-	string sink = buf[0] == '-' ? &(current_task->flags[0]) : &(current_task->args[0]);
-	int *count = buf[0] == '-' ? &num_args : &num_flags;
+void copy_args(int bufsize, int *num_flags, int *num_args, char buf[], task_t *current_task) {
+	string *sink = buf[0] == '-' ? &(current_task->flags[0]) : &(current_task->args[0]);
+	int *count = buf[0] == '-' ? num_flags : num_args;
+	sink[*count] = malloc(sizeof(char) * bufsize);
 	memcpy(sink[(*count)++], buf, bufsize);
 	memset(buf, 0, bufsize);
-	bufsize = 0;
 }
 /**
  * parse 
@@ -69,6 +69,7 @@ job_t *parse(ssize_t len, string line) {
 	while(p++ != &(line[strlen(line)-1])) {
 		switch(*p) {
 			case ' ':
+			case '\n':
 				// we have hit a space.
 				if (state == STATE_START) {
 					// copy the buffer into our name.
@@ -78,8 +79,9 @@ job_t *parse(ssize_t len, string line) {
 				} else if (state == STATE_CMD || state == STATE_ARGS) {
 					// copy the buffer into the appropiate place.
 					// essentially this verbose line is equivalent to state -= 1
-					copy_args(state, bufsize, num_flags, num_args, buf, current_task);
+					copy_args(bufsize, &num_flags, &num_args, buf, current_task);
 					state = state == STATE_CMD ? STATE_CMD_HOLD : STATE_ARGS_HOLD;
+					bufsize = 0;
 				}
 				break;
 			case '<':
@@ -104,14 +106,14 @@ job_t *parse(ssize_t len, string line) {
 		if (state == STATE_START) {
 			copy_cmd(current_task, bufsize, buf);
 		} else if (state == STATE_CMD) {
-			copy_args(state, bufsize, num_flags, num_args, buf, current_task);
+			copy_args(bufsize, &num_flags, &num_args, buf, current_task);
 		} else if (state == STATE_ARGS) {
 
 		}
 	}
 	printf("The command we've read is: %s\n", current_task->cmd);
 	int i;
-	for (i = 0; i < num_flags; i++){ printf("%d:%s\t", i, current_task->flags[i]);}
-	for (i = 0; i < num_args; i++){ printf("%d:%s\t", i, current_task->args[i]);}
+	for (i = 0; i < num_flags; i++){ printf("%d:%s\n", i, current_task->flags[i]);}
+	for (i = 0; i < num_args; i++){ printf("%d:%s\n", i, current_task->args[i]);}
 	return job;
 }
