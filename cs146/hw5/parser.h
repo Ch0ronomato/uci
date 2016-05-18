@@ -8,6 +8,7 @@ typedef struct task_s {
   string *args;
   int redirect;
   string outputname;
+  string inputname;
 } task_t;
 
 typedef struct job_s {
