@@ -13,16 +13,6 @@
 #define STATE_REDIRECT_HOLD 6
 #define STATE_REDIRECT 7
 
-void resize_job_size(job_t *jobs, size_t old_size, size_t new_size) {
-	job_t *newjob = malloc(sizeof(job_t));
-	newjob->tasks = malloc(new_size);
-	memset(newjob->tasks, 0, new_size);
-	memcpy(newjob->tasks, jobs->tasks, old_size);
-	free(jobs->tasks);
-	free(jobs);
-	jobs = newjob;
-}
-
 int validate_state(int current) {
 	switch (current) {
 		case STATE_START_HOLD:
@@ -39,15 +29,15 @@ int validate_state(int current) {
 }
 void copy_cmd(task_t *current_task, int bufsize, char buf[]) {
 	current_task->cmd = malloc(sizeof(char) * bufsize);
-	memcpy(current_task->cmd, buf, bufsize); // @TODO: Use strcpy
+	strcpy(current_task->cmd, buf); 
 	memset(buf, 0, bufsize);
 }
 
 void copy_args(int bufsize, int *num_flags, int *num_args, char buf[], task_t *current_task) {
 	string *sink = buf[0] == '-' ? &(current_task->flags[0]) : &(current_task->args[0]);
 	int *count = buf[0] == '-' ? num_flags : num_args;
-	sink[*count] = malloc(sizeof(char) * bufsize);
-	memcpy(sink[(*count)++], buf, bufsize);
+	sink[(*count)] = malloc(sizeof(char) * bufsize);
+	strcpy(sink[(*count)++], buf);
 	memset(buf, 0, bufsize);
 }
 /**
@@ -67,10 +57,7 @@ job_t *parse(ssize_t len, string line) {
 
 	// allocate our objects
 	job_t *job = malloc(sizeof(job_t));
-	job->tasks = malloc(sizeof(task_t));
 	current_task = &(job->tasks[0]);
-	current_task->flags = malloc(sizeof(char*) * BUFSIZ);
-	current_task->args = malloc(sizeof(char*) * BUFSIZ);
 	current_task->redirect = 0;
 	while(p++ != &(line[strlen(line)-1])) {
 		switch(*p) {
@@ -91,10 +78,11 @@ job_t *parse(ssize_t len, string line) {
 				} else if (state == STATE_REDIRECT && redir) {
 					string *sink = redir == 1 ?  &(current_task->inputname) : &(current_task->outputname);
 					// only take the first one
+					sink[bufsize] = '\0';
 					if (!(current_task->redirect & redir)) {
 						current_task->redirect |= redir;
 						sink[0] = malloc(sizeof(char) * bufsize);
-						memcpy(sink[0], buf, bufsize);
+						strcpy(sink[0], buf);
 						memset(buf, 0, bufsize);
 					}
 					redir = 0;
@@ -108,11 +96,16 @@ job_t *parse(ssize_t len, string line) {
 				break;
 			case '|':
 				// we have hit a pipe!
-				resize_job_size(job, sizeof(task_t) * jobsize++, sizeof(task_t) * jobsize);
-				current_task = &(job->tasks[0]);
-				current_task->flags = malloc(sizeof(char*) * BUFSIZ);
-				current_task->args = malloc(sizeof(char*) * BUFSIZ);
+				current_task->flag_size = num_flags;
+				current_task->arg_size = num_args;
+				jobsize++;
+				if (jobsize >= MAX_PIPE) {
+					perror("Too many pipes were allocated");
+					exit(-1);
+				}
+				current_task = &(job->tasks[jobsize - 1]);
 				current_task->redirect = 0;
+				bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0;
 				break;
 			default:
 				// just fill the buffer.
@@ -126,11 +119,9 @@ job_t *parse(ssize_t len, string line) {
 	if (bufsize) {
 		if (state == STATE_START) {
 			copy_cmd(current_task, bufsize, buf);
-		} else if (state == STATE_CMD) {
+		} else if (state == STATE_CMD || state == STATE_ARGS) {
 			copy_args(bufsize, &num_flags, &num_args, buf, current_task);
-		} else if (state == STATE_ARGS) {
-			
-		}
+		} 	
 	}
 	printf("The command we've read is: %s\n", current_task->cmd);
 	int i;
@@ -142,5 +133,8 @@ job_t *parse(ssize_t len, string line) {
 	if (current_task->redirect & 2) {
 		printf("output: %s\n", current_task->outputname);
 	}
+	current_task->flag_size = num_flags;
+	current_task->arg_size = num_args;
+	job->task_count = jobsize;
 	return job;
 }
