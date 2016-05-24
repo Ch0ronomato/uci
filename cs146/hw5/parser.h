@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef PARSER_H
+#define PARSER_H
 #define ARG_FLAG_SIZE 16
 #define MAX_PIPE 255
 typedef char* string;
@@ -21,3 +23,4 @@ typedef struct job_s {
 } job_t;
 
 job_t *parse(ssize_t len, char *input);
+#endif

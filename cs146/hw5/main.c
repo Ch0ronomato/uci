@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "parser.h"
+#include "engine.h"
 
 void process(job_t *job);
 int main(int argc, string* argv) {
@@ -9,7 +10,7 @@ int main(int argc, string* argv) {
    string line;
    while((read = getline(&line, &len, stdin)) != -1) {
    		job_t *job = parse(len, line);
-   		process(job);
+   		process_job(job);
 		free(job);
    }
 

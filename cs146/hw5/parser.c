@@ -123,16 +123,6 @@ job_t *parse(ssize_t len, string line) {
 			copy_args(bufsize, &num_flags, &num_args, buf, current_task);
 		} 	
 	}
-	printf("The command we've read is: %s\n", current_task->cmd);
-	int i;
-	for (i = 0; i < num_flags; i++){ printf("%d:%s\n", i, current_task->flags[i]);}
-	for (i = 0; i < num_args; i++){ printf("%d:%s\n", i, current_task->args[i]);}
-	if (current_task->redirect & 1) {
-		printf("input: %s\n", current_task->inputname);
-	} 
-	if (current_task->redirect & 2) {
-		printf("output: %s\n", current_task->outputname);
-	}
 	current_task->flag_size = num_flags;
 	current_task->arg_size = num_args;
 	job->task_count = jobsize;
