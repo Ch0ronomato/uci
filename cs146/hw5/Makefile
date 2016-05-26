@@ -14,18 +14,18 @@ obj/parser.o: parser.c
 	mkdir obj 2>/dev/null || echo "dir exists. Skipping for now"
 	mv parser.o obj
 
-parser-debug: parser.c
-	gcc -ggdb -c parser.c
+parser.dSYM: parser.c
+	gcc -ggdb -c $^
 
 parser-clean: 
 	rm obj/parser.o
 
 obj/engine.o:
-	gcc -c engine.c
+	gcc -c $^
 	mkdir obj 2>/dev/null || echo "dir exists. Skipping for now"
 	mv engine.o obj
 
-engine-debug: engine.c
+engine.dSYM: engine.c
 	gcc -ggdb -c engine.c
 
 engine-clean: 
