@@ -48,7 +48,7 @@ void copy_args(int bufsize, int *num_flags, int *num_args, char buf[], task_t *c
  *	array can be piped to the next
  *	item in the list without worry.
  */
-job_t *parse(ssize_t len, string line) {
+job_t *parse(int len, string line) {
 	// begin character by character
 	// parse.
 	int bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0, jobsize = 1;
