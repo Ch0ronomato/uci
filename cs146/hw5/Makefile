@@ -2,7 +2,7 @@ FILES=main.c parser.o engine.o
 OUTPUT=nsh
 all: obj/parser.o obj/engine.o
 	gcc -o $(OUTPUT) $^ main.c
-debug: parser-debug engine-debug
+debug: parser.dSYM engine.dSYM
 	gcc -ggdb -o $(OUTPUT) $(FILES)
 clean: parser-clean engine-clean
 	rm nsh
@@ -20,7 +20,7 @@ parser.dSYM: parser.c
 parser-clean: 
 	rm obj/parser.o
 
-obj/engine.o:
+obj/engine.o: engine.c
 	gcc -c $^
 	mkdir obj 2>/dev/null || echo "dir exists. Skipping for now"
 	mv engine.o obj

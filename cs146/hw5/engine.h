@@ -5,5 +5,5 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 // will handle the forking and execing.
-void process_job(job_t *job);
+void process_job(job_t *job, string *env);
 #endif
