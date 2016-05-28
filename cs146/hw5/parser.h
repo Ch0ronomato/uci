@@ -22,5 +22,5 @@ typedef struct job_s {
 	task_t tasks[MAX_PIPE];
 } job_t;
 
-job_t *parse(ssize_t len, char *input);
+job_t *parse(int len, char *input);
 #endif

@@ -4,7 +4,7 @@
 #include "engine.h"
 
 int main(int argc, string* argv, string *env) {
-   ssize_t read;
+   int read;
    size_t len = 0;
    string line;
    while((read = getline(&line, &len, stdin)) != -1) {
