@@ -17,6 +17,8 @@ obj/parser.o: parser.c
 
 parser.dSYM: parser.c
 	$(GCC) -ggdb -c $^
+	mkdir obj 2>/dev/null || echo "dir exists. Skipping for now"
+	mv parser.o obj
 
 parser-clean: 
 	rm obj/parser.o
@@ -28,6 +30,8 @@ obj/engine.o: engine.c
 
 engine.dSYM: engine.c
 	$(GCC) -ggdb -c engine.c
+	mkdir obj 2>/dev/null || echo "dir exists. Skipping for now"
+	mv engine.o obj
 
 engine-clean: 
 	rm obj/engine.o

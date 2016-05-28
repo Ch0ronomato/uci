@@ -7,6 +7,9 @@
 #include "engine.h"
 #include "parser.h"
 
+#define REDIR_INPUT 1
+#define REDIR_OUTPUT 2
+#define REDIR_APPEND 4
 /**
  * Method will fill buf with strings that are
  * ready for execvpe
@@ -29,17 +32,24 @@ void forkandexec(task_t *t, string *env);
  * @TODO: #6
  */
 void handlepipe(job_t *job, string *envp);
+
+/**
+ * Method will handle redirects.
+ * The redirect member variable on the task
+ * is a bit vector of three bits.
+ * 1 = input
+ * 2 = output
+ * 4 = output append
+ */
+void setupnshredirects(task_t *task);
 /**
  * @TODOS as of 25
- *	1. get pipes working
- *	2. get redirects working
  *	3. do extras
  */
 void process_job(job_t *job, string *env) {
 	int i,j;
 	if (job->task_count > 1) {
 		if (fork() && wait(NULL)) {
-			printf("Resuming after fork");
 		} else {
 			handlepipe(job, env);
 		}
@@ -60,6 +70,7 @@ void prepare(task_t *task, string *buf) {
 		buf[i + 1] = malloc(sizeof(char) * strlen(task->args[i - temp]));
 		strcpy(buf[i + 1], task->args[i - temp]);
 	}	
+	buf[i + 1] = NULL;
 }
 
 void getargs(task_t *t, string **buf) {
@@ -74,9 +85,8 @@ void forkandexec(task_t *t, string *env) {
 	string *args;
 	getargs(t, &args);
 	if (fork() && wait(NULL)) {
-		printf("Resuming parent");	
 	} else {
-		printf("Child");
+		setupnshredirects(t);
 		execvpe(t->cmd, args, env);
 		printf("Shit...");
 		exit(-1);
@@ -93,13 +103,40 @@ void handlepipe(job_t *job, string *envp) {
 			dup2(fd[1], fileno(stdout));
 			close(fd[0]); close(fd[1]);
 			getargs(&job->tasks[0], &args);
+			setupnshredirects(&job->tasks[0]);
 			execvpe(job->tasks[0].cmd, args, envp);
 		} else {
 			dup2(fd[0], fileno(stdin));
 			close(fd[1]); close(fd[0]);
 			getargs(&job->tasks[1], &args);
+			setupnshredirects(&job->tasks[1]);
 			execvpe(job->tasks[1].cmd, args, envp);
 		}
 		// exit the child	
 		exit(0);
+}
+
+void setupnshredirects(task_t *task) {
+	// error check.
+	// redirect would be 7 or 6 too cause this error
+	if (task->redirect >= (REDIR_OUTPUT | REDIR_APPEND)) {
+		perror("Cannot handle redirect output and append together");
+		exit(-1); // this is okay, i'll be in a fork.
+	}
+
+	if (task->redirect & REDIR_INPUT) {
+		FILE *fp = fopen(task->inputname, "r");
+		dup2(fileno(fp), fileno(stdin));
+		fclose(fp);
+	} 
+
+	if (task->redirect & REDIR_OUTPUT) { 
+		FILE *fp = fopen(task->outputname, "w");
+		dup2(fileno(fp), fileno(stdout));
+		fclose(fp);
+	} else if (task->redirect & REDIR_APPEND) {
+		FILE *fp = fopen(task->outputname, "a");
+		dup2(fileno(fp),fileno(stdout));
+		fclose(fp);
+	}
 }

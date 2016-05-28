@@ -91,8 +91,12 @@ job_t *parse(int len, string line) {
 				break;
 			case '<':
 			case '>':
-				redir = (*p == '<') ? 1 : 2;	
+				redir = (*p == '<') ? 1 : (*(p + sizeof(char)) == '>') ? 4 : 2;	
 				state = STATE_REDIRECT_HOLD;
+				if (*p == '>' && *(p + sizeof(char)) == '>') {
+					// we need to skip the current p.
+					p++;
+				}
 				break;
 			case '|':
 				// we have hit a pipe!
