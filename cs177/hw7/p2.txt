@@ -1,0 +1,3 @@
+Average mean is 0.193383258479 minutes
+Length is 157621
+mean and var: (5.1709861557640577, 27.714940625817128)

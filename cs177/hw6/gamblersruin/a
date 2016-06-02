@@ -4,3 +4,5 @@
 .5 .5
 5
 20
+
+This configuration gives us roughly 79.2% of loss. This is because we aren't going very many times since the amount we want to win is low
