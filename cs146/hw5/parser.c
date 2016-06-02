@@ -59,63 +59,65 @@ job_t *parse(int len, string line) {
 	job_t *job = malloc(sizeof(job_t));
 	current_task = &(job->tasks[0]);
 	current_task->redirect = 0;
-	while(p++ != &(line[strlen(line)-1])) {
-		switch(*p) {
-			case ' ':
-			case '\n':
-				// we have hit a space.
-				if (state == STATE_START) {
-					// copy the buffer into our name.
-					copy_cmd(current_task, bufsize, buf);
-					state = STATE_CMD_HOLD;
-					bufsize = 0;
-				} else if (state == STATE_CMD || state == STATE_ARGS) {
-					// copy the buffer into the appropiate place.
-					// essentially this verbose line is equivalent to state -= 1
-					copy_args(bufsize, &num_flags, &num_args, buf, current_task);
-					state = state == STATE_CMD ? STATE_CMD_HOLD : STATE_ARGS_HOLD;
-					bufsize = 0;
-				} else if (state == STATE_REDIRECT && redir) {
-					string *sink = redir == 1 ?  &(current_task->inputname) : &(current_task->outputname);
-					// only take the first one
-					sink[bufsize] = '\0';
-					if (!(current_task->redirect & redir)) {
-						current_task->redirect |= redir;
-						sink[0] = malloc(sizeof(char) * bufsize);
-						strcpy(sink[0], buf);
-						memset(buf, 0, bufsize);
+	if (line[0] != '\n') {
+		while(p++ != &(line[strlen(line)-1])) {
+			switch(*p) {
+				case ' ':
+				case '\n':
+					// we have hit a space.
+					if (state == STATE_START) {
+						// copy the buffer into our name.
+						copy_cmd(current_task, bufsize, buf);
+						state = STATE_CMD_HOLD;
+						bufsize = 0;
+					} else if (state == STATE_CMD || state == STATE_ARGS) {
+						// copy the buffer into the appropiate place.
+						// essentially this verbose line is equivalent to state -= 1
+						copy_args(bufsize, &num_flags, &num_args, buf, current_task);
+						state = state == STATE_CMD ? STATE_CMD_HOLD : STATE_ARGS_HOLD;
+						bufsize = 0;
+					} else if (state == STATE_REDIRECT && redir) {
+						string *sink = redir == 1 ?  &(current_task->inputname) : &(current_task->outputname);
+						// only take the first one
+						sink[bufsize] = '\0';
+						if (!(current_task->redirect & redir)) {
+							current_task->redirect |= redir;
+							sink[0] = malloc(sizeof(char) * bufsize);
+							strcpy(sink[0], buf);
+							memset(buf, 0, bufsize);
+						}
+						redir = 0;
+						bufsize = 0;
 					}
-					redir = 0;
-					bufsize = 0;
-				}
-				break;
-			case '<':
-			case '>':
-				redir = (*p == '<') ? 1 : (*(p + sizeof(char)) == '>') ? 4 : 2;	
-				state = STATE_REDIRECT_HOLD;
-				if (*p == '>' && *(p + sizeof(char)) == '>') {
-					// we need to skip the current p.
-					p++;
-				}
-				break;
-			case '|':
-				// we have hit a pipe!
-				current_task->flag_size = num_flags;
-				current_task->arg_size = num_args;
-				jobsize++;
-				if (jobsize >= MAX_PIPE) {
-					perror("Too many pipes were allocated");
-					exit(-1);
-				}
-				current_task = &(job->tasks[jobsize - 1]);
-				current_task->redirect = 0;
-				bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0;
-				break;
-			default:
-				// just fill the buffer.
-				buf[bufsize++] = *p;
-				state = validate_state(state);
-				break;
+					break;
+				case '<':
+				case '>':
+					redir = (*p == '<') ? 1 : (*(p + sizeof(char)) == '>') ? 4 : 2;	
+					state = STATE_REDIRECT_HOLD;
+					if (*p == '>' && *(p + sizeof(char)) == '>') {
+						// we need to skip the current p.
+						p++;
+					}
+					break;
+				case '|':
+					// we have hit a pipe!
+					current_task->flag_size = num_flags;
+					current_task->arg_size = num_args;
+					jobsize++;
+					if (jobsize >= MAX_PIPE) {
+						perror("Too many pipes were allocated");
+						exit(-1);
+					}
+					current_task = &(job->tasks[jobsize - 1]);
+					current_task->redirect = 0;
+					bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0;
+					break;
+				default:
+					// just fill the buffer.
+					buf[bufsize++] = *p;
+					state = validate_state(state);
+					break;
+			}
 		}
 	}
 
@@ -129,6 +131,6 @@ job_t *parse(int len, string line) {
 	}
 	current_task->flag_size = num_flags;
 	current_task->arg_size = num_args;
-	job->task_count = jobsize;
+	job->task_count = line[0]=='\n' ? 0 : jobsize;
 	return job;
 }

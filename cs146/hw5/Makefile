@@ -1,4 +1,4 @@
-FILES=main.c parser.o engine.o
+FILES=main.c obj/parser.o obj/engine.o
 OUTPUT=nsh
 GCC=gcc -std=gnu99
 all: obj/parser.o obj/engine.o

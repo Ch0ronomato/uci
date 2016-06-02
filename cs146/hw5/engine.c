@@ -48,6 +48,7 @@ void setupnshredirects(task_t *task);
  */
 void process_job(job_t *job, string *env) {
 	int i,j;
+	if (job->task_count == 0) return;
 	if (job->task_count > 1) {
 		if (fork() && wait(NULL)) {
 		} else {
@@ -56,6 +57,7 @@ void process_job(job_t *job, string *env) {
 	} else {
 		forkandexec(&job->tasks[0], env);
 	}
+	fflush(stdout);
 }
 
 void prepare(task_t *task, string *buf) {
@@ -94,26 +96,61 @@ void forkandexec(task_t *t, string *env) {
 }
 
 void handlepipe(job_t *job, string *envp) {
-		// we have a pipe
-		int fd[2];
-		char buf[BUFSIZ];
-		string *args;
-		pipe(fd);
+	// we have a pipe
+	int fds[MAX_PIPE][2];
+	string *args;
+	char buf[BUFSIZ];
+	for (int i = 0; i < job->task_count - 1; i++) {
+		pipe(fds[i]);
+	}
+	if (fork() && wait(NULL)) {
+	} else {
 		if (fork()) {
-			dup2(fd[1], fileno(stdout));
-			close(fd[0]); close(fd[1]);
+			// main guy.
+			dup2(fds[0][1], fileno(stdout));
+			// close the rest.
+			for (int i = 0; i < job->task_count - 1; i++) {
+				close(fds[i][0]); close(fds[i][1]);
+			}
 			getargs(&job->tasks[0], &args);
 			setupnshredirects(&job->tasks[0]);
 			execvpe(job->tasks[0].cmd, args, envp);
+			exit(-5);
 		} else {
-			dup2(fd[0], fileno(stdin));
-			close(fd[1]); close(fd[0]);
-			getargs(&job->tasks[1], &args);
-			setupnshredirects(&job->tasks[1]);
-			execvpe(job->tasks[1].cmd, args, envp);
+			int id, parent=job->task_count-2 ? 0 : 1;
+			for (id = 1; id < job->task_count - 1; id++) {
+				if (fork()) {
+					// parent will keep going
+					parent=1;
+				} else {
+					break;
+				}
+			}
+
+			if (!parent) {
+				dup2(fds[id-1][0], fileno(stdin)); // input to output
+				dup2(fds[id][1], fileno(stdout)); // output to input
+				for (int i = 0; i < job->task_count - 1; i++) {
+					close(fds[i][0]); close(fds[i][1]);
+				}
+				getargs(&job->tasks[id], &args);
+				setupnshredirects(&job->tasks[id]);
+				execvpe(job->tasks[id].cmd, args, envp);
+				exit(-6);
+			} else {
+				dup2(fds[id-1][0], fileno(stdin));
+				for (int i = 0; i < job->task_count - 1; i++) {
+					close(fds[i][0]); close(fds[i][1]);
+				}
+				getargs(&job->tasks[id], &args);
+				setupnshredirects(&job->tasks[id]);
+				execvpe(job->tasks[id].cmd, args, envp);
+				exit(-7);
+			}
 		}
-		// exit the child	
-		exit(0);
+	}
+	// exit the child	
+	exit(0);
 }
 
 void setupnshredirects(task_t *task) {
