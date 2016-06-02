@@ -47,13 +47,14 @@ void setupnshredirects(task_t *task);
  *	3. do extras
  */
 void process_job(job_t *job, string *env) {
-	int i,j;
 	if (job->task_count == 0) return;
+	for (int i = 0; i < job->task_count; i++) {
+		if (!strcmp(job->tasks[i].cmd, "exit")) exit(0);
+	}
 	if (job->task_count > 1) {
 		int id;
 		if ((id = fork())) {
 			if (!job->background) {
-				printf("Waiting on %d\n", id);
 				waitpid(id, NULL, 0);
 				fflush(stdout);
 			}
@@ -93,7 +94,6 @@ void forkandexec(task_t *t, string *env, int background) {
 	getargs(t, &args);
 	if (fork()) {
 		if (!background) {
-			printf("Waiting\n");
 			wait(NULL);
 		}
 	} else {
@@ -124,16 +124,15 @@ void handlepipe(job_t *job, string *envp) {
 		execvpe(job->tasks[0].cmd, args, envp);
 		exit(-5);
 	} else {
-		int id, parent=job->task_count-2 ? 0 : 1;
-		for (id = 1; id < job->task_count - 1; id++) {
+		int id, parent=(job->task_count-2) ? 0 : 1;
+		for (id = 1; id < job->task_count-1; id++) {
 			if (fork()) {
 				// parent will keep going
-				parent=1;
 			} else {
 				break;
 			}
 		}
-
+		parent = id == (job->task_count - 1);
 		if (!parent) {
 			dup2(fds[id-1][0], fileno(stdin)); // input to output
 			dup2(fds[id][1], fileno(stdout)); // output to input

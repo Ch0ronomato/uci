@@ -12,6 +12,8 @@
 #define STATE_ARGS 5
 #define STATE_REDIRECT_HOLD 6
 #define STATE_REDIRECT 7
+#define STATE_QUOTE_HOLD 8
+#define STATE_QUOTE 9
 
 int validate_state(int current) {
 	switch (current) {
@@ -71,7 +73,7 @@ job_t *parse(int len, string line) {
 						copy_cmd(current_task, bufsize, buf);
 						state = STATE_CMD_HOLD;
 						bufsize = 0;
-					} else if (state == STATE_CMD || state == STATE_ARGS) {
+					} else if (state == STATE_CMD || state == STATE_ARGS || state == STATE_QUOTE) {
 						// copy the buffer into the appropiate place.
 						// essentially this verbose line is equivalent to state -= 1
 						copy_args(bufsize, &num_flags, &num_args, buf, current_task);
@@ -89,6 +91,9 @@ job_t *parse(int len, string line) {
 						}
 						redir = 0;
 						bufsize = 0;
+					} else if (state == STATE_QUOTE_HOLD) {
+						// add it to the buffer
+						buf[bufsize++] = *p;
 					}
 					break;
 				case '<':
@@ -116,11 +121,21 @@ job_t *parse(int len, string line) {
 				case '&':
 					job->background = 1;
 					break;
+				case '\'':
+					if (state == STATE_QUOTE_HOLD) {
+						state = STATE_QUOTE;
+					} else {
+						state = STATE_QUOTE_HOLD;
+					}
+					buf[bufsize++] = *p;
+					break;
 				default:
 					// just fill the buffer.
-					buf[bufsize++] = *p;
-					state = validate_state(state);
-					break;
+					if (*p != '\\') {
+						buf[bufsize++] = *p;
+						state = validate_state(state);
+						break;
+					}
 			}
 		}
 	}
