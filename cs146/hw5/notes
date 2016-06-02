@@ -1,0 +1,9 @@
+__feature bugs__
+	1. exit doesn't not accept integer arguments.
+	2. multiple pipes cannot exceed 256
+	3. large files can cause pipes too take forever e.x. cat /usr/share/dict/linux.words | nl | wc -l only sometimes finished. This maybe because of an a missing implementation detail when a buffer is filled.
+	4. enviornment variables cannot handle nested variables e.x. $$a
+	5. Executing a task in the background that has file redirection when the program begins too read from stdin (for example, cat > file), one command can run, but then the backgrounded task will be brought into the foreground and all input will go into that programs stdout. This can be fixed through signal handlers
+	6. Escaped single quotes won't work.
+	7. Wrapping a ampersand around single quotes will cause the job to execute in the background.
+	8. File redirection hidden in back quotes will write the output too the filename with quotes around it. E.x. echo hey '>/dev/null' will write to a file called '>/dev/null'
