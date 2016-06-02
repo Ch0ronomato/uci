@@ -1,1 +1,1 @@
-ls | nl | wc
+ls | wc | nl

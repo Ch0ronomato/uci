@@ -60,7 +60,7 @@ void process_job(job_t *job, string *env) {
 			int id;
 			if ((id = fork())) {
 				if (!job->background) {
-					waitpid(id, NULL, 0);
+					wait(NULL);
 					fflush(stdout);
 				}
 			} else {

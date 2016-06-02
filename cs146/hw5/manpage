@@ -1,0 +1,45 @@
+NSH(4)								NSH			
+							Not so shelly shell
+
+	The NSH shell is a barebone alternative too the bourne again shell that shares 
+	the syntax. The nsh shell can handle all commands in your path variable. The user
+	will be prompted for a command with the ?. The command may contain redirection,
+	including the append operator, and up too 256 pipes. The shell can also handle basic
+	additional features:
+		1. Single quotes for quoting in an argument. This will work as expected, treating the 
+		space as a character instead of a delimiter.
+		2. Backgrounding using the & character.
+		3. Enviornment variables for ease of use. The syntax is simply var=val
+		4. Handling more pipes
+
+API:
+	The shell is broken into three parts: main, engine and parser. The parser is a state machine with a few
+	special states for single quotes and &. It will go character by character over the input string using a 
+	char pointer and incrementor.
+
+	The engine will mainly take advantage of libc process management (fork and execvpe). Each command in between
+	a pipe character will be forked. When handling fork, each process will be forked and then piped into each 
+	other using the pipe command. There are three use cases: First forker, all middle, and last. 
+
+	final process <---stdin-- |------| <----stdout--- process n |-----| <---stdin-- process n - 1 ... <--stdout process 1
+
+	Background is essentially just a conditional wait. If we are background, we don't wait on the task to finish. If there
+	is , then we will wait for the job.
+
+	Enviornment variables simply use getenv and setenv system calls.
+
+ARGS:
+	nsh takes either a shell script or will read from stdin. The implementation will simply look at argc too
+	see if there is a shell argument and execute the one given too it.
+	:
+TESTING:
+	There are a few test cases available to test some of these features.
+		test0 => Tests simple commands
+		test1 => Essentially a stress test to ensure file descriptors are closed properly
+		test2 => A test for doing multiple pipes.
+		test3 => Tests pipes with pipes
+		test4 => Tests background processes
+		test5 => Tests single quotes. This should cause ls too error.
+		test6 => Tests the exit command
+		test7 => Tests enviornment variables
+
