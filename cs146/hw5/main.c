@@ -19,7 +19,6 @@ int main(int argc, string* argv, string *env) {
 		free(job);
 		if (argc == 1) {
 			printf("? ");
-			fflush(stdout);
 		}
    }
 

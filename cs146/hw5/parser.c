@@ -57,6 +57,7 @@ job_t *parse(int len, string line) {
 
 	// allocate our objects
 	job_t *job = malloc(sizeof(job_t));
+	job->background = 0;
 	current_task = &(job->tasks[0]);
 	current_task->redirect = 0;
 	if (line[0] != '\n') {
@@ -111,6 +112,9 @@ job_t *parse(int len, string line) {
 					current_task = &(job->tasks[jobsize - 1]);
 					current_task->redirect = 0;
 					bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0;
+					break;
+				case '&':
+					job->background = 1;
 					break;
 				default:
 					// just fill the buffer.

@@ -19,6 +19,7 @@ typedef struct task_s {
 
 typedef struct job_s {
 	int task_count;
+	int background;
 	task_t tasks[MAX_PIPE];
 } job_t;
 
