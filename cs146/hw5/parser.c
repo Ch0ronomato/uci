@@ -53,13 +53,14 @@ void copy_args(int bufsize, int *num_flags, int *num_args, char buf[], task_t *c
 job_t *parse(int len, string line) {
 	// begin character by character
 	// parse.
-	int bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0, jobsize = 1;
+	int bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0, jobsize = 1, readcmd = 0;
 	char *p = &(line[0]) - sizeof(char), buf[BUFSIZ];
 	task_t *current_task;
 
 	// allocate our objects
 	job_t *job = malloc(sizeof(job_t));
 	job->background = 0;
+	job->envvar = 0;
 	current_task = &(job->tasks[0]);
 	current_task->redirect = 0;
 	if (line[0] != '\n') {
@@ -68,11 +69,12 @@ job_t *parse(int len, string line) {
 				case ' ':
 				case '\n':
 					// we have hit a space.
-					if (state == STATE_START) {
+					if (!readcmd && (state == STATE_START || state == STATE_QUOTE)) {
 						// copy the buffer into our name.
 						copy_cmd(current_task, bufsize, buf);
 						state = STATE_CMD_HOLD;
 						bufsize = 0;
+						readcmd = 1;
 					} else if (state == STATE_CMD || state == STATE_ARGS || state == STATE_QUOTE) {
 						// copy the buffer into the appropiate place.
 						// essentially this verbose line is equivalent to state -= 1
@@ -116,10 +118,14 @@ job_t *parse(int len, string line) {
 					}
 					current_task = &(job->tasks[jobsize - 1]);
 					current_task->redirect = 0;
-					bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0;
+					readcmd=0,bufsize=0, state = STATE_START_HOLD, num_args = 0, num_flags = 0, redir = 0;
 					break;
 				case '&':
 					job->background = 1;
+					break;
+				case '=':
+					job->envvar=1;
+					buf[bufsize++] = *p;
 					break;
 				case '\'':
 					if (state == STATE_QUOTE_HOLD) {

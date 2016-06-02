@@ -48,21 +48,27 @@ void setupnshredirects(task_t *task);
  */
 void process_job(job_t *job, string *env) {
 	if (job->task_count == 0) return;
-	for (int i = 0; i < job->task_count; i++) {
-		if (!strcmp(job->tasks[i].cmd, "exit")) exit(0);
-	}
-	if (job->task_count > 1) {
-		int id;
-		if ((id = fork())) {
-			if (!job->background) {
-				waitpid(id, NULL, 0);
-				fflush(stdout);
-			}
-		} else {
-			handlepipe(job, env);
+	if (job->envvar) {
+		if(putenv(job->tasks[0].cmd)) {
+			perror("Could not set enviornment variable");
 		}
 	} else {
-		forkandexec(&job->tasks[0], env, job->background);
+		for (int i = 0; i < job->task_count; i++) {
+			if (!strcmp(job->tasks[i].cmd, "exit")) exit(0);
+		}
+		if (job->task_count > 1) {
+			int id;
+			if ((id = fork())) {
+				if (!job->background) {
+					waitpid(id, NULL, 0);
+					fflush(stdout);
+				}
+			} else {
+				handlepipe(job, env);
+			}
+		} else {
+			forkandexec(&job->tasks[0], env, job->background);
+		}
 	}
 }
 
@@ -71,11 +77,13 @@ void prepare(task_t *task, string *buf) {
 	int i = 0;
 	for (; i < task->flag_size; i++) {
 		buf[i + 1] = malloc(sizeof(char) * strlen(task->flags[i]));
+		task->flags[i] = task->flags[i][0] == '$' ? task->flags[i]: getenv(&(task->flags[i][1]));
 		strcpy(buf[i + 1], task->flags[i]);
 	}
 	int temp = i;
 	for (; i < task->flag_size + task->arg_size; i++) {
 		buf[i + 1] = malloc(sizeof(char) * strlen(task->args[i - temp]));
+		task->args[i - temp] = task->args[i][0] != '$' ? task->args[i - temp] : getenv(&(task->args[i - temp][1]));
 		strcpy(buf[i + 1], task->args[i - temp]);
 	}	
 	buf[i + 1] = NULL;
@@ -92,9 +100,10 @@ void forkandexec(task_t *t, string *env, int background) {
 	// prepare all tasks.
 	string *args;
 	getargs(t, &args);
-	if (fork()) {
+	int id;
+	if ((id=fork())) {
 		if (!background) {
-			wait(NULL);
+			waitpid(id, NULL, 0);
 		}
 	} else {
 		setupnshredirects(t);
