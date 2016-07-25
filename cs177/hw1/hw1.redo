@@ -1,0 +1,46 @@
+1.1 = 2^5 - 1
+1.2 = Countably infinite.
+1.3 = 20
+1.4 = 36
+1.5 = Countable infinite
+1.6 = Uncountably infinite
+
+2.1 = A1 || A2 || A3 || A1 && A2 || A1 && A3 || A2 && A3 || A1 && A2 && A3
+2.2 = (B1c) || (B2c) || (B3c)
+2.3 = (D1c) || (D2c) || (D3c) || (D4c) || (D5c)
+2.4 = (D1 and D2c and D3c and D4c and D5c) or (D1c and D2 and D3c and D4c and D5c) and ... and (D1c and D2c and D3c and D4c and D5)
+2.5 = (A1 and A2) or (A2 and A3) or (A3 and A4) or (A4 and A5)
+
+3.1 = 2 mills => 1/4
+	  4 mills => 1/4
+	  6 mills => 1/4
+	  8 mills => 1/4
+
+3.2 = E[x] = sum of x*p(x) = 1/4 + 1/2 + 3/4 + 1 = 2.5
+	  E[x] = 1/8 + 1/4 + 3/8 + 1/2 + 5/8 + 3/4 + 7/8 + 1 = 4.5 
+
+	  b. E[x] = 7/3 + 8/3 + 9/3 = 7.6
+
+3.3 = Var[X] = avg((2 - 2.5)2, (4 - 2.5)2, (6 - 2.5)2, (8 - 2.5)2) = 6.67
+	  Var[X] = avg((7 - 7.6)2, (8 - 7.6)2, (9 - 7.6)2) = .82
+
+3.4 = P[N=a] = P[N=b] = 1/2, where N is a random variable describing the network we choose.
+	  P[X1=x and N=a] = 1/2 * P[X1=x] = 1/2 * 1/4 = 1/8
+	  P[X2=x and N=b] = 1/2 * P[X2=x] = 1/2 * 1/3 = 1/6
+
+3.5 = A network with low expected network latency is really important for apps with fast connection most of the time.
+This would work for an application that sends a packet over the network every once in a while, and expects a fast
+result. An example of this could be something like checking email. Generally, you make one request to get all your unread
+mails, and the state of the network later doesn't matter to you. For something like streaming, a consistent network lateney
+would be much better. That way you can serve the same quality of video given that bandwidth and not worry about it
+conneciton being worse on one particular node.
+
+5.1 = 1 / all possible combinations = 1 / (26+10)^6 = 1 / 2,176,782,336 = 4.594 * e-10
+5.2 = 1 - probability of being wrong = 1 - (1000000) / (2,176,782,336) = .9995
+5.3.1 = (Assuming there are five vowels): 1 / (5 * 21 * 10 * 5 * 21 * 10) = 9.07 * 10^-6
+5.3.2 = (Same assumption): 1000000 / (5*21*10*5*21*10) = .09
+
+6.1 = .6 * .3 * .1 = .018
+6.2 = 6 * .018 = .108
+6.3 = .6 * .6 * .6 * .6 * .6 = .0778
+6.4 = 1 - .6^10 = .994
