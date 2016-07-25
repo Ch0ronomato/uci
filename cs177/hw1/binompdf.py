@@ -1,4 +1,6 @@
+#!/usr/bin/python2.7
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 class Memory:
 	def __init__(self):
@@ -34,12 +36,15 @@ def nchoosek(n, k):
 	nminkfac = factorial(n - k) # will certainly be cached.
 	return nfac / (kfac * nminkfac)
 
-def binomialapprox(n, i, p):
+def binomialapprox(n, i, p, doprint=False):
 	nbyp = n * p
-	denom = 2. * np.pi * nbyp * (1. - p)
+	denom = math.sqrt(2. * np.pi * nbyp * (1. - p))
 
 	# get 'e's power
 	x = pow((i - nbyp), 2) / (2.*nbyp*(1. - p))
+	if doprint:
+		print "denom=", denom, "x=", x
+		print "1/denom=",(1./denom),"pow to x=",math.pow(np.e,-x)
 	return (1. / denom) * pow(np.e, -x)
 
 def binomialexact(n, i, p):
@@ -62,6 +67,10 @@ def binomialcdf(n, p):
 
 	return sums
 
+print "Printing graph for parameters described in problem 7"
+print "Graph one and two are only different based on their location. They're both rather fat and have small n's, meaning that these graphs have very high veriance."
+print "Graph three and four are much skinner compared to 1 and 2, have a lower variance"
+print "All three graphs are roughly symmetric around np"
 fig,ax = plt.subplots(2, 2)
 ax[0][0].bar(range(0, 26), binomialdist(25, .1))
 ax[0][0].set_title("n = 25, p = .1")
@@ -74,6 +83,7 @@ ax[1][1].set_title("n = 1000, p = .9")
 plt.gcf().canvas.set_window_title('Binomial pmf')
 plt.show()
 
+print "Printing graph for parameters described in problem 8"
 fig,ax = plt.subplots(2, 2)
 ax[0][0].bar(range(0, 26), binomialcdf(25, .1))
 ax[0][0].set_title("n = 25, p = .1")
@@ -86,12 +96,11 @@ ax[1][1].set_title("n = 1000, p = .9")
 plt.gcf().canvas.set_window_title('Binomial cdf')
 plt.show()
 
-
 print "Entering problem 9 answers"
-print "X ~ binom(10000, .1). P[X = 1000] = ",binomialapprox(10000, 1000, .1) 
-print "X ~ binom(10000, .1). P[X >= 1000] = 1 - P[X < 1000] = ",(1. - binomialcdf(10000, .1)[1000])
-print "X ~ binom(10000, .1). P[X >= 1100] = 1 - P[X < 1100] = ",(1. - binomialcdf(10000, .1)[1000]) 
-print "X ~ binom(10000, .1). P[X <= 900] = ",binomialapprox(10000, 901, .1)
+print "X ~ binom(10000, .1). (10000 choose 1000)P[X = 1000]^1000 * (1-P[x=1000])^9000 = ",binomialapprox(10000., 1000., .1) 
+print "X ~ binom(10000, .1). P[X >= 1000] = 1 - cdf[999] = ",(1. - binomialcdf(10000, .1)[998])
+print "X ~ binom(10000, .1). P[X >= 1100] = 1 - cdf[1099] = ",(1. - binomialcdf(10000, .1)[1098]) 
+print "X ~ binom(10000, .1). P[X <= 900] = cdf[900] ",binomialcdf(10000, .1)[900]
 
 # Find the largest possible value such that P[X >= 500] < .0000002
 # for loop over all possible P's from 0 - 1
@@ -99,6 +108,7 @@ print "X ~ binom(10000, .1). P[X <= 900] = ",binomialapprox(10000, 901, .1)
 delta = 2 * pow(10, -7)
 for i in range(1, 100):
 	p = (i*1.)/100.0
-	if (binomialcdf(10000, p)[500] <= delta):
-		print "The minimum p = ", i
+	print p,binomialcdf(10000,p)[498]
+	if ((1-binomialcdf(10000, p)[498]) > delta):
+		print "The minimum p = ", p
 		break
