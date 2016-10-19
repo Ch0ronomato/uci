@@ -1,3 +1,6 @@
 [submodule "CS-165"]
 	path = CS-165
 	url = git@github.com:MrShroom/CS-165.git
+[submodule "ConnectK"]
+	path = ConnectK
+	url = git@github.com:IanSchweer/ConnectK.git
