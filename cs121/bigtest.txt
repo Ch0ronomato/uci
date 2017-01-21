@@ -1,0 +1,67 @@
+Information Retrieval
+Assignment 1 - Text Processing Functions
+Due date: 1/25 at 11:59pm
+This assignment is to be done individually. You cannot use code written by your
+classmates. Use code found over the Internet at your own peril -- it may not do
+exactly what the assignment requests. If you do end up using code you find on the
+Internet, you must disclose the origin of the code. Concealing the origin of a piece
+of code is plagiarism. Use the Message Board for general questions whose answers
+can benefit you and everyone.
+General Specifications
+1. You can use any programming language. The next homework will use crawlers
+written in Python, so you may want to use this homework to brush up your
+knowledge of Python.
+2. Make sure to break down your program into classes/methods/functions
+corresponding to the parts in this specification. They will be tested separately.
+3. The function signatures in this specification are informal; their purpose is to
+explain the inputs and outputs of the methods.
+4. At points, the assignment may be underspecified. In those cases, make your own
+assumptions and be prepared to defend them.
+Part A: Word Frequencies (40 points)
+Write a method/function that reads in a text file and returns a list of the tokens in
+that file. For the purposes of this project, a token is a sequence of alphanumeric
+characters, independent of capitalization (so Apple, apple are the same token).
+Method/Function: List<Token> tokenize(TextFilePath)
+Write another method/function that counts the number of occurrences of each
+word in the token list.
+Method: Map<Token,Count>
+computeWordFrequencies(List<Token>)
+Finally, write method that prints out the word frequency counts onto the screen.
+The print out should be ordered by decreasing frequency. (so, highest frequency
+words first)
+Method: void print(Frequencies<Token,Count>)
+The TA will provide a test text file during the f2f presentation. For this part, it is
+expected that your program will read this text file, tokenize it, count the tokens, and
+print out the token (word) frequencies.
+Part B: Intersection of two files (60 points)
+Write a program that takes two text files as arguments and outputs the number of
+tokens they have in common. Here is an example of input/output:
+You can reuse code you wrote for part A.
+The TA will provide text files during the f2f presentation. Note that some of the text
+files may be VERY LARGE.
+Once you have implemented your program, please perform an analysis of its
+runtime complexity: does it run in linear time relative to the size of the input?
+Polynomial time? Exponential time?
+For this part, programs that perform better will be given more credit than those that
+perform poorly.
+Submitting Your Assignment
+Your submission should be a single zip file containing two programs, one for part A,
+the other for part B. Submit it to Canvas.
+Grading Process
+You will meet with the grader for about 10 minutes during the week starting on
+1/26. During that meeting, be ready for the following:
+1. Show your program running on your own computer, on an input file
+provided by the grader on a USB stick
+2. Answer questions about your program (as submitted) and its behavior
+during the meeting
+You should not continue to work on your program once you submit it to Canvas, as
+the reader will be looking at your submitted code.
+Evaluation Criteria
+Your assignment will be graded on the following four criteria.
+1. Correctness (40%)
+a) How well does the behavior of the program match the specification?
+b) How does your program handle bad input?
+2. Understanding (30%)
+a) Do you demonstrate understanding of the code?
+3. Efficiency (30%)
+a) How quickly does the program work on large inputs?
