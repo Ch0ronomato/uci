@@ -14,8 +14,12 @@ class Tokenizer:
         self.freqs={}
     
     def _getlines(self):
-        with self.flock:
-            return list(islice(self.file, self.chunksize))
+        while True:
+            with self.flock:
+                items=list(islice(self.file, self.chunksize))
+                if not items:
+                    break
+                yield items
 
     def _stripWord(self, word):
         '''
@@ -33,14 +37,12 @@ class Tokenizer:
 
         if (not currentword == ""):
             self.res[me][currentword.lower()] += 1
+        len(self.res[me])
 
     def tokenizeThread(self):
         me=int(threading.current_thread().name)
-        while 1:
-            lines=self._getlines()
-            if not lines:
-                break;
-            for x in lines:
+        for l in self._getlines():
+            for x in l: 
                 self._stripWord(x)
 
     def tokenize(self, fname):
