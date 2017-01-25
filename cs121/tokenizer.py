@@ -1,45 +1,67 @@
+import operator # used to reverse dict
+import threading
+from collections import defaultdict as ddict
+from itertools import islice
 class Tokenizer:
     def __init__(self):
-        self.files=[]
-
-    def addFile(self, fname):
-        self.files.append(fname)
+        self.file=False
+        self.flock=threading.Lock()
+        self.chunksize=500
+        self.threads=[]
+        self.lock = threading.Lock()
+        self.res=[ddict(int), ddict(int), ddict(int), ddict(int)]
+        self.flushamount = 5*100*100
+        self.freqs={}
+    
+    def _getlines(self):
+        with self.flock:
+            return list(islice(self.file, self.chunksize))
 
     def _stripWord(self, word):
         '''
-        Gets the first set of alphanumeric characters. Returns false if none found
+	Splits one word into a set of alphanumeric groups. O(n), where n=size(word), assuming append is O(1) time
         '''
-        words=[]
         currentword=""
+        me=int(threading.current_thread().name)
         for ch in word:
             if (not ch.isalnum()):
                 if (not currentword == ""):
-                    words.append(currentword)
+                    self.res[me][currentword.lower()] += 1
                     currentword = ""
             else:
                 currentword = currentword + ch
+
         if (not currentword == ""):
-            words.append(currentword)
+            self.res[me][currentword.lower()] += 1
 
-        return words
-    def _tokenizeFile(self, f):
-        tokenizing={}
-        for line in f:
-            for word in line.split(" "):
-                tokens = self._stripWord(word)
-                for token in tokens:
-                    if (tokenizing.has_key(token) == False):
-                        tokenizing[token] = 1
-                    else:
-                        tokenizing[token] = tokenizing[token] + 1
-        return tokenizing
+    def tokenizeThread(self):
+        me=int(threading.current_thread().name)
+        while 1:
+            lines=self._getlines()
+            if not lines:
+                break;
+            for x in lines:
+                self._stripWord(x)
 
-    def tokenize(self):
-        for i in range(len(self.files)):
-            print "Tokenizing file",self.files[i]
-            print self._tokenizeFile(open(self.files[i]))
+    def tokenize(self, fname):
+	'''
+	Tokenizes file, and counts the frequency of each token. O(n*m) time, where
+		n=average( length( word in words ) )
+		m=length( words )
+	assuming has_key is O(1)
+	'''
+        tokenizing=[]
+	self.file = open(fname)
+        for i in range(4):
+            self.threads.append(threading.Thread(target=self.tokenizeThread, name=str(i)))
+            self.threads[i].start()
+        for i in range(4):
+            self.threads[i].join()
 
-tok = Tokenizer()
-tok.addFile("test.txt")
-tok.addFile("bigtest.txt")
-tok.tokenize()
+        return self.res
+
+    def computeFrequencies(self):
+        for i in range(1, 4):
+            for k,v in self.res[i]:
+                self.res[0][k] += v
+        return self.res[0]
