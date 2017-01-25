@@ -62,6 +62,6 @@ class Tokenizer:
 
     def computeFrequencies(self):
         for i in range(1, 4):
-            for k,v in self.res[i]:
+            for k,v in self.res[i].iteritems():
                 self.res[0][k] += v
         return self.res[0]
